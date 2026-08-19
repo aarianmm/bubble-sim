@@ -23,7 +23,7 @@ import {
   type Engine,
   type PresetName,
 } from './engine';
-import type { Decision, EventId } from '../sim/types';
+import type { Band, DeathCauseId, Decision, EventId } from '../sim/types';
 import { isValidMonth, monthIndex, MONTH_COUNT, type MonthIndex } from '../sim/month';
 import { createInitialState, tickOneMonth, computeStateAtMonth } from './provisionalSim';
 
@@ -119,6 +119,21 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /**
+   * §25.4 — the closing shot, on demand. Ends the run with an authored band and
+   * cause instead of the one the decade would have produced. Step 26 computes
+   * these for real; this only forces them for the demo.
+   */
+  const showDeathCard = useCallback((band: Band, causeId: DeathCauseId) => {
+    setState((s) => ({
+      ...s,
+      status: band === 'LEGENDARY' ? 'survived' : 'dead',
+      deathMonth: band === 'LEGENDARY' ? null : s.month,
+      deathCauseId: causeId,
+    }));
+    setPausedState(true);
+  }, []);
+
   const reset = useCallback(() => {
     setState(createInitialState());
     setPausedState(false);
@@ -156,6 +171,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       jumpToMonth,
       forceEvent,
       loadPreset,
+      showDeathCard,
       reset,
     }),
     [state, paused, timeRate, dispatch, setPaused, setTimeRate, jumpToMonth, forceEvent, loadPreset, reset],

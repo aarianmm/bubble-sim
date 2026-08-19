@@ -11,7 +11,7 @@
  */
 
 import { createContext, useContext } from 'react';
-import type { Decision, EventId, GameState } from '../sim/types';
+import type { Band, Decision, DeathCauseId, EventId, GameState } from '../sim/types';
 import type { MonthIndex } from '../sim/month';
 
 /** §7.4 — one simulated month is 1.2 real seconds at 1x. */
@@ -41,6 +41,13 @@ export interface Engine {
   jumpToMonth(month: MonthIndex): void;
   forceEvent(eventId: EventId): void;
   loadPreset(preset: PresetName): void;
+  /**
+   * §25.4 "Instant death card — any band, any cause line, one click, for the
+   * closing shot." Ends the run and navigates to the card without playing the
+   * decade that would have earned it. Real runs never call this; the band and
+   * cause a real run produces come from `src/sim/bands.ts` (Step 26).
+   */
+  showDeathCard(band: Band, causeId: DeathCauseId): void;
   reset(): void;
 }
 

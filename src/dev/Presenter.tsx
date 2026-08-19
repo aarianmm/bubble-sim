@@ -70,16 +70,9 @@ export function Presenter({ open, onClose }: PresenterProps) {
   }
 
   function killNow() {
-    // SEAM: no sanctioned way to set an arbitrary band/cause exists yet —
-    // see the file header. forceEvent's stub is the only mutation surface
-    // available without changing the frozen Engine interface, so the
-    // chosen band/cause travel through it as a documented dev-only
-    // convention (`dev:instant-death:<band>:<cause>`) until Step 24 gives
-    // this tool its own method. Pausing is real, though — §19.3 means the
-    // clock shouldn't keep ticking in the background under a page that's
-    // telling the player (or a judge) the run is over.
-    engine.forceEvent(`dev:instant-death:${band}:${cause}`);
-    engine.setPaused(true);
+    // §19.3: the clock must not keep ticking behind a page telling the player
+    // — or a judge — that the run is over. showDeathCard pauses for us.
+    engine.showDeathCard(band, cause);
     router.navigate(GAME_OVER_URL);
   }
 
