@@ -3,6 +3,14 @@
 Deliberately open, with the evidence needed to close them. Each names the spec
 section it violates so nothing here can be quietly forgotten.
 
+**Add to this file whenever you find a problem** — including problems you choose
+not to fix and problems you caused (CLAUDE.md rule 12). Give each one what a
+future reader needs to close it: what breaks, why, which §n it violates, and what
+the fix would be. Never widen a test or soften an assertion to turn a check green;
+record the gap and leave the check honest.
+
+**Live:** https://bubble-sim.pages.dev/
+
 ---
 
 ## 1. Perfect play cannot survive the decade — §8.5, §26.1

@@ -1114,7 +1114,7 @@ Everything needed, kept deliberately small. All original work.
 
 # BUILD STATUS
 
-**Repo:** https://github.com/aarianmm/bubble-sim · **branch:** `mvp` · **stack:** Vite + React + TS, static, no backend
+**Live:** https://bubble-sim.pages.dev/ · **Repo:** https://github.com/aarianmm/bubble-sim · **stack:** Vite + React + TS, static, no backend
 **Last updated:** 20 Aug 2026
 
 > **Nobody has looked at this in a real browser yet.** The Chrome extension was
@@ -1126,9 +1126,13 @@ Everything needed, kept deliberately small. All original work.
 > structurally only, and it is load-bearing for the fairness contract. Look at it
 > before you rehearse.
 
-`main` is a buildable scaffold so the Cloudflare Pages production deploy stays
-healthy; the MVP lives on `mvp` and is viewed through its preview deployment.
-Each step was built on its own `step/*` branch and merged into `mvp`.
+The MVP was built step by step on `step/*` branches, merged into `mvp`, and
+merged to `main` via PR #1. `main` deploys to the live URL above; pull requests
+get their own Cloudflare preview deployment.
+
+**This section is maintained, not archival.** CLAUDE.md rules 10–12 require every
+change to update it in the same commit, every deviation to be recorded under
+*Deviations*, and every problem found to be added to `KNOWN-ISSUES.md`.
 
 ## The number the design rests on
 

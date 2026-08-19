@@ -3,6 +3,11 @@
 The authoritative spec is `bubble-design-requirements.md`, in this repo. Section references
 below (§n) point at it. Read your step's sections before writing code.
 
+**Live:** `main` deploys to https://bubble-sim.pages.dev/
+
+Companion docs: `KNOWN-ISSUES.md` (open problems), `DEMO.md` (the §25.5 operator's
+card), `AGENTS.md` (points here).
+
 ## Non-negotiable
 
 1. **`Math.random()` is banned everywhere** (§25.1). ESLint enforces it; do not
@@ -24,6 +29,22 @@ below (§n) point at it. Read your step's sections before writing code.
 9. **§5.1 content law:** real indices, fictional firms. No real company is ever
    depicted as a scam or a bad investment. Fictional names must not be
    near-misses for real 1996–2006 firms.
+10. **Every change updates the spec.** `bubble-design-requirements.md` has a
+    **BUILD STATUS** section between Parts III and IV. When you change what the
+    build does, update it *in the same commit* — move the step into *Done* with
+    what it actually achieved, or adjust *To be done*. The spec and the code
+    drifting apart is how a demo gets contradicted by its own documentation in
+    front of a judge.
+11. **Every departure from the spec is recorded.** If the implementation has to
+    diverge — because the spec is ambiguous, self-contradictory, or wrong — do it
+    deliberately, then write it under BUILD STATUS's *Deviations* with the
+    reasoning and the section it departs from. Never diverge silently.
+12. **Every problem found goes in `KNOWN-ISSUES.md`**, including problems you
+    choose not to fix and problems you caused. Give each one the evidence needed
+    to close it: what breaks, why, which §n it violates, and what the fix would
+    be. An unrecorded known problem is indistinguishable from a bug nobody
+    noticed. Never widen a test or soften an assertion to make a red check go
+    green — record the gap and leave the check honest.
 
 ## The one number the design rests on
 
