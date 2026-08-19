@@ -417,7 +417,7 @@ describe('fireScheduledEvents (§7.3.5)', () => {
     expect(next.cash).toBe(0);
   });
 
-  it('skips a Step 31/32 mvpDeferred event entirely — scheduled but inert (§26.1)', () => {
+  it('delivers a Step 31/32 mvpDeferred event as ordinary mail — §26.1 says "deliver it", not "skip it"', () => {
     const cardEvent: ScriptEvent = {
       id: 'ev.test.card',
       date: '1998-05',
@@ -430,7 +430,20 @@ describe('fireScheduledEvents (§7.3.5)', () => {
       blocksTime: false,
     };
     const next = fireScheduledEvents(makeState({ month: cardEvent.month }), [cardEvent], []);
-    expect(next.inbox).toHaveLength(0);
+    expect(next.inbox).toHaveLength(1);
+    expect(next.inbox[0].vehicleId).toBe('capital-direct-card');
+  });
+
+  it('"accepting" a deferred card never creates a working debt facility — state.debt stays null', () => {
+    const decision: Decision = {
+      type: 'accept-offer',
+      month: monthIndex(1998, 5),
+      vehicleId: 'capital-direct-card',
+      source: 'test',
+    };
+    const next = fireScheduledEvents(makeState({ month: monthIndex(1998, 5) }), [], [decision]);
+    expect(next.unlocked).toContain('capital-direct-card'); // an inert holding, per §26.1
+    expect(next.debt).toBeNull(); // nothing to fund it with (§13/§26.1 MVP boundary)
   });
 });
 

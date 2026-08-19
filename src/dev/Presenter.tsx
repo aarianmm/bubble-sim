@@ -1,18 +1,16 @@
 /**
- * Presenter tools (Step 15, §25.4) — behind `?dev=1` or Help > About
- * clicked five times (wired in App.tsx). Built as insurance on the demo,
- * not a debug panel: styled as a period utility window so it doesn't break
- * the illusion on the accidental occasion it's visible in front of judges.
+ * Presenter tools (Step 15, finished by Step 24, §25.4) — behind `?dev=1`
+ * or Help > About clicked five times (wired in App.tsx). Built as insurance
+ * on the demo, not a debug panel: styled as a period utility window so it
+ * doesn't break the illusion on the accidental occasion it's visible in
+ * front of judges.
  *
- * Two of the six tools genuinely can't do more than move the clock yet:
- * "Force any event" needs src/script/timeline.ts (Step 5), and "Load a
- * saved state"'s portfolio presets need holdings (Steps 7-9/24) — neither
- * is merged into this worktree. Both are wired end-to-end with a clearly
- * marked seam in src/ui/EngineProvider.tsx rather than left unwired.
- * "Instant death card" has the same shape of gap for a different reason:
- * GameState carries no `band` field (Band is computed from RunStats by the
- * death-card step, 27-28) and the Engine interface — frozen for this step
- * — has no death-forcing method. See the comment on killNow() below.
+ * "Force any event" and "Load a saved state" are both real now —
+ * src/ui/EngineProvider.tsx's forceEvent()/loadPreset() run the actual
+ * timeline/scheduler/tick rather than logging a stub. "Instant death card"
+ * still forces an authored band/cause directly onto GameState rather than
+ * computing one (that's Steps 26-28's job, the sibling branch) — see the
+ * comment on killNow() below.
  */
 import { useState } from 'react';
 import { useEngine, RATE_NORMAL, RATE_FAST, RATE_PRESENTER, type PresetName } from '../ui/engine';
@@ -138,8 +136,10 @@ export function Presenter({ open, onClose }: PresenterProps) {
         <section className="presenter__section">
           <h2>Force any event</h2>
           <p className="presenter__note">
-            Seam: src/script/timeline.ts isn't merged into this worktree yet — this
-            calls the stub in EngineProvider.tsx, which logs to the console.
+            Any event id from src/script/timeline.ts (e.g.
+            "ev.1999-06.halcyon"). Fires it into its real channel right now,
+            regardless of the authored date — a DLG event blocks time for a
+            real choice, same as it would on its own month.
           </p>
           <div className="presenter__row">
             <input

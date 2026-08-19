@@ -11,7 +11,7 @@
  *   - otherwise           the real game, inside <EngineProvider> and
  *                          <RouterProvider>
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Window } from './chrome/Window';
 import { TooSmall, useIsViewportTooSmall } from './chrome/TooSmall';
 import { VisualGallery } from './chrome/VisualGallery';
@@ -22,6 +22,7 @@ import type { NavSection } from './chrome/Chrome.types';
 import { noop } from './chrome/Chrome.types';
 import { EngineProvider } from './ui/EngineProvider';
 import { useEngine } from './ui/engine';
+import { Notifications } from './ui/Notifications';
 import { Presenter } from './dev/Presenter';
 import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
 
@@ -66,6 +67,16 @@ function AppShell() {
     engine.reset();
     router.resetTo(HOME_URL);
   }
+
+  // §7.2's state machine: DEATH CARD / survival is a terminal state reached
+  // from RUNNING — when it happens, hand off to whatever's rendered at
+  // GAME_OVER_URL (Steps 26-28's death card, on the sibling branch) rather
+  // than leaving the player parked on whatever page they were last reading.
+  useEffect(() => {
+    if (engine.state.status !== 'running' && router.url !== GAME_OVER_URL) {
+      router.navigate(GAME_OVER_URL);
+    }
+  }, [engine.state.status, router.url]);
 
   function handleAbout() {
     const next = aboutClicks + 1;
@@ -146,6 +157,7 @@ function AppShell() {
       >
         <PageComponent key={router.contentKey} />
       </Window>
+      <Notifications />
       {presenterUnlocked && (
         <>
           <Presenter open={presenterOpen} onClose={() => setPresenterOpen(false)} />

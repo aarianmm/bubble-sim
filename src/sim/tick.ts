@@ -35,7 +35,6 @@ import type {
   Holding,
   DialogItem,
   MailItem,
-  PopupItem,
   ScriptEvent,
   Decision,
   DialogAction,
@@ -45,10 +44,11 @@ import { MONTHLY_PAY } from './types';
 import type { VehicleId } from './ids';
 import { expensesFor } from './basket';
 import { netWorth } from './selectors';
-import { DAYS_PER_MONTH, type MonthIndex } from './month';
+import type { MonthIndex } from './month';
 import { VEHICLES } from './vehicles';
 import { DIALOGS } from '../content/dialogs';
-import { MAIL_MESSAGES, POPUP_MESSAGES } from '../content/messages';
+import { POPUP_MESSAGES } from '../content/messages';
+import { materializeMail, materializePopups, materializeDialog, sweepExpired, MAX_CONCURRENT_POPUPS } from './scheduler';
 import seriesFile from '../data/series.json';
 import type { MarketSeriesFile } from '../data/schema';
 
@@ -240,6 +240,33 @@ function applyDecision(state: GameState, decision: Decision): GameState {
     case 'close-popup':
       return { ...state, popups: state.popups.filter((p) => p.id !== decision.popupId) };
 
+    case 'file-popup-as-mail': {
+      // §10 rule 3 / §20.2 — clicking a popup's CTA never loses it: a copy
+      // is filed in the inbox (unread, never expiring — mirrors
+      // chrome/popupPlacement.ts's popupToMailItem exactly) and the popup
+      // itself closes, same as the main window navigating away from it.
+      const popup = state.popups.find((p) => p.id === decision.popupId);
+      if (!popup) return state;
+      const msg = POPUP_MESSAGES[popup.contentId];
+      const filed: MailItem = {
+        id: `${popup.id}.filed`,
+        eventId: popup.eventId,
+        from: msg?.from ?? '',
+        subject: popup.title,
+        contentId: popup.contentId,
+        vehicleId: popup.vehicleId,
+        cls: popup.cls,
+        arrivedMonth: state.month,
+        expiresMonth: null,
+        status: 'unread',
+      };
+      return {
+        ...state,
+        inbox: [...state.inbox, filed],
+        popups: state.popups.filter((p) => p.id !== popup.id),
+      };
+    }
+
     case 'decline-offer':
       return {
         ...state,
@@ -347,59 +374,38 @@ function applyDecision(state: GameState, decision: Decision): GameState {
 }
 
 export function fireScheduledEvents(state: GameState, monthEvents: ScriptEvent[], monthDecisions: Decision[]): GameState {
-  let next = state;
+  // §10.2 / §20.2 — expiry is real: a message or popup past its own
+  // expiresMonth/closesMonth disappears silently before anything new for
+  // this month is even materialized.
+  const swept = sweepExpired(state.inbox, state.popups, state.month);
+  let next: GameState = { ...state, inbox: swept.inbox, popups: swept.popups };
 
   for (const event of monthEvents) {
-    if (event.mvpDeferred) continue; // scheduled but inert (§26.1)
+    // §26.1's MVP boundary is explicit about how the two mvpDeferred credit
+    // offers and the mvpDeferred Apr 2003 fake-dialog scam behave: "deliver
+    // them as ordinary mail that cannot be funded" / "deliver it as an
+    // ordinary loud popup" — i.e. they materialize exactly like any other
+    // event; only the DEFERRED MECHANIC is missing (there is no `state.debt`
+    // creation path anywhere in this file, so "accepting" the card can
+    // never actually unlock a working credit facility — `use-the-card`
+    // below falls back to cash precisely because `state.debt` stays null
+    // forever; the fake-dialog behaviour (§20.5) simply isn't built, so the
+    // popup just reads as an ordinary loud one). Nothing here is skipped.
 
     if (event.channel === 'MAIL') {
-      const msg = MAIL_MESSAGES[event.contentId];
-      const item: MailItem = {
-        id: event.id,
-        eventId: event.id,
-        from: msg?.from ?? '',
-        subject: msg?.subject ?? '',
-        contentId: event.contentId,
-        vehicleId: event.vehicleId,
-        cls: event.cls,
-        arrivedMonth: state.month,
-        expiresMonth: event.expiresDays == null ? null : state.month + Math.ceil(event.expiresDays / DAYS_PER_MONTH),
-        status: 'unread',
-        amount: event.amount,
-      };
-      next = { ...next, inbox: [...next.inbox, item] };
+      next = { ...next, inbox: [...next.inbox, materializeMail(event, state.month)] };
     } else if (event.channel === 'POP') {
-      const msg = POPUP_MESSAGES[event.contentId];
-      const item: PopupItem = {
-        id: event.id,
-        eventId: event.id,
-        title: msg?.subject ?? '',
-        contentId: event.contentId,
-        vehicleId: event.vehicleId,
-        cls: event.cls,
-        openedMonth: state.month,
-        closesMonth: state.month + Math.ceil(45 / DAYS_PER_MONTH),
-        // Deterministic, not random (§25.1) — Step 20's UI is free to derive
-        // a richer placement from the month index; the sim doesn't care.
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      };
-      next = { ...next, popups: [...next.popups, item] };
+      // §20.2: "never more than 3 at once" — a new authored batch (e.g. the
+      // May 1999 mania peak) always gets to open in full; if that would push
+      // the total over the cap, the oldest already-open popups close early
+      // to make room, exactly as if their own 45-day timer had run out.
+      let popups = [...next.popups, ...materializePopups(event, state.month)];
+      if (popups.length > MAX_CONCURRENT_POPUPS) {
+        popups = popups.slice(popups.length - MAX_CONCURRENT_POPUPS);
+      }
+      next = { ...next, popups };
     } else if (event.channel === 'DLG') {
-      const copy = DIALOGS[event.contentId];
-      const item: DialogItem = {
-        id: event.id,
-        eventId: event.id,
-        title: copy?.title ?? '',
-        contentId: event.contentId,
-        cls: event.cls,
-        raisedMonth: state.month,
-        amount: event.amount,
-        buttons: copy?.buttons ?? [],
-      };
-      next = { ...next, dialogs: [...next.dialogs, item] };
+      next = { ...next, dialogs: [...next.dialogs, materializeDialog(event, state.month)] };
     }
 
     // Job loss is involuntary — nobody "accepts" it (§14.1: "the big one").
