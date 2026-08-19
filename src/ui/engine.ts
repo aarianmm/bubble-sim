@@ -1,0 +1,62 @@
+/**
+ * The engine interface — the seam between the pure simulation (/sim) and every
+ * React surface (/chrome, /pages, /dev).
+ *
+ * Pages read `state` and call `dispatch`. They never mutate state, never
+ * advance time, and never reach into /sim directly for anything other than the
+ * pure selectors in `src/sim/selectors.ts`.
+ *
+ * This interface is stable. Step 24 (the scheduler) replaces the implementation
+ * behind it without any page changing.
+ */
+
+import { createContext, useContext } from 'react';
+import type { Decision, EventId, GameState } from '../sim/types';
+import type { MonthIndex } from '../sim/month';
+
+/** §7.4 — one simulated month is 1.2 real seconds at 1x. */
+export const MS_PER_MONTH = 1200;
+
+/** §7.4 / §10.3 — held fast-forward is 4x; the inbox slows time to 0.4x. */
+export const RATE_NORMAL = 1;
+export const RATE_FAST = 4;
+export const RATE_INBOX = 0.4;
+
+/** §25.4 presenter tool — 20x is for skipping quiet years live. */
+export const RATE_PRESENTER = 20;
+
+export interface Engine {
+  state: GameState;
+  /** True while a blocking dialog is open, or the player pressed pause (§20.1). */
+  paused: boolean;
+  /** Effective multiplier on MS_PER_MONTH. 0 while paused. */
+  timeRate: number;
+
+  dispatch(decision: Decision): void;
+  setPaused(paused: boolean): void;
+  /** Hold-to-fast-forward sets RATE_FAST on press and RATE_NORMAL on release. */
+  setTimeRate(rate: number): void;
+
+  /* --- §25.4 presenter tools, behind ?dev=1 --- */
+  jumpToMonth(month: MonthIndex): void;
+  forceEvent(eventId: EventId): void;
+  loadPreset(preset: PresetName): void;
+  reset(): void;
+}
+
+/** §25.4 — one preset per demo beat. */
+export type PresetName =
+  | 'start'
+  | 'just-before-the-crash'
+  | 'holding-the-ponzi'
+  | 'about-to-be-forced-to-sell'
+  | 'cash-only-march-2000'
+  | 'survived-2006';
+
+export const EngineContext = createContext<Engine | null>(null);
+
+export function useEngine(): Engine {
+  const engine = useContext(EngineContext);
+  if (!engine) throw new Error('useEngine must be used inside <EngineProvider>');
+  return engine;
+}
