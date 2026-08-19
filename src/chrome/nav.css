@@ -1,0 +1,68 @@
+/**
+ * Nav.tsx (Step 14) — the sidebar's live parts. Sidebar.tsx supplies the
+ * slots; this file only styles what's dropped into them. Tokens only, no
+ * hex (§25.1 hard rule #4); nothing here declares a `transition` (§23).
+ */
+
+.comet-nav__date {
+  margin: 4px 2px 6px;
+  padding: 3px 6px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.comet-nav__time-controls {
+  display: flex;
+  gap: 4px;
+  margin: 0 2px 6px;
+}
+
+.comet-nav__time-btn {
+  flex: 1 1 0;
+  cursor: default;
+}
+
+.comet-nav__time-btn--held {
+  border-top-color: var(--dk-shadow);
+  border-left-color: var(--dk-shadow);
+  border-right-color: var(--hilite);
+  border-bottom-color: var(--hilite);
+  box-shadow:
+    inset 1px 1px 0 0 var(--shadow),
+    inset -1px -1px 0 0 var(--face-light);
+}
+
+.comet-nav__spine {
+  list-style: none;
+  margin: 0;
+  padding: 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--font-mono);
+}
+
+.comet-nav__spine-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.comet-nav__spine-row--current {
+  font-weight: 700;
+}
+
+.comet-nav__spine-year {
+  flex: 0 0 auto;
+  width: 28px;
+}
+
+.comet-nav__spine-bar {
+  flex: 0 0 auto;
+  letter-spacing: -1px;
+}
+
+.comet-nav__spine-marker {
+  flex: 0 0 auto;
+}
