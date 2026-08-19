@@ -242,7 +242,18 @@ export const TIMELINE: ScriptEvent[] = [
     channel: 'DLG',
     cls: 'shock',
     contentId: 'dlg.shock-1998-08',
-    amount: 1100,
+    // Calibration (§25.3/§8.4, Step 9): the cash-only player must die in
+    // exactly March 2000. The Nov 1999 job-loss event (§14.1, 3 months of
+    // no income) fires in tick.ts step 5, so the income suspension it sets
+    // first bites the FOLLOWING month — Dec 1999, Jan 2000 and Feb 2000 are
+    // the three unpaid months, not Nov itself. With that timing and the
+    // real basket/series numbers, the original £1,100 here left too thin a
+    // buffer and the cash-only run went bankrupt in Jan 2000 instead.
+    // Reduced to £500 — still within the §14.1 £250-£1,600 shock range —
+    // which restores the March 2000 death with a comfortable margin (see
+    // verify.test.ts and the Step 7/8/9 completion report for the
+    // arithmetic). No other field changed.
+    amount: 500,
     blocksTime: true,
     notes: 'Laptop / car.',
   },

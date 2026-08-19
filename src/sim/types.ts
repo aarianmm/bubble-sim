@@ -182,6 +182,15 @@ export interface MailItem {
   /** null = never expires; shown as `—` (§10.2). */
   expiresMonth: MonthIndex | null;
   status: MailStatus;
+  /**
+   * Windfall size (§8.5), copied from the originating ScriptEvent at
+   * materialization (Step 7, §7.3 step 5). Added because a windfall's cash
+   * lands only when its mail is opened (§8.5 — a cash-only player who never
+   * opens the inbox never receives it) and the tick needs the amount at
+   * open-time without re-querying the whole timeline. `undefined` for every
+   * non-windfall message.
+   */
+  amount?: number;
 }
 
 export interface PopupItem {
