@@ -22,7 +22,7 @@
  * `@ts-expect-error` in dialog.test.ts keeps that a live compile-time
  * guarantee rather than a comment that quietly stops being true.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { DialogAction, DialogItem } from '../sim/types';
 import { DIALOGS } from '../content/dialogs';
@@ -33,6 +33,17 @@ export interface DialogProps {
   /** Fired only when the player activates one of `dialog.buttons`. Nothing
    * else in this component ever calls it. */
   onResolve: (action: DialogAction) => void;
+  /**
+   * Overrides the plain-string body normally looked up from
+   * `DIALOGS[dialog.contentId]`. Additive, optional, defaults to that
+   * lookup unchanged — for src/ui/ForcedSale.tsx (§12.3), whose itemized
+   * "what will be sold, at what loss, in both money terms" body is computed
+   * from live GameState via <Money>, not authored copy, and so has no
+   * `contentId` to look up in the first place. Everything else about this
+   * component (no dismiss, max two buttons, dims and freezes the page
+   * behind it) is unchanged and still applies.
+   */
+  bodyOverride?: ReactNode;
 }
 
 /* 32x32, hand-drawn (§24 — no external assets, nothing from Microsoft). */
@@ -51,7 +62,7 @@ function WarningIcon() {
   );
 }
 
-export function Dialog({ dialog, onResolve }: DialogProps) {
+export function Dialog({ dialog, onResolve, bodyOverride }: DialogProps) {
   const defaultBtnRef = useRef<HTMLButtonElement | null>(null);
   const body = DIALOGS[dialog.contentId]?.body ?? '';
   // §20.1: max two buttons is content's own rule (content.test.ts enforces
@@ -100,7 +111,7 @@ export function Dialog({ dialog, onResolve }: DialogProps) {
             <span className="comet-dialog__icon" aria-hidden="true">
               <WarningIcon />
             </span>
-            <p className="comet-dialog__text">{body}</p>
+            {bodyOverride ?? <p className="comet-dialog__text">{body}</p>}
           </div>
 
           <div className="comet-dialog__buttons">

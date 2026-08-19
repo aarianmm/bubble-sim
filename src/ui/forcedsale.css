@@ -1,0 +1,36 @@
+/**
+ * ForcedSale.tsx (Step 25, §12.3). Rendered inside Dialog.tsx's own body
+ * slot via `bodyOverride` — reuses Dialog's chrome (bevel, titlebar,
+ * backdrop, button row) entirely; this file only styles the itemized list
+ * that replaces Dialog's plain single-string body. Tokens only (§25.1 hard
+ * rule #4); no transitions (§23 — everything snaps).
+ */
+.forced-sale {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.forced-sale__list {
+  margin: 4px 0 8px;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.forced-sale__item {
+  line-height: 1.4;
+}
+
+.forced-sale__totals {
+  border-top: 1px solid var(--shadow);
+  padding-top: 6px;
+  font-weight: 700;
+}
+
+.forced-sale__pick {
+  width: 100%;
+  text-align: left;
+  padding: 4px 8px;
+  cursor: default;
+}

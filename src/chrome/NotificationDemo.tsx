@@ -1,10 +1,14 @@
 /**
  * A `?dev=1`-only harness for the three notification tiers (§20).
  *
- * The scheduler that actually fires these is Step 24. Until it lands this is
- * the only way to see a dialog, three concurrent popups and the badge flash —
- * and it stays useful afterwards, because §25.4's presenter tools need a way
- * to raise a beat on demand in front of judges.
+ * ROLE CHANGED BY STEP 24: the scheduler (src/sim/scheduler.ts) now fires
+ * every §14.2 event for real, and src/ui/Notifications.tsx renders the
+ * genuine `state.dialogs`/`state.popups` through the same Dialog.tsx and
+ * Popup.tsx this file uses — this is no longer the only way to see a
+ * dialog or three concurrent popups. It stays, unmodified, as a manual,
+ * state-independent trigger for the Presenter (§25.4): useful when a
+ * demo needs one of the three tiers on screen RIGHT NOW, off-script,
+ * without touching the real run.
  *
  * Nothing here is reachable in a normal run.
  */

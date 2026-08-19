@@ -223,7 +223,16 @@ export type DialogAction =
   | 'pay-from-cash'
   | 'sell-to-cover'
   | 'use-the-card'
-  | 'restart';
+  | 'restart'
+  /**
+   * §12.3's "[ Sell something else ]" path, ui/ForcedSale.tsx only. Never
+   * reaches applyDecision/the sim — ForcedSale's own onResolve wrapper
+   * intercepts it to swap which holding the plan proposes selling, then
+   * dispatches a real 'sell-to-cover'/'rebalance' once the player commits.
+   * Exists purely so Dialog.tsx's generic button plumbing has a typed
+   * action to wire the second button to.
+   */
+  | 'sell-something-else';
 
 export interface DialogItem {
   id: string;
@@ -341,6 +350,16 @@ export type Decision =
   | { type: 'accept-offer'; month: MonthIndex; vehicleId: VehicleId; source: string }
   | { type: 'decline-offer'; month: MonthIndex; vehicleId: VehicleId }
   | { type: 'close-popup'; month: MonthIndex; popupId: string }
+  /**
+   * §10 rule 3 / §20.2 — clicking a popup's CTA navigates the main window
+   * to the offer's site AND files a copy in the inbox, so nothing is
+   * permanently lost by exploring. Files the popup's content as an unread,
+   * never-expiring MailItem (see popupToMailItem in chrome/popupPlacement.ts,
+   * the pure shape this mirrors) and removes the popup — the UI performs
+   * the actual navigation separately, since that's chrome/router state, not
+   * sim state.
+   */
+  | { type: 'file-popup-as-mail'; month: MonthIndex; popupId: string }
   | { type: 'navigate'; month: MonthIndex; url: string }
   | { type: 'rebalance'; month: MonthIndex; targets: Partial<Record<VehicleId, number>>; cashPct: number }
   | { type: 'resolve-dialog'; month: MonthIndex; dialogId: string; action: DialogAction }
