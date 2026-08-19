@@ -18,6 +18,8 @@ function loadStateText(state: StatusBarProps['loadState']): string {
       return `Opening page ${state.url}`;
     case 'transferring':
       return 'Transferring data…';
+    case 'link-hover':
+      return state.url;
   }
 }
 

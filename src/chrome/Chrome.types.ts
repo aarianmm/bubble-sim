@@ -21,7 +21,14 @@ import type { ReactNode } from 'react';
 export type LoadState =
   | { kind: 'done' }
   | { kind: 'opening'; url: string }
-  | { kind: 'transferring' };
+  | { kind: 'transferring' }
+  /** §19.3 — link-hover URL preview. A real browser's status bar shows the
+   * raw target URL, not "Opening page…", while the pointer is merely
+   * hovering (no navigation has happened yet). Set by router.tsx whenever a
+   * <GameLink> or useLinkPreview() consumer is hovered/focused; it always
+   * takes priority over the real load state so the chrome can never show
+   * both an in-progress load and a hover preview at once. */
+  | { kind: 'link-hover'; url: string };
 
 /** The portal's own three sections (§17.1), as shown in the left nav. */
 export type NavSection = 'home' | 'inbox' | 'money';
