@@ -33,6 +33,12 @@ export function investedValue(state: GameState): number {
   return total;
 }
 
+// §9.3 — "what a 0.4% tracker would have charged on the same contributions."
+// Fenwick Index Trust's own fee (§9.1) is the reference rate. Shared between
+// sim/run.ts (the headless aggregator) and sim/tick.ts (the live engine's
+// per-month accumulation) so both agree bit for bit (§25.2).
+export const TRACKER_FEE_PCT_PER_MONTH = 0.4 / 100 / 12;
+
 /** §19.4 — the same figure in 1996 purchasing power. */
 export function to1996(amount: number, month: MonthIndex): number {
   return amount * deflatorTo1996(month);

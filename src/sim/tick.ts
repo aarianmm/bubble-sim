@@ -43,7 +43,7 @@ import type {
 import { MONTHLY_PAY } from './types';
 import type { VehicleId } from './ids';
 import { expensesFor } from './basket';
-import { netWorth } from './selectors';
+import { netWorth, investedValue, TRACKER_FEE_PCT_PER_MONTH } from './selectors';
 import type { MonthIndex } from './month';
 import { VEHICLES } from './vehicles';
 import { DIALOGS } from '../content/dialogs';
@@ -495,5 +495,22 @@ export function tick(state: GameState, monthEvents: ScriptEvent[], monthDecision
   next = interestAndFees(next);
   next = fireScheduledEvents(next, monthEvents, monthDecisions);
   next = solvencyCheck(next);
+  // §9.3's death-card fee line ("the tracker would have charged you £X") reads
+  // `state.stats.trackerCounterfactualFees`. sim/run.ts's headless aggregator
+  // has always accumulated this itself, outside tick() — fine for a
+  // headless run, but the live engine (ui/EngineProvider.tsx) has no
+  // equivalent loop and calls tick() directly, so on a live run this stat
+  // stayed 0 forever and the line quietly read "£0". Accumulating it here,
+  // once per tick, off the fully-settled post-tick state (same formula, same
+  // point in the month as run.ts's own `investedValue(state)` call), fixes
+  // the live path and leaves run.ts's identical separately-computed total to
+  // simply overwrite this with the same number, so neither path can drift.
+  next = {
+    ...next,
+    stats: {
+      ...next.stats,
+      trackerCounterfactualFees: next.stats.trackerCounterfactualFees + investedValue(next) * TRACKER_FEE_PCT_PER_MONTH,
+    },
+  };
   return next;
 }

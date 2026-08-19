@@ -12,7 +12,7 @@
 import type { GameState, RunResult, RunStats, RunFlags, ScriptEvent, Decision } from './types';
 import { MONTH_COUNT, type MonthIndex } from './month';
 import { tick } from './tick';
-import { netWorth, investedValue, to1996 } from './selectors';
+import { netWorth, investedValue, to1996, TRACKER_FEE_PCT_PER_MONTH } from './selectors';
 import { SCAM_VEHICLE_IDS } from '../script/timeline';
 import { DEATH_LINES } from '../content/deathlines';
 import { bandFor, causeIdFor, missedRedFlags } from './bands';
@@ -24,10 +24,6 @@ const SERIES = seriesFile as unknown as MarketSeriesFile;
 function seriesRowFor(month: MonthIndex): Record<string, number> {
   return SERIES.rows[month].values as unknown as Record<string, number>;
 }
-
-// §9.3 — "what a 0.4% tracker would have charged on the same contributions."
-// Fenwick Index Trust's own fee (§9.1) is the reference rate.
-const TRACKER_FEE_PCT_PER_MONTH = 0.4 / 100 / 12;
 
 function groupByMonth<T extends { month: MonthIndex }>(items: readonly T[]): Map<MonthIndex, T[]> {
   const map = new Map<MonthIndex, T[]>();
