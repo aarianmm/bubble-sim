@@ -197,6 +197,39 @@ describe('redistribute', () => {
     expect(out.find((r) => r.id === 'technova-growth')!.pct).toBe(50); // 100 - lockedSum(50)
     expect(out.reduce((s, r) => s + r.pct, 0)).toBe(100);
   });
+
+  /**
+   * §25.5's demo path (beat 3, Jul 1997): "accept the tracker, move to 70%
+   * tracker / 30% cash" — with Northmoor already 100% funded from beat 1.
+   * A DEMO.md-writing pass found that this reads as a single slider drag
+   * but is not one: proportional redistribution (§12.2) means dragging only
+   * Fenwick to 70% splits the *other* 30% by current weight, and Northmoor
+   * (currently 100%) is the only other row with any weight to receive it —
+   * so a single drag leaves 30% stranded in Northmoor, not in cash. Locked
+   * in here as a permanent regression on the exact operator instruction
+   * DEMO.md gives (drag Northmoor to 0% first, then Fenwick to 70%).
+   */
+  it('the §25.5 demo path 70/30 target needs two drags, not one — Northmoor to 0% first, then Fenwick to 70%', () => {
+    const afterBeatOne: DraftRow[] = [
+      { id: 'cash', label: 'Cash', pct: 0, locked: false },
+      { id: 'northmoor-bond', label: 'Northmoor', pct: 100, locked: false },
+      { id: 'fenwick-index', label: 'Tracker', pct: 0, locked: false },
+    ];
+
+    const singleDrag = redistribute(afterBeatOne, 'fenwick-index', 70);
+    const singleById = Object.fromEntries(singleDrag.map((r) => [r.id, r.pct]));
+    // The trap: this is NOT "70% tracker / 30% cash" — 30 lands back in
+    // Northmoor because it's the only other row with nonzero weight.
+    expect(singleById['northmoor-bond']).toBe(30);
+    expect(singleById.cash).toBe(0);
+
+    const zeroedNorthmoor = redistribute(afterBeatOne, 'northmoor-bond', 0);
+    const twoDrags = redistribute(zeroedNorthmoor, 'fenwick-index', 70);
+    const twoById = Object.fromEntries(twoDrags.map((r) => [r.id, r.pct]));
+    expect(twoById['fenwick-index']).toBe(70);
+    expect(twoById.cash).toBe(30);
+    expect(twoById['northmoor-bond']).toBe(0);
+  });
 });
 
 describe('toggleLock', () => {
