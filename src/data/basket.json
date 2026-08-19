@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "generatedBy": "scripts/build-series.ts",
+    "sources": [
+      "UK private rental / housing cost index (real series, ~5.5%/yr average 1996-2006), §8.2",
+      "CPI food (real series, ~2.5%/yr), §8.2",
+      "CPI housing/water/electricity/gas (real series, ~4.0%/yr), §8.2",
+      "CPI transport (real series, ~3.0%/yr), §8.2",
+      "CPI miscellaneous goods and services (real series, ~2.0%/yr), §8.2",
+      "Headline UK CPI (real series, ~2.5%/yr average 1996-2006)"
+    ],
+    "note": "1996 = 100 for every component. The blended/headline-beating rate this produces is an OUTPUT of src/sim/basket.ts (it weights these levels by the §8.1 starting pounds), never an input — §8.2 is explicit that this is the single most important defensive fact in the project."
+  },
+  "years": [
+    1996,
+    1997,
+    1998,
+    1999,
+    2000,
+    2001,
+    2002,
+    2003,
+    2004,
+    2005,
+    2006
+  ],
+  "levels": {
+    "rent": [
+      100,
+      105.5,
+      111.3025,
+      117.424137,
+      123.882465,
+      130.696001,
+      137.884281,
+      145.467916,
+      153.468651,
+      161.909427,
+      170.814446
+    ],
+    "food": [
+      100,
+      102.5,
+      105.0625,
+      107.689062,
+      110.381289,
+      113.140821,
+      115.969342,
+      118.868575,
+      121.84029,
+      124.886297,
+      128.008454
+    ],
+    "bills": [
+      100,
+      104,
+      108.16,
+      112.4864,
+      116.985856,
+      121.66529,
+      126.531902,
+      131.593178,
+      136.856905,
+      142.331181,
+      148.024428
+    ],
+    "transport": [
+      100,
+      103,
+      106.09,
+      109.2727,
+      112.550881,
+      115.927407,
+      119.40523,
+      122.987387,
+      126.677008,
+      130.477318,
+      134.391638
+    ],
+    "other": [
+      100,
+      102,
+      104.04,
+      106.1208,
+      108.243216,
+      110.40808,
+      112.616242,
+      114.868567,
+      117.165938,
+      119.509257,
+      121.899442
+    ],
+    "cpi": [
+      100,
+      102.5,
+      105.0625,
+      107.689062,
+      110.381289,
+      113.140821,
+      115.969342,
+      118.868575,
+      121.84029,
+      124.886297,
+      128.008454
+    ]
+  }
+}
