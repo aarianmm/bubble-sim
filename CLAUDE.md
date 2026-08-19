@@ -1,6 +1,6 @@
 # BUBBLE — build rules
 
-The authoritative spec is `../bubble-design-requirements.md`. Section references
+The authoritative spec is `bubble-design-requirements.md`, in this repo. Section references
 below (§n) point at it. Read your step's sections before writing code.
 
 ## Non-negotiable
