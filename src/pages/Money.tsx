@@ -24,12 +24,6 @@
  * and `Money.test.ts` exercises the slider maths against fixture holdings
  * instead (see that file's header).
  *
- * SEAM: `src/ui/Money.tsx` (the dual-money display component, Step 16)
- * does not exist on this branch. `MoneyFigure` below is a local,
- * throwaway stand-in that reimplements just the §19.4 primary/secondary
- * swap this page needs — replace it with the real component at
- * integration.
- *
  * SEAM: `src/chrome/Dialog.tsx` (Step 20) is being built in parallel and
  * does not exist on this branch either. `RebalanceConfirmPanel` is a
  * page-level panel, not a real dialog — styled with the bevel primitives
@@ -38,9 +32,10 @@
  */
 import { useEffect, useState } from 'react';
 import { useEngine } from '../ui/engine';
+import { Money } from '../ui/Money';
 import { GameLink } from '../chrome/router';
 import { VEHICLES } from '../sim/vehicles';
-import { currentAllocation, holdingsList, netWorth, to1996 } from '../sim/selectors';
+import { currentAllocation, holdingsList, netWorth } from '../sim/selectors';
 import { monthLabel } from '../sim/month';
 import type { Decision, GameState, Holding, MonthIndex, VehicleId } from '../sim/types';
 import './money.css';
@@ -274,39 +269,33 @@ function formatGBP(amount: number): string {
 }
 
 /**
- * SEAM (see file header): stands in for `src/ui/Money.tsx` (Step 16, not
- * on this branch). §19.4: period money is primary (larger, on top); 1996
- * money is secondary (smaller, beneath, `--disabled` grey); the global
- * `moneyBase` flag swaps which is which, everywhere, instantly. Swap this
- * for the real component at integration.
+ * Adapter over the shared dual-money component (§19.4). Every figure on this
+ * page renders in both period and 1996 money, and the global toggle swaps
+ * which is primary everywhere at once.
  */
 function MoneyFigure({
   amount,
   month,
-  base,
   inline,
   suffix,
   className,
 }: {
   amount: number;
   month: MonthIndex;
-  base: 'period' | '1996';
   inline?: boolean;
   suffix?: string;
   className?: string;
 }) {
-  const periodAmount = amount;
-  const in1996 = to1996(amount, month);
-  const primary = base === '1996' ? in1996 : periodAmount;
-  const secondary = base === '1996' ? periodAmount : in1996;
   return (
-    <span className={`money-figure ${inline ? 'money-figure--inline' : ''} ${className ?? ''}`}>
-      <span className="money-figure__primary">{formatGBP(primary)}</span>
-      <span className="money-figure__secondary disabled-text">
-        {formatGBP(secondary)}
-        {suffix ?? ''}
-      </span>
-    </span>
+    <>
+      <Money
+        amount={amount}
+        month={month}
+        variant={inline ? 'inline' : 'table-cell'}
+        className={className}
+      />
+      {suffix ?? ''}
+    </>
   );
 }
 
@@ -340,7 +329,6 @@ function PortfolioRow({
   const holding = isCash ? undefined : state.holdings[row.id];
   const vehicle = VEHICLES[row.id];
   const value = isCash ? state.cash : (holding?.value ?? 0);
-  const base = state.flags.moneyBase;
 
   return (
     <div className="money-row">
@@ -350,7 +338,7 @@ function PortfolioRow({
           {holding && <ReturnBadge holding={holding} />}
           {holding?.collapsed && <span className="money-row__suspended"> (suspended)</span>}
         </span>
-        <MoneyFigure amount={value} month={state.month} base={base} className="money-row__value" />
+        <MoneyFigure amount={value} month={state.month} className="money-row__value" />
         <span className="money-row__pct">{row.pct}%</span>
       </div>
 
@@ -405,13 +393,11 @@ function PortfolioRow({
 function RebalanceConfirmPanel({
   preview,
   month,
-  moneyBase,
   onCancel,
   onConfirm,
 }: {
   preview: RebalancePreview;
   month: MonthIndex;
-  moneyBase: 'period' | '1996';
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -433,13 +419,13 @@ function RebalanceConfirmPanel({
                 <li key={item.id} className="money-confirm__item">
                   {item.kind === 'buy' && (
                     <>
-                      BUY <MoneyFigure amount={item.amount} month={month} base={moneyBase} inline /> into{' '}
+                      BUY <MoneyFigure amount={item.amount} month={month} inline /> into{' '}
                       {item.label}
                     </>
                   )}
                   {item.kind === 'sell' && (
                     <>
-                      SELL <MoneyFigure amount={item.amount} month={month} base={moneyBase} inline /> of{' '}
+                      SELL <MoneyFigure amount={item.amount} month={month} inline /> of{' '}
                       {item.label}
                       {' — realised '}
                       {(item.realisedGain ?? 0) >= 0 ? 'gain' : 'loss'} {formatGBP(Math.abs(item.realisedGain ?? 0))}
@@ -449,7 +435,7 @@ function RebalanceConfirmPanel({
                   {item.kind === 'cash' && (
                     <>
                       Cash {item.amount >= 0 ? '+' : '−'}
-                      <MoneyFigure amount={Math.abs(item.amount)} month={month} base={moneyBase} inline />
+                      <MoneyFigure amount={Math.abs(item.amount)} month={month} inline />
                     </>
                   )}
                 </li>
@@ -458,17 +444,17 @@ function RebalanceConfirmPanel({
           )}
           <div className="money-confirm__totals">
             <div>
-              Total bought <MoneyFigure amount={preview.totalBuys} month={month} base={moneyBase} inline />
+              Total bought <MoneyFigure amount={preview.totalBuys} month={month} inline />
             </div>
             <div>
-              Total sold <MoneyFigure amount={preview.totalSells} month={month} base={moneyBase} inline />
+              Total sold <MoneyFigure amount={preview.totalSells} month={month} inline />
             </div>
             <div>
-              Total exit fees <MoneyFigure amount={preview.totalExitFees} month={month} base={moneyBase} inline />
+              Total exit fees <MoneyFigure amount={preview.totalExitFees} month={month} inline />
             </div>
             <div>
               Total realised gain/loss{' '}
-              <MoneyFigure amount={preview.totalRealisedGain} month={month} base={moneyBase} inline />
+              <MoneyFigure amount={preview.totalRealisedGain} month={month} inline />
             </div>
           </div>
         </div>
@@ -543,7 +529,6 @@ export function MoneyPage() {
         <MoneyFigure
           amount={netWorthNow}
           month={state.month}
-          base={state.flags.moneyBase}
           suffix=" in 1996 money"
         />
       </div>
@@ -584,7 +569,6 @@ export function MoneyPage() {
         <RebalanceConfirmPanel
           preview={preview}
           month={state.month}
-          moneyBase={state.flags.moneyBase}
           onCancel={() => setConfirmOpen(false)}
           onConfirm={handleConfirm}
         />
