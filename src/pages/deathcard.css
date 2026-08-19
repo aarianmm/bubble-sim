@@ -1,0 +1,276 @@
+/**
+ * BUBBLE — the death card (Steps 27-28, §22.6). Tokens only, no hex
+ * (§25.1 hard rule #4). §23: everything snaps — no transition, no
+ * animated graph draw-on; the whole card is present the instant it mounts.
+ *
+ * Institutional body font (§19.1) — same register as /home: this is an
+ * account statement, not a poster, even at the game's most dramatic
+ * moment. The one exception is the GAME OVER banner and the month, which
+ * lean on the chrome monospace the way a terminal would.
+ */
+
+.deathcard-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 28px 32px;
+  background: var(--field);
+  color: var(--text);
+  font-family: var(--font-body-institutional);
+  font-size: var(--font-body-institutional-size);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ *
+ * Banner + month
+ * ------------------------------------------------------------------ */
+
+.deathcard-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 640px;
+  margin-bottom: 6px;
+}
+
+.deathcard-banner__rule {
+  flex: 1;
+  border-top: 1px solid var(--shadow);
+}
+
+.deathcard-banner__text {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.deathcard-month {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 6px 0 2px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Cause / detail
+ * ------------------------------------------------------------------ */
+
+.deathcard-cause {
+  max-width: 620px;
+  margin: 4px 0 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.deathcard-detail {
+  max-width: 560px;
+  margin: 2px 0 10px;
+  font-size: 14px;
+  color: var(--disabled);
+  text-shadow: 1px 1px 0 var(--disabled-shadow);
+}
+
+/* ------------------------------------------------------------------ *
+ * The decade graph — the shareable object (§22.6).
+ * ------------------------------------------------------------------ */
+
+.deathcard-graph {
+  width: 100%;
+  max-width: 640px;
+  padding: 10px 12px 6px;
+  margin: 4px 0 12px;
+}
+
+.deathcard-graph__legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.deathcard-graph__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deathcard-graph__legend-item::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top-width: 2px;
+  border-top-style: solid;
+}
+
+.deathcard-graph__legend-item--player::before {
+  border-top-color: var(--text);
+}
+
+.deathcard-graph__legend-item--market::before {
+  border-top-color: var(--disabled);
+  border-top-style: dashed;
+}
+
+.deathcard-graph__line {
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.deathcard-graph__line--player {
+  stroke: var(--text);
+}
+
+.deathcard-graph__line--market {
+  stroke: var(--disabled);
+  stroke-dasharray: 5 4;
+}
+
+.deathcard-graph__year {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--disabled);
+  text-anchor: middle;
+}
+
+/* ------------------------------------------------------------------ *
+ * §11.2 rule 5 — the flags missed, quoted from the sheet.
+ * ------------------------------------------------------------------ */
+
+.deathcard-flags {
+  width: 100%;
+  max-width: 560px;
+  margin: 4px 0 12px;
+  padding: 10px 16px;
+  text-align: left;
+}
+
+.deathcard-flags__title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.deathcard-flags__list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+}
+
+.deathcard-flags__list li {
+  margin-bottom: 2px;
+}
+
+/* ------------------------------------------------------------------ *
+ * §9.3 — "give it room."
+ * ------------------------------------------------------------------ */
+
+.deathcard-fees {
+  max-width: 560px;
+  margin: 4px 0 14px;
+  font-size: 15px;
+}
+
+.deathcard-fees .money {
+  display: inline-flex;
+}
+
+/* ------------------------------------------------------------------ *
+ * Stats block
+ * ------------------------------------------------------------------ */
+
+.deathcard-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 32px;
+  width: 100%;
+  max-width: 460px;
+  padding: 14px 24px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.deathcard-stats__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.deathcard-stats__label {
+  font-size: 13px;
+}
+
+.deathcard-stats__value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ------------------------------------------------------------------ *
+ * Band
+ * ------------------------------------------------------------------ */
+
+.deathcard-band {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  margin-bottom: 18px;
+}
+
+.deathcard-band__value {
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ *
+ * Actions
+ * ------------------------------------------------------------------ */
+
+.deathcard-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.deathcard-actions__button {
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+  padding: 8px 18px;
+}
+
+.deathcard-actions__button:disabled {
+  color: var(--disabled);
+  cursor: default;
+}
+
+/* ------------------------------------------------------------------ *
+ * §22.6/Step 27 — "every toolbar button is greyed except Home... the
+ * machine keeps working, and you don't." `.app-shell--death` is set by
+ * App.tsx whenever the death card is the current page.
+ *
+ * Back/Forward/Stop already get a real `disabled` from App.tsx passing
+ * `canGoBack`/`canGoForward`/`canStop` as false (Toolbar.tsx renders those
+ * off a genuine `disabled` attribute) — this stylesheet doesn't need to
+ * touch them. Refresh/Search/Favourites/Mail have no such prop in
+ * Toolbar.tsx's own contract (adding one is out of this step's file list —
+ * Toolbar.tsx belongs to Step 12, not Steps 26-28), so App.tsx swaps their
+ * handlers for a no-op instead and this rule supplies the matching grey
+ * look, targeted per-button rather than on `.comet-toolbar` itself:
+ * `filter` doesn't un-apply from a child once set on an ancestor, so
+ * graying the container and trying to "undo" it on the 5th (Home) button
+ * would still leave Home visibly grey. Button order is Back, Forward,
+ * Stop, Refresh, Home, Search, Favourites, Mail (src/chrome/Toolbar.tsx) —
+ * Home is the 5th child and stays completely untouched.
+ */
+.app-shell--death .comet-toolbar__btn:not(:nth-child(5)) {
+  filter: grayscale(1) contrast(0.6);
+  opacity: 0.5;
+  pointer-events: none;
+}

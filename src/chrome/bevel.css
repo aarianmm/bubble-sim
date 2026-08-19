@@ -1,0 +1,263 @@
+/**
+ * BUBBLE — the bevel system (Step 11, §19.2).
+ *
+ * "The bevel is the whole language." Built once, here, as `.bevel-out` /
+ * `.bevel-in` / `.bevel-pressed`, plus the window face, sunken fields, the
+ * 16px Win95 scrollbar and the period slider. No other file may redefine a
+ * bevel — every raised or sunken surface in the app composes these classes.
+ *
+ * Every colour and metric below is a token from tokens.css (§25.1 hard rule:
+ * no component, and no other stylesheet, hardcodes a colour). §23: everything
+ * snaps — nothing in this file declares a `transition`.
+ */
+
+/* ------------------------------------------------------------------ *
+ * Chrome text — §19.1: "-webkit-font-smoothing: none... does more for the
+ * period feel than any other line of CSS." Applies to all chrome surfaces;
+ * page content (Times/Arial/Verdana) opts back into normal smoothing.
+ * ------------------------------------------------------------------ */
+
+.chrome,
+.chrome * {
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+  font-weight: var(--font-chrome-weight);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+}
+
+/* Deliberately not folded into the rule above: `color` is inherited, so it
+ * only needs setting once per surface (`.window-face`, `.comet-titlebar`,
+ * etc. each set their own). A blanket `.chrome * { color }` would sit at
+ * the same specificity as those per-component overrides and the winner
+ * would depend on CSS import order rather than the cascade — exactly the
+ * kind of order-fragility this whole system exists to avoid. */
+.chrome {
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------------ *
+ * The bevel triple (§19.2)
+ *
+ *   raised:  outer border  top/left = hilite,    bottom/right = dk-shadow
+ *            inner 1px     top/left = face-light, bottom/right = shadow
+ *   sunken:  the same, inverted.
+ *   pressed: the sunken bevel again, plus content offset 1px down-right.
+ * ------------------------------------------------------------------ */
+
+.bevel-out {
+  background: var(--face);
+  border-style: solid;
+  border-width: var(--bevel-width);
+  border-radius: var(--radius-control);
+  border-top-color: var(--hilite);
+  border-left-color: var(--hilite);
+  border-right-color: var(--dk-shadow);
+  border-bottom-color: var(--dk-shadow);
+  box-shadow:
+    inset 1px 1px 0 0 var(--face-light),
+    inset -1px -1px 0 0 var(--shadow);
+  padding: var(--control-pad-y) var(--control-pad-x);
+}
+
+.bevel-in,
+.bevel-pressed {
+  background: var(--face);
+  border-style: solid;
+  border-width: var(--bevel-width);
+  border-radius: var(--radius-control);
+  border-top-color: var(--dk-shadow);
+  border-left-color: var(--dk-shadow);
+  border-right-color: var(--hilite);
+  border-bottom-color: var(--hilite);
+  box-shadow:
+    inset 1px 1px 0 0 var(--shadow),
+    inset -1px -1px 0 0 var(--face-light);
+  padding: var(--control-pad-y) var(--control-pad-x);
+}
+
+/* Pressed: the sunken bevel, and the content nudges 1px down-right — the
+ * only "motion" a button ever gets, and it is a snap, not an animation. */
+.bevel-pressed {
+  padding:
+    calc(var(--control-pad-y) + 1px)
+    calc(var(--control-pad-x) - 1px)
+    calc(var(--control-pad-y) - 1px)
+    calc(var(--control-pad-x) + 1px);
+}
+
+/* A raised control shows its pressed bevel while the mouse is down on it —
+ * §18.1's "hovering [the title bar buttons] shows the bevel press". */
+.bevel-out:active {
+  background: var(--face);
+  border-top-color: var(--dk-shadow);
+  border-left-color: var(--dk-shadow);
+  border-right-color: var(--hilite);
+  border-bottom-color: var(--hilite);
+  box-shadow:
+    inset 1px 1px 0 0 var(--shadow),
+    inset -1px -1px 0 0 var(--face-light);
+  padding:
+    calc(var(--control-pad-y) + 1px)
+    calc(var(--control-pad-x) - 1px)
+    calc(var(--control-pad-y) - 1px)
+    calc(var(--control-pad-x) + 1px);
+}
+
+/* ------------------------------------------------------------------ *
+ * Window face and sunken fields
+ * ------------------------------------------------------------------ */
+
+.window-face {
+  background: var(--face);
+  color: var(--text);
+}
+
+.sunken-field {
+  background: var(--field);
+  border-style: solid;
+  border-width: var(--bevel-width);
+  border-radius: var(--radius-control);
+  border-top-color: var(--dk-shadow);
+  border-left-color: var(--dk-shadow);
+  border-right-color: var(--hilite);
+  border-bottom-color: var(--hilite);
+  box-shadow:
+    inset 1px 1px 0 0 var(--shadow),
+    inset -1px -1px 0 0 var(--face-light);
+  padding: var(--control-pad-y) var(--control-pad-x);
+  color: var(--text);
+}
+
+.disabled-text {
+  color: var(--disabled);
+  text-shadow: 1px 1px 0 var(--disabled-shadow);
+}
+
+/* ------------------------------------------------------------------ *
+ * 16px Win95 scrollbar (§18.1: "16px, correct Win95 metrics. Long pages
+ * actually scroll.") Styled on the real, native scrollbar of the content
+ * area — the scroll itself is genuine, not a fake overlay widget.
+ *
+ * WebKit/Blink supports pseudo-element scrollbar styling; Firefox gets the
+ * closest approximation `scrollbar-width`/`scrollbar-color` allow (no square
+ * arrow buttons there — a documented, acceptable gap, not a fake one).
+ * ------------------------------------------------------------------ */
+
+.win-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: var(--face) var(--shadow);
+}
+
+.win-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+.win-scrollbar::-webkit-scrollbar-track {
+  background: var(--face);
+  /* the classic 50%-grey dither of a Win95 scrollbar track */
+  background-image: linear-gradient(45deg, var(--face-light) 25%, transparent 25%, transparent 75%, var(--face-light) 75%),
+    linear-gradient(45deg, var(--face-light) 25%, transparent 25%, transparent 75%, var(--face-light) 75%);
+  background-size: 2px 2px;
+  background-position: 0 0, 1px 1px;
+}
+
+.win-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--face);
+  border-style: solid;
+  border-width: 1px;
+  border-top-color: var(--hilite);
+  border-left-color: var(--hilite);
+  border-right-color: var(--dk-shadow);
+  border-bottom-color: var(--dk-shadow);
+  box-shadow:
+    inset 1px 1px 0 0 var(--face-light),
+    inset -1px -1px 0 0 var(--shadow);
+}
+
+.win-scrollbar::-webkit-scrollbar-button {
+  background: var(--face);
+  border-style: solid;
+  border-width: 1px;
+  border-top-color: var(--hilite);
+  border-left-color: var(--hilite);
+  border-right-color: var(--dk-shadow);
+  border-bottom-color: var(--dk-shadow);
+}
+
+.win-scrollbar::-webkit-scrollbar-corner {
+  background: var(--face);
+}
+
+/* ------------------------------------------------------------------ *
+ * Period slider — a Win95 "trackbar": a sunken groove with a raised thumb.
+ * Styled on a real <input type="range"> so it stays a native, accessible
+ * control; only its paint is period.
+ * ------------------------------------------------------------------ */
+
+.win-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  margin: 0;
+}
+
+.win-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--field);
+  border-style: solid;
+  border-width: 1px;
+  border-top-color: var(--dk-shadow);
+  border-left-color: var(--dk-shadow);
+  border-right-color: var(--hilite);
+  border-bottom-color: var(--hilite);
+  box-shadow:
+    inset 1px 1px 0 0 var(--shadow),
+    inset -1px -1px 0 0 var(--face-light);
+}
+
+.win-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 20px;
+  margin-top: -8px;
+  background: var(--face);
+  border-style: solid;
+  border-width: 1px;
+  border-top-color: var(--hilite);
+  border-left-color: var(--hilite);
+  border-right-color: var(--dk-shadow);
+  border-bottom-color: var(--dk-shadow);
+  box-shadow:
+    inset 1px 1px 0 0 var(--face-light),
+    inset -1px -1px 0 0 var(--shadow);
+}
+
+.win-slider::-moz-range-track {
+  height: 4px;
+  background: var(--field);
+  border-style: solid;
+  border-width: 1px;
+  border-top-color: var(--dk-shadow);
+  border-left-color: var(--dk-shadow);
+  border-right-color: var(--hilite);
+  border-bottom-color: var(--hilite);
+}
+
+.win-slider::-moz-range-thumb {
+  width: 11px;
+  height: 20px;
+  border-radius: 0;
+  background: var(--face);
+  border-style: solid;
+  border-width: 1px;
+  border-top-color: var(--hilite);
+  border-left-color: var(--hilite);
+  border-right-color: var(--dk-shadow);
+  border-bottom-color: var(--dk-shadow);
+}

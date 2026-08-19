@@ -1,0 +1,191 @@
+/**
+ * BUBBLE — design tokens (Step 10, §19).
+ *
+ * Every colour, font, radius, metric and duration the chrome (and, via the
+ * web-safe accent palette, the period pages) can possibly need lives here as
+ * a CSS custom property. Nothing outside this file may contain a hex value
+ * (§25.1 hard rule #4) — that is the enforceable check for this step.
+ *
+ * The 2002 switch (§18.2) is `data-era="a" | "b"` on the document root. Every
+ * token below is defined once per era; no component file may branch on era —
+ * it only ever reads a token (§25.1 hard rule: "no component knows which era
+ * it is in").
+ */
+
+/* ------------------------------------------------------------------ *
+ * ERA A — 1996–2000. Windows 95/98, IE4. "Comet Navigator 4.0" (§18.2)
+ * ------------------------------------------------------------------ */
+
+:root[data-era='a'] {
+  /* --- System palette (§19.2) --- */
+  --face: #c0c0c0; /* window and control faces */
+  --face-light: #dfdfdf; /* inner bevel highlight */
+  --hilite: #ffffff; /* outer bevel highlight (top/left) */
+  --shadow: #808080; /* inner bevel shadow */
+  --dk-shadow: #000000; /* outer bevel shadow (bottom/right) */
+  --title: #000080; /* active title bar */
+  --title-inactive: #808080; /* inactive title bar */
+  --title-text: #ffffff;
+  --title-text-shadow: transparent; /* Era A title text is flat, no shadow */
+  --field: #ffffff; /* sunken input and content areas */
+  --text: #000000; /* default window text — distinct from --dk-shadow, which is a border colour */
+  --disabled: #808080; /* greyed text */
+  --disabled-shadow: #ffffff; /* the offset "emboss" behind greyed text */
+  --link: #0000ff; /* unvisited hyperlink, classic browser blue */
+  --link-visited: #800080;
+  --selection-bg: #000080;
+  --selection-text: #ffffff;
+
+  /* --- Fonts (§19.1) --- */
+  /* W95FA is the bundled bitmap MS Sans Serif clone (§25.4 — offline, no
+     Microsoft fonts shipped, see src/assets/fonts/README.md). Era A prefers
+     the bitmap clone; system Tahoma/MS Sans Serif are optional fallbacks. */
+  --font-chrome: 'W95FA', Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
+  --font-chrome-size: 11px;
+  --font-chrome-weight: 400;
+  --font-body-institutional: 'Times New Roman', Times, serif;
+  --font-body-institutional-size: 16px;
+  --font-body-commercial: Arial, Helvetica, sans-serif;
+  --font-body-commercial-size: 13px;
+  --font-loud: 'Comic Sans MS', 'Comic Sans', cursive;
+  --font-mono: 'Courier New', Courier, monospace;
+
+  /* --- Radii (§18.2 — "hard 1px double bevel, no radius") --- */
+  --radius-control: 0;
+  --radius-title: 0;
+
+  /* --- Metrics --- */
+  --bevel-width: 1px;
+  --titlebar-height: 20px;
+  --menubar-height: 20px;
+  --toolbar-height: 56px; /* large icons + text labels underneath (§18.2) */
+  --toolbar-icon-size: 32px;
+  --addressbar-height: 24px;
+  --statusbar-height: 20px;
+  --sidebar-width: 160px;
+  --scrollbar-width: 16px; /* correct Win95 metric, both eras (§18.1) */
+  --control-pad-x: 6px; /* button/field padding — the bevel-pressed offset is derived from this */
+  --control-pad-y: 3px;
+  --min-viewport-width: 1024px;
+  --min-viewport-height: 768px;
+
+  /* --- Durations (§18.3, §23 — "everything snaps") --- */
+  --duration-snap: 0ms; /* the only legal transition length: none */
+  --duration-unread-flash: 200ms; /* the one authored blink, §23 */
+  --load-duration-min: 600ms;
+  --load-duration-max: 1200ms;
+  --image-resolve-duration: 400ms;
+
+  /* --- Era-controlled visibility (§18.2) — components render the element
+     unconditionally; the era token decides whether it shows. Keeps
+     Toolbar/AddressBar/StatusBar ignorant of which era they're in. --- */
+  --toolbar-label-display: block; /* large icons with labels underneath */
+  --go-button-display: none; /* no Go button in Era A */
+  --popup-blocker-display: none; /* the popup-blocker count is Era B only */
+}
+
+/* ------------------------------------------------------------------ *
+ * ERA B — 2001–2006. Windows XP Luna, IE6. "Comet Navigator 6" (§18.2)
+ * Written now, unused until a later step sets data-era="b" — the whole
+ * point is that flipping the attribute is enough (§25.1).
+ * ------------------------------------------------------------------ */
+
+:root[data-era='b'] {
+  /* --- System palette (§19.2 + period-accurate Luna fill-ins) --- */
+  --face: #ece9d8;
+  --face-light: #f6f5ec; /* Luna 3D "light" — inner bevel highlight */
+  --hilite: #ffffff; /* outer bevel highlight (top/left) */
+  --shadow: #aca899; /* Luna 3D shadow — inner bevel shadow */
+  --dk-shadow: #716f64; /* Luna 3D dark shadow — outer bevel shadow */
+  --title: linear-gradient(#0058ee, #3f8cf3);
+  --title-inactive: linear-gradient(#7a96df, #b1c3ee); /* muted, undocumented in spec — approximated to match Luna's inactive blue */
+  --title-text: #ffffff;
+  --title-text-shadow: rgba(0, 0, 0, 0.4); /* "soft text shadow" (§18.2) */
+  --field: #ffffff;
+  --text: #000000;
+  --disabled: #aca899;
+  --disabled-shadow: #ffffff;
+  --link: #0000ff;
+  --link-visited: #800080;
+  --selection-bg: #316ac5; /* Luna accent (§19.2) */
+  --selection-text: #ffffff;
+  --accent: #316ac5;
+
+  /* --- Fonts (§19.1) --- */
+  --font-chrome: Tahoma, 'W95FA', 'MS Sans Serif', Geneva, Verdana, sans-serif;
+  --font-chrome-size: 11px;
+  --font-chrome-weight: 400;
+  --font-body-institutional: 'Times New Roman', Times, serif;
+  --font-body-institutional-size: 16px;
+  --font-body-commercial: Verdana, Arial, Helvetica, sans-serif;
+  --font-body-commercial-size: 13px;
+  --font-loud: 'Comic Sans MS', 'Comic Sans', cursive;
+  --font-mono: 'Courier New', Courier, monospace;
+
+  /* --- Radii (§18.2 — "softer, 2px radius on buttons") --- */
+  --radius-control: 2px;
+  --radius-title: 6px; /* rounded top corners on the title bar */
+
+  /* --- Metrics --- */
+  --bevel-width: 1px;
+  --titlebar-height: 24px;
+  --menubar-height: 20px;
+  --toolbar-height: 30px; /* small icons, no labels (§18.2) */
+  --toolbar-icon-size: 16px;
+  --addressbar-height: 24px;
+  --statusbar-height: 20px;
+  --sidebar-width: 160px;
+  --scrollbar-width: 16px;
+  --control-pad-x: 7px; /* slightly roomier — softer Luna controls */
+  --control-pad-y: 4px;
+  --min-viewport-width: 1024px;
+  --min-viewport-height: 768px;
+
+  /* --- Durations (§18.3, §23) --- */
+  --duration-snap: 0ms;
+  --duration-unread-flash: 200ms;
+  --load-duration-min: 200ms; /* the decade gets faster (§18.2) */
+  --load-duration-max: 400ms;
+  --image-resolve-duration: 400ms;
+
+  /* --- Era-controlled visibility (§18.2) --- */
+  --toolbar-label-display: none; /* small icons, no labels */
+  --go-button-display: inline-block; /* Go button present in Era B */
+  --popup-blocker-display: flex; /* status bar popup-blocker count */
+}
+
+/* ------------------------------------------------------------------ *
+ * Web-safe page-accent palette (§19.2).
+ *
+ * "Page accent colours must come from the 216-colour web-safe palette... a
+ * page cannot accidentally look like 2026 if its accents can only be
+ * web-safe." Era-independent — /pages content reaches for these regardless
+ * of which chrome era is active, exactly as an authored period page would
+ * reach for a fixed set of browser-safe hex values.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --accent-magenta: #ff00ff;
+  --accent-cyan: #00ffff;
+  --accent-lime: #00ff00;
+  --accent-orange: #ff6600;
+  --accent-yellow: #ffff00;
+  --accent-blue: #0000ff;
+  --accent-purple: #800080;
+}
+
+/* ------------------------------------------------------------------ *
+ * Chrome icon palette (§24 — "16×16 and 32×32, 16-colour"). Toolbar/status
+ * icons are the browser's own art, not page content, so they are not bound
+ * to the web-safe accent set above — but they are still tokens, not
+ * hardcoded hex, and still era-independent (only their size changes). Named
+ * for the classic Win95 toolbar glyphs they colour: the stop sign, the
+ * refresh arrows, the globe/zone icon, the favourites star.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --icon-red: #ff0000;
+  --icon-green: #008000;
+  --icon-blue: #0000ff;
+  --icon-yellow: #ffff00;
+}
