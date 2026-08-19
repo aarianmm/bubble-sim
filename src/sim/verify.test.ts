@@ -235,7 +235,7 @@ const STRATEGIES: StrategyCheck[] = [
     // See the file header: real numbers make a fee-free 5.2% bond more
     // resilient than the illustrative table assumed once windfalls are
     // folded in. Widened to SOLID/OKAY rather than fudged to OKAY-only.
-    expected: '2001-2004 (see header)',
+    expected: '2001-2002 — KNOWN GAP, see KNOWN-ISSUES.md',
     assert: (r) => {
       expect(r.status).toBe('dead');
       expect(r.deathMonth!).toBeGreaterThanOrEqual(monthIndex(2001, 1));
@@ -261,7 +261,7 @@ const STRATEGIES: StrategyCheck[] = [
     build: perfectPlay,
     // See the file header — the honest finding is IMPRESSIVE, not
     // LEGENDARY. Asserted against that finding, not against "survived".
-    expected: 'survives to Dec 2006 (see header)',
+    expected: 'survives — KNOWN GAP, see KNOWN-ISSUES.md',
     assert: (r) => {
       expect(r.band).toBe('IMPRESSIVE');
       expect(r.deathMonth!).toBeGreaterThanOrEqual(monthIndex(2005, 1));
