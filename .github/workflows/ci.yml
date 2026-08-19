@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main, mvp]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      # §25.3: the calibration gate. The failure mode of hand-authored content is
+      # a late edit nudging a shock until the cash-only path silently slips to
+      # 2002 and nobody notices until a judge is watching. This is the guard.
+      - run: npm run verify
+      - run: npm run build
