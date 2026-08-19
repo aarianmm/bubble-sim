@@ -1,0 +1,4 @@
+/* Global reset. Everything else lives in /chrome. */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; padding: 0; }
+body { background: #000; overflow: hidden; }
