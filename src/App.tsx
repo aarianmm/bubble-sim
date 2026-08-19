@@ -19,10 +19,11 @@ import { RouterProvider, useRouter } from './chrome/router';
 import { DateReadout, TimeControls, YearSpine, useUnreadNotice } from './chrome/Nav';
 import { NotificationDemo } from './chrome/NotificationDemo';
 import type { NavSection } from './chrome/Chrome.types';
+import { noop } from './chrome/Chrome.types';
 import { EngineProvider } from './ui/EngineProvider';
 import { useEngine } from './ui/engine';
 import { Presenter } from './dev/Presenter';
-import { resolveRoute, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
+import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
 
 function isVisualRoute(): boolean {
   return new URLSearchParams(window.location.search).get('visual') === '1';
@@ -81,8 +82,20 @@ function AppShell() {
   const route = resolveRoute(router.url);
   const PageComponent = route.component;
 
+  // §22.6/Step 27 — "the browser chrome remains... every toolbar button is
+  // greyed except Home... the machine keeps working, and you don't." The
+  // Back/Forward/Stop props already carry a real `disabled` (Toolbar.tsx
+  // renders them off `canGoBack`/`canGoForward`/`canStop`), so forcing
+  // those false is a real disable, not a cosmetic one. Refresh/Search/
+  // Favourites/Mail have no such prop in Toolbar.tsx's contract (out of
+  // scope to add — Toolbar.tsx isn't a file this step owns), so their
+  // handlers are swapped for `noop` here (functionally inert either way a
+  // player reaches them) and `app-shell--death` (src/pages/deathcard.css)
+  // greys them out visually to match. Home is left completely untouched.
+  const onDeathCard = router.url === GAME_OVER_URL;
+
   return (
-    <div className="app-shell">
+    <div className={onDeathCard ? 'app-shell app-shell--death' : 'app-shell'}>
       <Window
         titleBar={{ title: router.title, onCloseConfirmed: newRun }}
         menuBar={{
@@ -98,15 +111,15 @@ function AppShell() {
             window.alert('This is not financial advice. It is a game about 1996–2006.'),
         }}
         toolbar={{
-          canGoBack: router.canGoBack,
-          canGoForward: router.canGoForward,
+          canGoBack: onDeathCard ? false : router.canGoBack,
+          canGoForward: onDeathCard ? false : router.canGoForward,
           onBack: router.back,
           onForward: router.forward,
-          canStop: router.canStop,
+          canStop: onDeathCard ? false : router.canStop,
           onStop: router.stop,
-          onRefresh: router.refresh,
+          onRefresh: onDeathCard ? noop : router.refresh,
           onHome: () => router.navigate(HOME_URL),
-          onMail: () => router.navigate(MAIL_URL),
+          onMail: onDeathCard ? noop : () => router.navigate(MAIL_URL),
           unreadCount,
         }}
         addressBar={{

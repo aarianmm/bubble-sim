@@ -9,13 +9,13 @@
  * hardcoded decision lists.
  */
 
-import type { GameState, RunResult, RunStats, RunFlags, ScriptEvent, Decision, Band, DeathCauseId } from './types';
-import { MONTH_COUNT, monthIndex, type MonthIndex } from './month';
+import type { GameState, RunResult, RunStats, RunFlags, ScriptEvent, Decision } from './types';
+import { MONTH_COUNT, type MonthIndex } from './month';
 import { tick } from './tick';
 import { netWorth, investedValue, to1996 } from './selectors';
 import { SCAM_VEHICLE_IDS } from '../script/timeline';
-import { FACT_SHEETS } from '../content/factsheets';
 import { DEATH_LINES } from '../content/deathlines';
+import { bandFor, causeIdFor, missedRedFlags } from './bands';
 import type { VehicleId } from './ids';
 import seriesFile from '../data/series.json';
 import type { MarketSeriesFile } from '../data/schema';
@@ -82,34 +82,6 @@ function initialState(): GameState {
   };
 }
 
-/** §15 — bands are decided by survival date ALONE, never by final wealth. */
-function bandFor(status: GameState['status'], deathMonth: MonthIndex | null): Band {
-  if (status === 'survived' || deathMonth === null) return 'LEGENDARY';
-  if (deathMonth < monthIndex(2001, 1)) return 'OUCH';
-  if (deathMonth < monthIndex(2003, 1)) return 'OKAY';
-  if (deathMonth < monthIndex(2005, 1)) return 'SOLID';
-  // §15 names "2005" for IMPRESSIVE and "survived through Dec 2006" for
-  // LEGENDARY, leaving a death in 2006 itself unnamed. That's closer to
-  // "almost made it" than to any earlier band, so it folds into IMPRESSIVE
-  // rather than inventing a sixth band the design doc doesn't have.
-  return 'IMPRESSIVE';
-}
-
-/**
- * Best-effort classification of what actually killed the run, for the death
- * card's headline (§22.6). Not a scored field (§15: bands are date-only) —
- * secondary, for teaching. 'the-card-ate-you' and 'the-fake-dialog' are
- * unreachable in the MVP build (Step 31/32, both beyond §26.1's boundary).
- */
-function causeFor(state: GameState): DeathCauseId {
-  if (state.status === 'survived') return 'survived';
-  if (state.stats.scamsFunded > 0) return 'funded-a-scam';
-  if (state.stats.forcedSales > 0) return 'sold-at-the-bottom';
-  if (state.stats.feesPaid > 500) return 'eaten-by-fees';
-  if (state.deathMonth !== null && state.deathMonth < monthIndex(2000, 6)) return 'broke-as-bubble-peaked';
-  return 'ground-down-by-rent';
-}
-
 export function run(script: readonly ScriptEvent[], decisions: readonly Decision[]): RunResult {
   const eventsByMonth = groupByMonth(script);
   const decisionsByMonth = groupByMonth(decisions);
@@ -149,7 +121,7 @@ export function run(script: readonly ScriptEvent[], decisions: readonly Decision
 
   const scamsFundedSet = new Set(state.stats.scamsFundedIds);
   const scamsDodgedIds = ([...SCAM_VEHICLE_IDS] as VehicleId[]).filter((id) => !scamsFundedSet.has(id));
-  const redFlagsMissed = [...new Set(state.stats.scamsFundedIds.flatMap((id) => FACT_SHEETS[id].redFlags))];
+  const redFlagsMissed = missedRedFlags(state.stats.scamsFundedIds);
 
   const finalStats: RunStats = {
     ...state.stats,
@@ -164,7 +136,7 @@ export function run(script: readonly ScriptEvent[], decisions: readonly Decision
   };
 
   const band = bandFor(state.status, state.deathMonth);
-  const causeId = causeFor({ ...state, stats: finalStats });
+  const causeId = causeIdFor(state.status, state.deathMonth, finalStats);
   const lines = DEATH_LINES[causeId];
 
   return {
