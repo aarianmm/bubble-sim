@@ -1,0 +1,102 @@
+/**
+ * BUBBLE — <Money> (Step 16, §19.4).
+ *
+ * "Numbers use Courier New — monospace money reads as period-accurate
+ * financial data" (§19.1): every rule here roots back to --font-mono.
+ * Tokens only, no hex (§25.1 hard rule #4); §23 — nothing here declares a
+ * `transition`, the hover state below is a snap, not an animation.
+ */
+
+.money {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: inherit;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+/* Clickable money (the /home headline, or any figure opted in) is a plain
+ * button wearing the same look as a static one — no bevel, no chrome, it
+ * reads as page content, not as a control. */
+button.money {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+.money--interactive:hover .money__primary {
+  text-decoration: underline;
+}
+
+.money__primary {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.money__secondary {
+  color: var(--disabled);
+  text-shadow: 1px 1px 0 var(--disabled-shadow);
+  white-space: nowrap;
+}
+
+.money__secondary-label {
+  font-family: var(--font-body-commercial);
+}
+
+/* ------------------------------------------------------------------ *
+ * Variants
+ * ------------------------------------------------------------------ */
+
+/* Headline (§22.1): "the single most important piece of typography in the
+ * product" — the pairing gets real size and its own vertical room. */
+.money--headline .money__primary {
+  font-size: 56px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.money--headline .money__secondary {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+.money--headline.money--interactive .money__primary {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* Inline — a figure sitting inside running text or a summary row. */
+.money--inline {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.money--inline .money__primary {
+  font-size: 15px;
+}
+
+.money--inline .money__secondary {
+  font-size: 12px;
+}
+
+/* Table-cell — dense rows (a portfolio table, a fact sheet). Stacked
+ * tightly so a column of them lines up without a tall row height. */
+.money--table-cell {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.money--table-cell .money__primary {
+  font-size: 13px;
+}
+
+.money--table-cell .money__secondary {
+  display: block;
+  font-size: 10px;
+}
