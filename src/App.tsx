@@ -16,7 +16,8 @@ import { Window } from './chrome/Window';
 import { TooSmall, useIsViewportTooSmall } from './chrome/TooSmall';
 import { VisualGallery } from './chrome/VisualGallery';
 import { RouterProvider, useRouter } from './chrome/router';
-import { DateReadout, TimeControls, YearSpine, useUnreadCount } from './chrome/Nav';
+import { DateReadout, TimeControls, YearSpine, useUnreadNotice } from './chrome/Nav';
+import { NotificationDemo } from './chrome/NotificationDemo';
 import type { NavSection } from './chrome/Chrome.types';
 import { EngineProvider } from './ui/EngineProvider';
 import { useEngine } from './ui/engine';
@@ -53,7 +54,7 @@ function urlForSection(section: NavSection): string {
 function AppShell() {
   const engine = useEngine();
   const router = useRouter();
-  const unreadCount = useUnreadCount();
+  const { count: unreadCount, flashing: unreadFlashing, statusLine } = useUnreadNotice();
 
   const [presenterUnlocked, setPresenterUnlocked] = useState(isDevRoute);
   const [presenterOpen, setPresenterOpen] = useState(isDevRoute);
@@ -114,7 +115,9 @@ function AppShell() {
           onSelectUrl: router.navigate,
         }}
         statusBar={{
-          loadState: router.statusLoadState,
+          loadState: statusLine
+            ? { kind: 'link-hover', url: statusLine }
+            : router.statusLoadState,
           progressPct: router.progressPct,
           zoneLabel: '🌐 Internet',
         }}
@@ -122,6 +125,7 @@ function AppShell() {
           active: sectionFor(router.url),
           onNavigate: (section) => router.navigate(urlForSection(section)),
           unreadCount,
+          unreadFlashing,
           dateSlot: <DateReadout />,
           timeControlsSlot: <TimeControls />,
           yearSpineSlot: <YearSpine />,
@@ -130,7 +134,10 @@ function AppShell() {
         <PageComponent key={router.contentKey} />
       </Window>
       {presenterUnlocked && (
-        <Presenter open={presenterOpen} onClose={() => setPresenterOpen(false)} />
+        <>
+          <Presenter open={presenterOpen} onClose={() => setPresenterOpen(false)} />
+          <NotificationDemo />
+        </>
       )}
     </div>
   );

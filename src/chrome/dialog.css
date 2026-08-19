@@ -1,0 +1,158 @@
+/**
+ * Dialog.tsx (Step 20, §20.1). Tier 1 — the loudest, rarest, most trusted
+ * object in the product; it has to read as such from across the room. Grey
+ * `--face`, a hard 1px double bevel (bevel.css, not redefined here), a
+ * navy title bar — the one chrome surface in the whole app that colour
+ * belongs to (§20.4: "if the operating system is talking to you, it is
+ * telling the truth"). Tokens only (§25.1 hard rule #4); nothing here
+ * declares a `transition` (§23 — "everything snaps").
+ */
+
+/* Dims the page 40% behind the dialog. Reuses --dk-shadow (black in Era A,
+ * a dark brown-grey in Era B) rather than a hardcoded rgba(0,0,0,.4) so the
+ * dim stays period-correct across eras without this file ever asking which
+ * one is active. Deliberately a separate element from the centring layer
+ * below it, not a background-plus-opacity on one element, so opacity never
+ * touches the dialog box itself. */
+.comet-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--dk-shadow);
+  opacity: 0.4;
+  z-index: 900;
+}
+
+/* No onClick anywhere on this element (Dialog.tsx) — §20.1: "there is
+ * never a [Dismiss] or [Later]." Click-outside-to-close is not a feature
+ * that exists to be disabled; it was never wired. */
+.comet-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 901;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comet-dialog {
+  width: 420px;
+  max-width: calc(100vw - 48px);
+  padding: 0;
+}
+
+.comet-dialog__titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 4px;
+  background: var(--title);
+  color: var(--title-text);
+}
+
+.comet-dialog__title-icon {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.comet-dialog__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+/* Drawn, and disabled — the mock-up's own annotation. A real <button
+ * disabled>, not a styled span: assistive tech still announces it as a
+ * button that cannot be activated, rather than hiding the fact that a
+ * close control exists at all. */
+.comet-dialog__close {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 16px;
+  padding: 0;
+  line-height: 1;
+  font-size: 10px;
+  cursor: default;
+}
+
+.comet-dialog__close:disabled {
+  color: var(--disabled);
+}
+
+.comet-dialog__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.comet-dialog__icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+}
+
+.comet-dialog__icon-glyph {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.comet-dialog__text {
+  margin: 0;
+  flex: 1 1 auto;
+  line-height: 1.5;
+}
+
+.comet-dialog__buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+.comet-dialog__btn {
+  min-width: 75px;
+  height: 23px;
+  cursor: default;
+}
+
+/* §20.1's mock-up: "default has an extra focus ring" — drawn on the button
+ * permanently, not only on real keyboard focus, matching the reference
+ * illustration (both buttons render; only the default one carries it). */
+.comet-dialog__btn--default {
+  outline: 1px dotted var(--dk-shadow);
+  outline-offset: 2px;
+}
+
+/**
+ * The `?dev=1` notification harness (§25.4). Not reachable in a normal run —
+ * it exists so the three §20 tiers are demonstrable before Step 24's
+ * scheduler fires them, and so a presenter can raise a beat on demand.
+ */
+.notification-demo {
+  position: fixed;
+  right: 8px;
+  bottom: 40px;
+  z-index: 9000;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px;
+  background: var(--face);
+  font: var(--font-size-chrome) var(--font-chrome);
+}
+
+.notification-demo__label {
+  color: var(--disabled);
+}
+
+.notification-demo button {
+  padding: 2px 8px;
+  background: var(--face);
+  font: var(--font-size-chrome) var(--font-chrome);
+}

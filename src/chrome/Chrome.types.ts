@@ -135,6 +135,9 @@ export interface SidebarProps {
   active?: NavSection;
   onNavigate?: (section: NavSection) => void;
   unreadCount?: number;
+  /** §20.3 — true for 200ms after the count rises, driving the single bold
+   * flash that is the entire visual weight of the quietest tier. */
+  unreadFlashing?: boolean;
   /** Slot: Step 14 owns the current-date readout (e.g. "SEP 1998"). */
   dateSlot?: ReactNode;
   /** Slot: Step 14 owns play/pause and fast-forward. */

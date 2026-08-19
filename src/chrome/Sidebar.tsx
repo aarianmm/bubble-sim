@@ -19,6 +19,7 @@ export function Sidebar({
   active = 'home',
   onNavigate = noop,
   unreadCount = 0,
+  unreadFlashing = false,
   dateSlot = null,
   timeControlsSlot = null,
   yearSpineSlot = null,
@@ -42,7 +43,11 @@ export function Sidebar({
               </span>
               <span>{section.label}</span>
               {section.key === 'inbox' && (
-                <span className="comet-sidebar__count">({unreadCount})</span>
+                <span
+                  className={`comet-sidebar__count${unreadFlashing ? ' comet-sidebar__count--flash' : ''}`}
+                >
+                  ({unreadCount})
+                </span>
               )}
             </button>
           </li>

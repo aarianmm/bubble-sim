@@ -4,7 +4,7 @@
  * timeControlsSlot / yearSpineSlot — Sidebar itself still owns HOME / INBOX
  * (n) / MY MONEY (§18.1) and never imports this file.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEngine, RATE_FAST, RATE_NORMAL } from '../ui/engine';
 import { unreadCount as selectUnreadCount } from '../sim/selectors';
 import { monthLabel, START_YEAR, END_YEAR, yearOf } from '../sim/month';
@@ -15,6 +15,50 @@ import './nav.css';
 export function useUnreadCount(): number {
   const { state } = useEngine();
   return selectUnreadCount(state);
+}
+
+/**
+ * §20.3 — Tier 3, the quietest notification. New mail increments the count
+ * with a single 200ms bold flash and a transient status-bar line, and does
+ * nothing else. Nothing covers content; nothing demands a click. A player can
+ * go a full simulated year without opening the inbox, and the design intends
+ * for some of them to try and to learn what it cost.
+ */
+export const UNREAD_FLASH_MS = 200;
+
+export interface UnreadNotice {
+  count: number;
+  /** True for 200ms after the count rises. Drives the bold flash. */
+  flashing: boolean;
+  /** `1 new message` / `3 new messages`, or null when there is nothing to say. */
+  statusLine: string | null;
+}
+
+export function useUnreadNotice(): UnreadNotice {
+  const count = useUnreadCount();
+  const previous = useRef(count);
+  const [flashing, setFlashing] = useState(false);
+  const [statusLine, setStatusLine] = useState<string | null>(null);
+
+  useEffect(() => {
+    const arrived = count - previous.current;
+    previous.current = count;
+    // Only a rise is news. Reading or deleting mail lowers the count and must
+    // stay silent — §20.3's whole point is that this tier never demands
+    // attention it has not earned.
+    if (arrived <= 0) return;
+
+    setFlashing(true);
+    setStatusLine(arrived === 1 ? '1 new message' : `${arrived} new messages`);
+    const flashTimer = window.setTimeout(() => setFlashing(false), UNREAD_FLASH_MS);
+    const lineTimer = window.setTimeout(() => setStatusLine(null), 2000);
+    return () => {
+      window.clearTimeout(flashTimer);
+      window.clearTimeout(lineTimer);
+    };
+  }, [count]);
+
+  return { count, flashing, statusLine };
 }
 
 export function DateReadout() {
