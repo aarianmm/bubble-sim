@@ -1,0 +1,121 @@
+/**
+ * §22.4 — the fact sheet. "A plain grey table in Times New Roman... rendered
+ * the same on every site however garish the page around it." No siteStyle
+ * input reaches this file: every colour here is a chrome grey/mono token,
+ * never a page accent, so a scam's sheet and a legit sheet cannot be told
+ * apart by paint (§21 rule 3 — the sheet is the one place that must be
+ * telling the whole truth, plainly).
+ *
+ * §25.1: no hex outside tokens.css. §23: everything snaps, no transitions.
+ */
+
+.factsheet {
+  background: var(--face);
+  color: var(--text);
+  font-family: var(--font-body-institutional);
+  font-size: var(--font-body-institutional-size);
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  border-style: solid;
+  border-width: var(--bevel-width);
+  border-top-color: var(--hilite);
+  border-left-color: var(--hilite);
+  border-right-color: var(--dk-shadow);
+  border-bottom-color: var(--dk-shadow);
+  box-shadow:
+    inset 1px 1px 0 0 var(--face-light),
+    inset -1px -1px 0 0 var(--shadow);
+}
+
+.factsheet__title {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: 1px solid var(--dk-shadow);
+  background: var(--face-light);
+}
+
+.factsheet__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--field);
+}
+
+.factsheet__table tr {
+  border-bottom: 1px solid var(--shadow);
+}
+
+.factsheet__table tr:last-child {
+  border-bottom: none;
+}
+
+.factsheet__label,
+.factsheet__value {
+  padding: 4px 12px;
+  text-align: left;
+  vertical-align: top;
+  font-size: var(--font-body-institutional-size);
+}
+
+.factsheet__label {
+  width: 42%;
+  color: var(--text);
+}
+
+.factsheet__value {
+  color: var(--text);
+}
+
+/* §11.5: the divider that separates identity (name/manager) from terms —
+ * present on every sheet, in the same place, per the §22.4 mock-up. */
+.factsheet__divider td {
+  padding: 0;
+  border-bottom: 1px solid var(--dk-shadow);
+}
+
+.factsheet__return-row .factsheet__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* §11.4 — "the smoothness is the tell." The sparkline plots the compounded
+ * monthly-return line, not the raw percentages, so a run of never-negative
+ * months draws itself as a visibly unbroken climb next to a real fund's
+ * visible dips. No colour cue does this work; the shape alone does. */
+.factsheet__sparkline {
+  display: block;
+  flex: none;
+}
+
+.factsheet__sparkline path {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.25;
+}
+
+.factsheet__actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--dk-shadow);
+  background: var(--face-light);
+}
+
+.factsheet__button {
+  font-family: var(--font-body-institutional);
+  font-size: var(--font-body-institutional-size);
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  color: var(--link);
+  cursor: pointer;
+}
+
+.factsheet__button:hover,
+.factsheet__button:focus-visible {
+  color: var(--link-visited);
+}
