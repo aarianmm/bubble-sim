@@ -1,0 +1,165 @@
+/**
+ * BUBBLE — /home (Step 17, §22.1). Tokens only, no hex (§25.1 hard rule #4).
+ * §23: everything snaps — the marquee is the one permitted motion, and it
+ * moves under its own native <marquee> behaviour, not a CSS transition.
+ *
+ * Page body defaults to Times New Roman (§19.1 "institutional" — a personal
+ * account dashboard is exactly the kind of page that renders in the
+ * browser's own default font). THIS MONTH is deliberately the odd one out:
+ * it reads as an embedded system panel, not page copy, so it wears the
+ * chrome font instead — set directly here rather than via the `.chrome`
+ * class, so it can't race that class's `.chrome *` font rule against
+ * <Money>'s own `--font-mono` for cascade order (both are plain classes of
+ * equal specificity; which stylesheet loads first depends on the JS import
+ * graph, not source order within this file).
+ */
+
+.home-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--field);
+  color: var(--text);
+  font-family: var(--font-body-institutional);
+  font-size: var(--font-body-institutional-size);
+}
+
+/* ------------------------------------------------------------------ *
+ * Masthead
+ * ------------------------------------------------------------------ */
+
+.home-masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 18px 28px 6px;
+}
+
+.home-masthead__brand {
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.08em;
+}
+
+.home-masthead__month {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.home-masthead__rule {
+  margin: 0 28px 20px;
+  border: none;
+  border-top: 1px solid var(--shadow);
+}
+
+/* ------------------------------------------------------------------ *
+ * The headline — "the single most important piece of typography in the
+ * product" (§22.1). Its own block, generously spaced, nothing competing
+ * with it above or below.
+ * ------------------------------------------------------------------ */
+
+.home-headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 24px 36px;
+}
+
+.home-headline__label {
+  margin: 0 0 22px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--text);
+}
+
+.home-headline__figure.money--headline {
+  align-items: center;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ *
+ * THIS MONTH — the bevelled panel (§22.1)
+ * ------------------------------------------------------------------ */
+
+.home-month {
+  align-self: center;
+  width: 380px;
+  max-width: calc(100% - 48px);
+  margin: 0 24px 32px;
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+  color: var(--text);
+}
+
+.home-month__title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.home-month__row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 0;
+}
+
+.home-month__label {
+  flex: 1 1 auto;
+}
+
+.home-month__value {
+  flex: 0 0 auto;
+}
+
+.home-month__trend {
+  flex: 0 0 18px;
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+.home-month__divider {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid var(--shadow);
+  border-bottom: 1px solid var(--hilite);
+}
+
+.home-month__was {
+  margin-top: 2px;
+  text-align: right;
+  font-size: 10px;
+  color: var(--disabled);
+}
+
+/* ------------------------------------------------------------------ *
+ * Ticker (§23 — one of the five permitted motions) and the §5.1 line
+ * ------------------------------------------------------------------ */
+
+.home-ticker {
+  margin-top: auto;
+  border-top: 1px solid var(--shadow);
+  padding: 6px 0;
+  background: var(--face);
+}
+
+.home-ticker__marquee {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.home-disclaimer {
+  margin: 0;
+  padding: 5px 24px 10px;
+  background: var(--face);
+  font-family: var(--font-body-commercial);
+  font-size: 10px;
+  color: var(--disabled);
+  text-align: center;
+}
