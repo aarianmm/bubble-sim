@@ -1,0 +1,165 @@
+/**
+ * `/mail` — the inbox (Step 18, §22.2). Tokens only, no hex (§25.1 hard
+ * rule #4). §23: everything snaps — nothing here declares a `transition`.
+ *
+ * Rendered inside the chrome's content area (`.comet-content`), which is
+ * already a `.sunken-field` — this page is a period commercial page, not
+ * chrome, so it opts into the commercial body font rather than the chrome
+ * font (§19.1's Arial/Helvetica row; BUBBLE Mail is the portal's own
+ * webmail product, not an offer site, so it stays in the plain system
+ * look rather than any §21 style band).
+ */
+
+.mail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  height: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-body-commercial);
+  font-size: var(--font-body-commercial-size);
+  color: var(--text);
+}
+
+.mail-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 4px 2px;
+  border-bottom: 1px solid var(--shadow);
+}
+
+.mail-header__title {
+  font-weight: 700;
+}
+
+.mail-header__unread {
+  font-family: var(--font-mono);
+}
+
+/* ------------------------------------------------------------------ *
+ * The message list — a period listview control.
+ * ------------------------------------------------------------------ */
+
+.mail-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.mail-table thead th {
+  padding: 0;
+  text-align: left;
+  background: var(--face);
+}
+
+.mail-th {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  cursor: default;
+}
+
+.mail-th__arrow {
+  font-size: 0.85em;
+}
+
+.mail-col-dot {
+  width: 22px;
+}
+
+.mail-col-from {
+  width: 26%;
+}
+
+.mail-col-subject {
+  width: auto;
+}
+
+.mail-col-expires {
+  width: 70px;
+  text-align: center;
+}
+
+.mail-table tbody td {
+  padding: 2px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid var(--face-light);
+}
+
+.mail-table tbody td.mail-col-expires {
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+/* §22.2: "Row hover = full-row highlight in --title with white text, as a
+ * period list control does." Selection (a clicked, not merely hovered,
+ * row) reuses the system selection tokens so the two states read as
+ * distinct without inventing a new colour. Neither rule reads `cls` —
+ * both apply identically to junk, legit and scam rows. */
+.mail-row {
+  cursor: default;
+}
+
+.mail-row--selected {
+  background: var(--selection-bg);
+  color: var(--selection-text);
+}
+
+.mail-row:hover {
+  background: var(--title);
+  color: var(--title-text);
+}
+
+/* ------------------------------------------------------------------ *
+ * Actions
+ * ------------------------------------------------------------------ */
+
+.mail-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px;
+}
+
+.mail-actions__delete-all {
+  margin-left: auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * A single open message — no preview pane in Era A (§22.2); this replaces
+ * the list entirely rather than sitting alongside it.
+ * ------------------------------------------------------------------ */
+
+.mail-message {
+  flex: 1 1 auto;
+  padding: 10px;
+  overflow: auto;
+}
+
+.mail-message__meta {
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--shadow);
+}
+
+.mail-message__body p {
+  margin: 0 0 0.8em;
+}
+
+.mail-message__offer {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--shadow);
+}
+
+.mail-message__offer-link {
+  color: var(--link);
+}
+
+.mail-message__offer-link:visited {
+  color: var(--link-visited);
+}
