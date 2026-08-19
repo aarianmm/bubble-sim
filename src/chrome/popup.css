@@ -1,0 +1,152 @@
+/**
+ * Popup.tsx (Step 21, §20.2). Tier 2 — non-blocking, loud, chromeless. Has
+ * to read as visually distinct from Dialog.tsx's navy-titled, centred
+ * Tier 1 at a glance: a plain `--face` minimal title bar, offset over the
+ * content area rather than centred over the whole window, no dimming
+ * behind it (the page stays live). Tokens only (§25.1 hard rule #4);
+ * nothing here declares a `transition` except the one authored marquee
+ * scroll, which is real motion, not eased UI chrome (§23).
+ */
+
+/* One shared layer, created lazily by Popup.tsx and reused by every open
+ * popup (see getPopupLayer()). Its box is derived from the exact same
+ * tokens Window.tsx's grid uses for the title/menu/toolbar/address bars
+ * and the sidebar, so it lines up with the real content area pixel-for-
+ * pixel without this file ever touching Window.tsx or querying its DOM.
+ * `overflow: visible` on purpose — §20.2 only constrains where a popup
+ * *opens*, not where a player can drag it afterwards. */
+#bubble-popup-layer {
+  position: fixed;
+  top: calc(
+    var(--titlebar-height) + var(--menubar-height) + var(--toolbar-height) + var(--addressbar-height)
+  );
+  left: var(--sidebar-width);
+  right: 0;
+  bottom: var(--statusbar-height);
+  overflow: visible;
+  pointer-events: none;
+  z-index: 500;
+}
+
+.comet-popup {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.comet-popup__titlebar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 18px;
+  padding: 0 4px;
+  background: var(--face);
+  border-bottom: 1px solid var(--shadow);
+  cursor: default; /* draggable, but a real OS drag cursor is chrome we don't own */
+  touch-action: none;
+}
+
+.comet-popup__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+/* The one real, working ✕ in this whole tier (§20.2, contrast Dialog's
+ * disabled one) — closing a popup is free and safe, always (§10 rule 2). */
+.comet-popup__close {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 14px;
+  padding: 0;
+  line-height: 1;
+  font-size: 10px;
+  cursor: default;
+}
+
+.comet-popup__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px;
+  background: var(--field);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* "Content is authentically awful" (§20.2) — a tiled web-safe background,
+ * opt-in per popup (junk/scam content), never the only look the component
+ * can render (§10 rule 1: loud is not the same as scam). Web-safe accents
+ * only (§19.2), all tokens. */
+.comet-popup__content--loud {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--accent-magenta) 0,
+    var(--accent-magenta) 8px,
+    var(--accent-yellow) 8px,
+    var(--accent-yellow) 16px
+  );
+}
+
+.comet-popup__heading {
+  margin: 0;
+  font-family: var(--font-loud);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--accent-blue);
+  text-shadow:
+    1px 1px 0 var(--hilite),
+    -1px -1px 0 var(--dk-shadow);
+}
+
+.comet-popup__marquee-track {
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--dk-shadow);
+  color: var(--hilite);
+  font-weight: 700;
+  padding: 2px 0;
+}
+
+/* The one authored, genuinely-scrolling motion §23 names by name ("Marquee
+ * text, real and scrolling"). Not eased — linear, and the only animated
+ * property is `transform`. */
+.comet-popup__marquee-text {
+  display: inline-block;
+  padding-left: 100%;
+  animation: comet-popup-marquee 6s linear infinite;
+}
+
+@keyframes comet-popup-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.comet-popup__para {
+  margin: 0;
+  font-family: var(--font-body-commercial);
+  font-size: var(--font-body-commercial-size);
+  color: var(--text);
+}
+
+.comet-popup__cta {
+  align-self: center;
+  margin-top: auto;
+  min-width: 140px;
+  height: 28px;
+  font-weight: 700;
+  cursor: default;
+}

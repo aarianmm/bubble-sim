@@ -66,3 +66,13 @@
 .comet-nav__spine-marker {
   flex: 0 0 auto;
 }
+
+/**
+ * §20.3 — Tier 3 is the quietest notification in the game: the unread count
+ * gains a single 200ms bold flash and nothing else. §23 lists this as one of
+ * only five things in the entire product permitted to move, so it is a state
+ * swap, not a transition — it snaps on and snaps off.
+ */
+.comet-sidebar__count--flash {
+  font-weight: bold;
+}
