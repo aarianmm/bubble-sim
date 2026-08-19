@@ -10,30 +10,52 @@ import { FACT_SHEETS } from '../content/factsheets';
  *
  * TOTALS RECONCILIATION — see the long comment at the top of timeline.ts.
  * §14.2's headline prose says "42 authored events" and "17 offers (9 mail,
- * 8 popup)". Counted row by row, the printed §14.2 table itself contains 46
- * events (45 dated rows + the Jan 1996 start marker) and 14 offers (9 mail,
- * 5 popup) — every OTHER headline total (6 scams, 9 shocks, 3 windfalls, 8
- * junk, 2 credit, and the 9-mail-offer figure) checks out exactly against
- * that table, which is strong evidence the row-by-row table is the
- * authoritative source and the prose headline undercounts by a few rows and
- * overcounts popup offers by three (the table names zero non-scam popup
- * offers). This suite asserts the true, reconciled numbers below rather
- * than the un-reconciled headline, and documents the gap rather than
- * silently forcing 42/17/8 by fabricating events absent from §14.2.
+ * 8 popup)". Counted row by row, the printed §14.2 table itself contained 46
+ * events (45 dated rows + the Jan 1996 start marker) and only 14 offers
+ * (9 mail, 5 popup, all five of them scams) — every OTHER headline total (6
+ * scams, 9 shocks, 3 windfalls, 8 junk, 2 credit, the 9-mail-offer figure)
+ * checked out exactly against that table.
+ *
+ * A popup channel that is 100% scam breaks §10 rule 1 ("Popups skew scam but
+ * never determine it... skew, don't determine") and, in spirit, §11.2's
+ * fairness contract — the fact sheet stops being a real judgement call once
+ * the channel alone gives the answer away. Resolved by adding three named
+ * popup offers for the three §9.1 vehicles that otherwise had no delivery
+ * anywhere in the timeline: technova-growth (loud, legit-but-mediocre),
+ * kingsley-gilt (plain, the crash dampener, arriving well before Mar 2000)
+ * and granville-plc (plain, legit, concentrated). Event count is now 49;
+ * popup offers 5 -> 8; total offers 14 -> 17 (9 mail, 8 popup) — matching
+ * §14.2's own 9/8 split exactly, even though the 42-events headline still
+ * doesn't reconcile (documented, not silently forced).
  */
 describe('the timeline (§14.2)', () => {
-  it('matches the row-by-row §14.2 table', () => {
+  it('matches the reconciled §14.2 table plus the three §10 rule 1 popup offers', () => {
     const stats = timelineStats();
-    expect(stats.totalEvents).toBe(46);
-    expect(stats.offers).toBe(14);
+    expect(stats.totalEvents).toBe(49);
+    expect(stats.offers).toBe(17);
     expect(stats.mailOffers).toBe(9);
-    expect(stats.popupOffers).toBe(5);
+    expect(stats.popupOffers).toBe(8);
     expect(stats.distinctScams).toBe(6); // §11.5: six scams, no seventh
     expect(stats.scamEvents).toBe(6);
     expect(stats.shocks).toBe(9); // §14.2: 8 "shock" + 1 "job-loss"
     expect(stats.windfalls).toBe(3);
     expect(stats.junk).toBe(8);
     expect(stats.credit).toBe(2);
+  });
+
+  // §10 rule 1 regression guard — the popup channel must never be 100%
+  // scam, or the channel alone teaches the answer and the fact sheet stops
+  // being a real judgement call (§11.2).
+  it('gives the popup channel at least one non-scam offer', () => {
+    const popupOffers = TIMELINE.filter(
+      (e) => e.channel === 'POP' && (e.cls === 'legit' || e.cls === 'mediocre' || e.cls === 'scam'),
+    );
+    const nonScamPopupOffers = popupOffers.filter((e) => e.cls !== 'scam');
+    expect(popupOffers.length).toBeGreaterThan(0);
+    expect(nonScamPopupOffers.length).toBeGreaterThanOrEqual(1);
+    expect(nonScamPopupOffers.map((e) => e.vehicleId).sort()).toEqual(
+      ['granville-plc', 'kingsley-gilt', 'technova-growth'].sort(),
+    );
   });
 
   // §14.3 rule 1 / §16 — the discoverability floor.

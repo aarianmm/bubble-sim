@@ -76,7 +76,7 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     subject: 'mate you have to see this',
     body: [
       'alright mate',
-      "put £500 into this tech fund my cousin told me about, it's already up loads. cavendish something. check it out before it closes",
+      "put £500 into this tech fund my cousin told me about, it's already up loads. technova something. check it out before it closes",
       'dave',
     ],
   },
@@ -216,6 +216,18 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
+  // §10 rule 1 — the popup channel's non-scam offer, and §21's central case:
+  // LOUD, and completely legitimate. Placed the same month as Dave's email,
+  // above, which now links here instead of to Cavendish.
+  'pop.technova-1998-02': {
+    from: 'Technova Growth Fund',
+    subject: 'BACKING TOMORROW, TODAY',
+    body: [
+      '58 hand-picked technology companies. Actively managed, actively priced.',
+      'Click to invest — places are limited this quarter.',
+    ],
+  },
+
   'pop.cavendish-1998-03': {
     // §22.3's own worked example.
     from: 'Cavendish Asset Mgmt',
@@ -233,6 +245,14 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
       'The Millennium Bug could wipe your hard drive on 1 January.',
       'Order our Y2K Protection Kit today — only £19.99.',
     ],
+  },
+
+  // §10 rule 1 — dull, correct, and ignored: exactly the shape a gilt fund
+  // ad should have two months ahead of the 1999 mania peak.
+  'pop.kingsley-gilt-1999-03': {
+    from: 'Kingsley Asset Management',
+    subject: 'Not every fund needs to be exciting',
+    body: ['UK government gilts, various maturities. 0.75% annual fee.', 'Steady income. Low drama.'],
   },
 
   'pop.vertex-1999-05': {
@@ -260,6 +280,17 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     from: 'MarketWatch Alerts',
     subject: 'BUY THE DIP — this is the bottom',
     body: ['Every crash is a buying opportunity. Analysts agree: this is the bottom.', "Don't miss the rebound."],
+  },
+
+  // §10 rule 1 — legit, undiversified, plain. Lands in the quiet stretch
+  // between the Halcyon collapse and the Sep 2001 trough shock.
+  'pop.granville-2001-03': {
+    from: 'Granville plc Investor Relations',
+    subject: 'Own a piece of the FTSE 100',
+    body: [
+      'Granville plc is a FTSE-listed manufacturer with a 15-year dividend record.',
+      'Shares are available through your usual broker.',
+    ],
   },
 
   'pop.recovery-room-2002-03': {
