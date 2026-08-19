@@ -6,32 +6,41 @@
  * "42 authored events" is §14.2's own headline count. Counted row by row, the
  * printed §14.2 table contains 46 rows (45 dated events plus the "Jan 1996 —
  * Run begins" scene-setter, kept here as an explicit `start` event so the
- * game has an anchor for month 0). That is 4 more than the headline "42".
+ * game has an anchor for month 0) — 4 more than the headline "42". Every
+ * OTHER §14.2 total checked out exactly against that row-by-row table (6
+ * distinct scams, 9 shocks, 3 windfalls, 8 junk, 2 credit, 9 mail offers),
+ * which is why the table, not the prose headline, was trusted as the
+ * authoritative source. That discrepancy is real and is left as-is.
  *
- * Every OTHER §14.2 total checks out EXACTLY against that row-by-row table:
- * 6 distinct scams, 9 shocks (8 "shock" + 1 "job-loss"), 3 windfalls, 8 junk,
- * 2 credit offers, 9 mail offers (legit + mediocre + scam + both credit-card
- * rows). That agreement is strong evidence the row-by-row table, not the
- * prose headline, is the authoritative one (consistent with §14.2's own
- * framing: "This section is the single source of truth for run content").
- * Only "42 events" and "8 popup offers" don't reconcile: the table names
- * zero non-scam popup offers — only the 5 scam popups (Meridian, Cavendish,
- * Vertex, Halcyon, the fake dialog) — despite §10 rule 1 requiring some to
- * exist ("a real tracker fund advertises by popup too"). That is a genuine,
- * separate content gap in §14.2 as printed. Rather than invent popup offers
- * found nowhere in the master table — which §14.2 itself forbids ("if an
- * event is not in this table, it does not happen") — this file encodes the
- * table faithfully (46 events, 5 popup offers, 14 offers total) and flags
- * the gap here and in the Step 5/6 completion report, for a human or the
- * orchestrating agent to resolve by authoring named popup offers into
- * §14.2 itself.
+ * What did NOT check out was popup offers: the printed table names zero
+ * non-scam popup offers — only the 5 scam popups (Meridian, Cavendish,
+ * Vertex, Halcyon, the fake dialog) — which teaches "popup = scam" and
+ * directly violates §10 rule 1: "Popups skew scam but never determine it.
+ * A real tracker fund advertises by popup too. Skew, don't determine." A
+ * popup channel that is 100% scam also breaks §11.2's fairness contract in
+ * spirit even where it holds by the letter: the fact sheet stops being a
+ * genuine judgement call and becomes decoration, because the channel alone
+ * already tells you the answer.
+ *
+ * RESOLVED: three named popup offers have been added, using the three §9.1
+ * vehicles that otherwise had no delivery anywhere in the timeline —
+ * `technova-growth` (LOUD, 1998-02, paired with Dave's FOMO email, which now
+ * links here instead of to Cavendish — §21's central lesson: loud does not
+ * mean scam), `kingsley-gilt` (1999-03, well ahead of the 1999 mania peak so
+ * it can do its §9.1 job as the crash dampener) and `granville-plc`
+ * (2001-03, in the quiet stretch after the Halcyon collapse). This raises
+ * total events to 49 and popup offers from 5 to 8 (17 offers total, 9 mail +
+ * 8 popup — matching §14.2's own headline split exactly, even though the
+ * event-count headline still doesn't reconcile). See each event's `notes`
+ * field, below, and `src/content/messages.ts` / `offerpages.ts` for their
+ * copy and site style.
  *
  * §14.3 rule 2 (every windfall followed by a scam within 90 days) is
- * satisfied WITHOUT changing the total event count: Restitution Partners is
- * moved from 2001-04 to 2000-04, exactly as rule 2's own text authorises
- * ("if playtesting shows the pattern isn't landing, move a scam into
- * mid-2000") — see the note on that event, below. This keeps the six named
- * scams at six (§11.5: "there is no seventh") and avoids adding a row.
+ * satisfied WITHOUT adding a scam: Restitution Partners is moved from
+ * 2001-04 to 2000-04, exactly as rule 2's own text authorises ("if
+ * playtesting shows the pattern isn't landing, move a scam into mid-2000")
+ * — see the note on that event, below. This keeps the six named scams at
+ * six (§11.5: "there is no seventh").
  *
  * `timelineStats()` reports the true counts; timeline.test.ts asserts them
  * with the same reconciliation reasoning inline.
@@ -179,7 +188,26 @@ export const TIMELINE: ScriptEvent[] = [
     contentId: 'msg.dave-fomo-1998-02',
     expiresDays: 9,
     blocksTime: false,
-    notes: 'FOMO. Links to the tech fund (Cavendish, arriving next month).',
+    notes: 'FOMO. Links to the tech fund (Technova Growth, arriving this same month).',
+  },
+  {
+    id: 'ev.1998-02.technova',
+    date: '1998-02',
+    month: monthIndex(1998, 2),
+    channel: 'POP',
+    cls: 'mediocre',
+    contentId: 'pop.technova-1998-02',
+    vehicleId: 'technova-growth',
+    count: 1,
+    expiresDays: 45,
+    blocksTime: false,
+    // §10 rule 1 fix (added on the coordinator's instruction): the printed
+    // §14.2 table has zero non-scam popup offers, which teaches "popup =
+    // scam" and breaks the fairness contract. Technova is the central case:
+    // LOUD, legitimate, and simply an expensive mistake (§21) — placed the
+    // same month as Dave's FOMO email so the two reinforce each other, the
+    // way a friend's tip and a fund's own advertising would in real life.
+    notes: 'Legit-but-mediocre popup offer, added for §10 rule 1 ("a real tracker fund advertises by popup too").',
   },
   {
     id: 'ev.1998-03.cavendish',
@@ -251,6 +279,23 @@ export const TIMELINE: ScriptEvent[] = [
     vehicleId: 'fenwick-world',
     expiresDays: 9,
     blocksTime: false,
+  },
+  {
+    id: 'ev.1999-03.kingsley-gilt',
+    date: '1999-03',
+    month: monthIndex(1999, 3),
+    channel: 'POP',
+    cls: 'legit',
+    contentId: 'pop.kingsley-gilt-1999-03',
+    vehicleId: 'kingsley-gilt',
+    count: 1,
+    expiresDays: 45,
+    blocksTime: false,
+    // §10 rule 1 fix, and §9.1's crash dampener: has to arrive well before
+    // Mar 2000 to do its job. Placed two months ahead of the May 1999 mania
+    // peak on purpose — a boring gilt fund advertising by popup right before
+    // the mania and getting ignored is exactly the right shape.
+    notes: 'Legit popup offer, added for §10 rule 1. Arrives well ahead of the crash so it can plausibly be held through it.',
   },
   {
     id: 'ev.1999-05.vertex',
@@ -424,6 +469,23 @@ export const TIMELINE: ScriptEvent[] = [
     vehicleId: 'halcyon-reserve',
     blocksTime: true,
     notes: '17 months of perfect returns, then nothing.',
+  },
+  {
+    id: 'ev.2001-03.granville',
+    date: '2001-03',
+    month: monthIndex(2001, 3),
+    channel: 'POP',
+    cls: 'legit',
+    contentId: 'pop.granville-2001-03',
+    vehicleId: 'granville-plc',
+    count: 1,
+    expiresDays: 45,
+    blocksTime: false,
+    // §10 rule 1 fix. Lands in the ten-month lull between the Halcyon
+    // collapse and the Sep 2001 trough shock — plenty of quiet on both
+    // sides (§14.3 rule 5) — and the post-crash rotation into boring
+    // blue-chip stocks is exactly the right period beat here.
+    notes: 'Legit popup offer, added for §10 rule 1.',
   },
   {
     id: 'ev.2001-09.shock-trough',
