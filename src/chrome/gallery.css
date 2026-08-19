@@ -1,0 +1,61 @@
+/**
+ * Styling for the `?visual=1` route (VisualGallery.tsx) only. Never
+ * imported by the real app shell — App.tsx loads it lazily behind the query
+ * param. Tokens only, same as every other chrome stylesheet.
+ */
+
+.gallery-root {
+  min-height: 100vh;
+  padding: 16px;
+  background: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gallery-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--hilite);
+}
+
+.gallery-section {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gallery-section h2 {
+  margin: 0;
+  color: var(--hilite);
+  font-size: 14px;
+}
+
+.gallery-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gallery-scrollbox {
+  display: block;
+  height: 90px;
+  width: 320px;
+  overflow-y: auto;
+}
+
+.gallery-scrollbox p {
+  margin: 0 0 6px;
+}
+
+.gallery-window-frame {
+  width: 1024px;
+  height: 768px;
+  border: 2px solid var(--dk-shadow);
+}
+
+.gallery-placeholder-page {
+  padding: 16px;
+}

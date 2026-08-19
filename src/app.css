@@ -1,4 +1,10 @@
-/* Global reset. Everything else lives in /chrome. */
+/* Global reset. Everything else lives in /chrome. No hex here — every
+ * colour is a token from chrome/tokens.css (§25.1 hard rule #4). */
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; padding: 0; }
-body { background: #000; overflow: hidden; }
+body { background: var(--dk-shadow); overflow: hidden; }
+
+/* §18: "one browser window, maximised... the window fills the viewport."
+ * Window.tsx sizes itself to 100% of this shell so it can also be embedded
+ * at a fixed size in the ?visual=1 gallery (chrome/gallery.css). */
+.app-shell { width: 100vw; height: 100vh; overflow: hidden; }
