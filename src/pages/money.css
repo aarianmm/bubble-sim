@@ -1,0 +1,280 @@
+/**
+ * `/money` — portfolio and allocation (Step 23, §22.5).
+ *
+ * This page is BUBBLE's own institutional page ("building societies and
+ * pension providers use [Times New Roman], and that is correct" — §19.1),
+ * so its prose uses --font-body-institutional; every number, percentage
+ * and fee figure uses --font-mono ("monospace money reads as
+ * period-accurate financial data" — §19.1). Interactive controls (buttons,
+ * the lock toggle) opt back into the chrome font via the `.chrome` class
+ * per element, the same way a native OS control would sit distinctly on an
+ * otherwise plain HTML page.
+ *
+ * Tokens only — no hex outside chrome/tokens.css (§25.1 hard rule #4).
+ * Nothing here declares a `transition` — everything snaps (§23). No
+ * component here branches on era; every era-dependent look (radius,
+ * bevel colours) is already baked into the bevel classes this file reuses.
+ */
+
+.money-page {
+  position: relative; /* anchors the confirm panel overlay */
+  height: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-body-institutional);
+  font-size: var(--font-body-institutional-size);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.money-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.money-title {
+  margin: 0;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+}
+
+.money-date {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.money-total {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.money-total__label {
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ *
+ * Dual-money figure — SEAM stand-in for src/ui/Money.tsx (see Money.tsx
+ * header). §19.4: period money primary (larger, on top); 1996 money
+ * secondary (smaller, beneath, --disabled grey via .disabled-text).
+ * ------------------------------------------------------------------ */
+
+.money-figure {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+  font-family: var(--font-mono);
+}
+
+.money-figure--inline {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.money-figure__primary {
+  font-weight: 700;
+}
+
+.money-figure__secondary {
+  font-size: 0.85em;
+}
+
+/* ------------------------------------------------------------------ *
+ * Row list — §22.5's bordered table. The outer sunken frame is the
+ * institutional page's own content box (distinct from the browser
+ * chrome's already-sunken .comet-content); rows are separated the same
+ * way Presenter's sections are (border-bottom, no card shadows).
+ * ------------------------------------------------------------------ */
+
+.money-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--field);
+}
+
+.money-row {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.money-row:last-child {
+  border-bottom: none;
+}
+
+.money-row__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.money-row__name {
+  flex: 1 1 auto;
+  font-weight: 700;
+}
+
+.money-row__return {
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.money-row__suspended {
+  color: var(--disabled);
+  font-weight: 400;
+}
+
+.money-row__value {
+  flex: 0 0 auto;
+}
+
+.money-row__pct {
+  flex: 0 0 auto;
+  width: 3.5em;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.money-row__fee {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.money-row__fee-warn {
+  font-family: initial; /* the glyph itself, not the monospace figures */
+}
+
+.money-row__factsheet {
+  margin-left: auto;
+  font-family: var(--font-body-institutional);
+}
+
+.money-row__slider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.money-row__lock {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  line-height: 1;
+  font-size: 11px;
+  cursor: default;
+}
+
+.money-row__range {
+  flex: 1 1 auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * Footer — total % readout and the two commit actions.
+ * ------------------------------------------------------------------ */
+
+.money-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.money-footer__total {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.money-footer__total--bad {
+  /* Should be unreachable — redistribute() always sums to 100 (§12.1) —
+   * kept as a visible tripwire rather than a silent one if that maths is
+   * ever wrong. --disabled is a token, not a hardcoded alarm colour. */
+  color: var(--disabled);
+}
+
+.money-footer__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.money-footer__actions button {
+  cursor: default;
+}
+
+/* ------------------------------------------------------------------ *
+ * Confirm step — a page-level panel, not a real dialog (src/chrome/
+ * Dialog.tsx is being built in parallel and doesn't exist on this
+ * branch). Structured to be lifted wholesale: a title strip, a
+ * scrollable itemised body, an action row.
+ * ------------------------------------------------------------------ */
+
+.money-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.money-confirm__panel {
+  width: 100%;
+  max-width: 480px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.money-confirm__titlebar {
+  padding: 4px 8px;
+  background: var(--title);
+  color: var(--title-text);
+  font-weight: 700;
+}
+
+.money-confirm__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 6px;
+  padding: 8px;
+}
+
+.money-confirm__list {
+  margin: 0 0 8px;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.money-confirm__totals {
+  border-top: 1px solid var(--shadow);
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.money-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px;
+}
+
+.money-confirm__actions button {
+  cursor: default;
+}
