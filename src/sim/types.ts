@@ -157,6 +157,12 @@ export interface ScriptEvent {
   expiresDays?: number | null;
   /** POP ×2 / POP ×3 — how many windows open together (max 3, §20.2). */
   count?: number;
+  /**
+   * Deterministic junk content for slots after the event's primary popup.
+   * Keeps authored mixed batches (offer + noise) inside the existing POP
+   * event without turning companion junk into separate timeline beats.
+   */
+  popupCompanionContentIds?: ContentId[];
   /** True for DLG: time is paused until the player chooses (§20.1). */
   blocksTime: boolean;
   /** Beyond the Step 1–28 MVP boundary (§26.1); scheduled but inert. */
@@ -201,7 +207,7 @@ export interface PopupItem {
   vehicleId?: VehicleId;
   cls: EventClass;
   openedMonth: MonthIndex;
-  /** Auto-closes ~45 simulated days after opening (§20.2). */
+  /** Short simulated bookkeeping expiry; UI presentation has its own timer. */
   closesMonth: MonthIndex;
   /** Deterministic offset over the content area — derived from month, not RNG. */
   x: number;
@@ -359,7 +365,7 @@ export type Decision =
    * the actual navigation separately, since that's chrome/router state, not
    * sim state.
    */
-  | { type: 'file-popup-as-mail'; month: MonthIndex; popupId: string }
+  | { type: 'file-popup-as-mail'; month: MonthIndex; popup: PopupItem }
   | { type: 'navigate'; month: MonthIndex; url: string }
   | { type: 'rebalance'; month: MonthIndex; targets: Partial<Record<VehicleId, number>>; cashPct: number }
   | { type: 'resolve-dialog'; month: MonthIndex; dialogId: string; action: DialogAction }

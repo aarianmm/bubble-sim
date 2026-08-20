@@ -16,10 +16,19 @@ export const SIMULATED_DISCLAIMER =
   'Simulated. Historical data is real; every company and fund in this game is invented. This is not financial advice.';
 
 /* ------------------------------------------------------------------ *
- * Mail (§22.2) — 17 messages
+ * Mail (§22.2) — core messages plus passive period atmosphere
  * ------------------------------------------------------------------ */
 
 export const MAIL_MESSAGES: Record<string, MessageBody> = {
+  'msg.ambient-bank-admin-1996-06': {
+    from: 'Meadowbank Current Accounts',
+    subject: 'A change to your monthly statement',
+    body: [
+      'From July, cash-machine withdrawals will be listed separately from counter transactions on your monthly statement.',
+      'This is for information only. Your account terms are unchanged.',
+    ],
+  },
+
   'msg.northmoor-bond': {
     from: 'Northmoor Building Society',
     subject: 'Your savings, working harder',
@@ -34,10 +43,11 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
 
   'msg.northmoor-annual-statement': {
     from: 'Northmoor Building Society',
-    subject: 'Your annual statement',
+    subject: 'Your annual bond illustration',
     body: [
       'Dear Member,',
-      'Your account earned £31.00 in interest this year. A full statement is enclosed for your records.',
+      'Our 5.2% fixed-rate bond paid about £31 this year on a £600 balance. Over the same year, typical rent on your room rose by about £28.',
+      'These illustrative figures are enclosed for your records.',
       'Yours faithfully,\nNorthmoor Building Society',
     ],
   },
@@ -68,6 +78,15 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
       'The Fenwick Index Trust holds the same 623 companies as the FTSE All-Share, in the same proportions, for a 0.4% annual fee.',
       'It will never beat the market. It will also never try to.',
       'Fund fact sheet enclosed.',
+    ],
+  },
+
+  'msg.ambient-work-social-1997-11': {
+    from: 'Brightwell Social Club',
+    subject: 'Winter social — names by Friday',
+    body: [
+      'The staff winter social will be held in the function room at The Railway Arms next month.',
+      'The sign-up sheet is beside the photocopier. Partners welcome; novelty jumpers optional.',
     ],
   },
 
@@ -107,12 +126,21 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
+  'msg.ambient-internet-investor-1999-04': {
+    from: 'Internet Investor Weekly',
+    subject: 'Can the internet change investing forever?',
+    body: [
+      'This week: portals, online retailers and the growing rush to put familiar businesses on the web.',
+      'Plus: why some analysts still insist that profits matter.',
+    ],
+  },
+
   'msg.dave-up-300-1999-07': {
     from: 'Dave',
-    subject: "I'm up 300%",
+    subject: "it's up again",
     body: [
       'mate',
-      "i put my isa into halcyon reserve back in june, i'm up over 300% since. you need to get in mate seriously, before it's too late",
+      "i put my isa into halcyon reserve last month and it's up again already. they reckon they've never had a down month. you need to look at this mate, seriously",
       'dave',
     ],
   },
@@ -130,7 +158,7 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     from: 'Brightwell Ltd HR',
     subject: 'Your redundancy payment',
     body: [
-      'Following last month’s restructuring notice, your redundancy payment has been processed.',
+      'Following the restructuring announced in November, your redundancy payment has now been processed.',
       'Amount: £1,800.00. We wish you well.',
     ],
   },
@@ -146,10 +174,28 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
 
   'msg.restitution-partners': {
     from: 'Restitution Partners',
-    subject: 'Lost money in a failed fund? We can help.',
+    subject: 'Recent investment losses? We can help.',
     body: [
-      'If you held units in a fund that has ceased trading, our specialists may be able to recover some or all of your losses.',
+      'If your investments fell in the recent market crash, our specialists may be able to recover losses and protect what remains.',
       'A £150 administration fee applies on application.',
+    ],
+  },
+
+  'msg.ambient-market-bulletin-2001-06': {
+    from: 'Meadowbank Market Bulletin',
+    subject: 'Markets one year after the fall',
+    body: [
+      'Technology shares remain unsettled and forecasts continue to change quickly.',
+      'Our quarterly bulletin looks at diversification, patience and the difficulty of calling a market bottom.',
+    ],
+  },
+
+  'msg.ambient-utility-admin-2002-06': {
+    from: 'North Borough Energy',
+    subject: 'Your account reference is changing',
+    body: [
+      'We are updating our billing system this summer. Your next statement may show a new account reference.',
+      'Your tariff and payment arrangements are not affected.',
     ],
   },
 
@@ -172,11 +218,21 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
   },
 
   'msg.pension-top-up-2004-08': {
-    from: 'Payroll @ Brightwell Ltd',
-    subject: 'Increase your pension contribution?',
+    from: 'Kingsley Pension Services',
+    subject: 'A reminder about workplace pensions',
     body: [
-      "You're currently contributing the scheme minimum to your workplace pension.",
-      'Increasing your contribution increases the company match. No action needed if you would rather not.',
+      'If your current employer offers a workplace pension, check whether it also offers matching contributions.',
+      'Increasing an eligible contribution may increase the employer match. Your payroll team can confirm the terms available to you.',
+    ],
+  },
+
+  'msg.ambient-dave-broadband-2005-06': {
+    from: 'Dave',
+    subject: 'finally got broadband',
+    body: [
+      'mate',
+      "it is actually always on. no dialling, no one shouting because they need the phone. this is the future",
+      'dave',
     ],
   },
 };
@@ -189,13 +245,13 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
   'pop.freestuff-1996-02': {
     from: 'FREEST0FF.NET',
     subject: 'FREE RINGTONES 4 U!!!',
-    body: ['Get 10 FREE ringtones sent straight to your phone!', 'Click below. No catch. 100% free!!!'],
+    body: ['Get 10 FREE ringtones sent straight to your phone!', 'No catch. 100% free!!!'],
   },
 
   'pop.junk-1996-09': {
     from: 'PrizeAlert',
     subject: 'YOU MAY ALREADY HAVE WON!',
-    body: ["Congratulations! You've been selected to claim a FREE prize.", 'Click to find out what you have won!'],
+    body: ["Congratulations! You've been selected for a FREE prize.", "Don't miss your chance!"],
   },
 
   'pop.meridian-1997-03': {
@@ -207,11 +263,17 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
+  'pop.junk-meridian-companion-1997-03': {
+    from: 'DialTone Deals',
+    subject: 'CHEAPER CALLS THIS WEEK',
+    body: ['Cut the cost of every evening call!', 'Limited-time rates. Connection fee applies.'],
+  },
+
   'pop.junk-1997-11': {
     from: 'ChainMail',
     subject: 'FWD: read this or 7 years bad luck',
     body: [
-      'Forward this message to 10 friends within 24 hours or you will have bad luck for 7 years.',
+      'Bad luck follows anyone who breaks the chain before it reaches 10 friends.',
       'This is NOT a joke.',
     ],
   },
@@ -243,7 +305,7 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     subject: 'Is YOUR PC ready for the Year 2000?',
     body: [
       'The Millennium Bug could wipe your hard drive on 1 January.',
-      'Order our Y2K Protection Kit today — only £19.99.',
+      'Essential Y2K Protection Kit — only £19.99.',
     ],
   },
 
@@ -261,6 +323,18 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     body: ['Insider tip: Vertex Communications is up 200% this year and still climbing.', 'Ground floor. Act fast.'],
   },
 
+  'pop.junk-vertex-companion-a-1999-05': {
+    from: 'MILLIONHITS.NET',
+    subject: 'MAKE MONEY FROM YOUR HOMEPAGE',
+    body: ['Turn every visitor into cash!', 'Banner exchanges mean MONEY while you sleep!'],
+  },
+
+  'pop.junk-vertex-companion-b-1999-05': {
+    from: 'MegaPortal',
+    subject: 'YOUR FREE WEB ADDRESS IS WAITING',
+    body: ['Your personal corner of the internet is waiting.', 'FREE setup for a limited time!'],
+  },
+
   'pop.halcyon-1999-06': {
     from: 'Halcyon Reserve',
     subject: 'A private reserve, now open to new clients',
@@ -273,7 +347,7 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
   'pop.y2k-1999-12': {
     from: 'Millennium Solutions',
     subject: '48 HOURS UNTIL THE MILLENNIUM BUG',
-    body: ['The clocks roll over in 48 hours.', 'Is your money safe? Click here to find out.'],
+    body: ['The clocks roll over in 48 hours.', 'Experts warn: your money could be at risk!'],
   },
 
   'pop.buy-the-dip-2000-06': {
@@ -309,6 +383,6 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
   'pop.late-junk-2005-11': {
     from: 'FREEST0FF.NET',
     subject: 'Remember us? Still free.',
-    body: ["It's been a while. Ringtones are still free.", 'Click here.'],
+    body: ["It's been a while. Ringtones are still free.", 'Still 100% FREE!!!'],
   },
 };

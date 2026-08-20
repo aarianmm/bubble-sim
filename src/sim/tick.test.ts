@@ -272,6 +272,62 @@ describe('fireScheduledEvents (§7.3.5)', () => {
     expect(next.inbox[0].vehicleId).toBe('northmoor-bond');
   });
 
+  it('protects a current offer by evicting lightweight junk first at the popup cap', () => {
+    const month = monthIndex(1999, 5);
+    const junkBatch: ScriptEvent = {
+      id: 'ev.test.junk-batch',
+      date: '1999-05',
+      month,
+      channel: 'POP',
+      cls: 'junk',
+      contentId: 'pop.junk-1998-12',
+      count: 3,
+      blocksTime: false,
+    };
+    const offer: ScriptEvent = {
+      id: 'ev.test.offer',
+      date: '1999-05',
+      month,
+      channel: 'POP',
+      cls: 'scam',
+      contentId: 'pop.vertex-1999-05',
+      vehicleId: 'vertex-communications',
+      blocksTime: false,
+    };
+    const next = fireScheduledEvents(makeState({ month }), [junkBatch, offer], []);
+    expect(next.popups).toHaveLength(3);
+    expect(next.popups.some((popup) => popup.vehicleId === 'vertex-communications')).toBe(true);
+    expect(next.popups.filter((popup) => popup.cls === 'junk')).toHaveLength(2);
+  });
+
+  it('files a queued popup snapshot even after its bookkeeping item expired', () => {
+    const month = monthIndex(1998, 6);
+    const popup = {
+      id: 'ev.1998-03.cavendish',
+      eventId: 'ev.1998-03.cavendish',
+      title: 'A once-in-a-generation opportunity',
+      contentId: 'pop.cavendish-1998-03',
+      vehicleId: 'cavendish-tech' as const,
+      cls: 'scam' as const,
+      openedMonth: monthIndex(1998, 3),
+      closesMonth: monthIndex(1998, 5),
+      x: 0,
+      y: 0,
+      width: 300,
+      height: 250,
+    };
+    const decision: Decision = { type: 'file-popup-as-mail', month, popup };
+    const next = fireScheduledEvents(makeState({ month, popups: [] }), [], [decision]);
+    expect(next.inbox).toHaveLength(1);
+    expect(next.inbox[0]).toMatchObject({
+      id: `${popup.id}.filed`,
+      contentId: popup.contentId,
+      vehicleId: popup.vehicleId,
+      status: 'unread',
+      expiresMonth: null,
+    });
+  });
+
   it('unlocks a vehicle and charges its accept fee on accept-offer (§11.1)', () => {
     const decision: Decision = { type: 'accept-offer', month: mailEvent.month, vehicleId: 'meridian-guaranteed', source: 'test' };
     const next = fireScheduledEvents(makeState({ month: mailEvent.month, cash: 1000 }), [], [decision]);

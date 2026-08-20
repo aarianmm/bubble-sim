@@ -23,7 +23,8 @@ import { FACT_SHEETS } from '../content/factsheets';
  * popup offers for the three §9.1 vehicles that otherwise had no delivery
  * anywhere in the timeline: technova-growth (loud, legit-but-mediocre),
  * kingsley-gilt (plain, the crash dampener, arriving well before Mar 2000)
- * and granville-plc (plain, legit, concentrated). Event count is now 49;
+ * and granville-plc (plain, legit, concentrated). Six later passive ambient
+ * mails bring the event count to 55 without changing the offer totals;
  * popup offers 5 -> 8; total offers 14 -> 17 (9 mail, 8 popup) — matching
  * §14.2's own 9/8 split exactly, even though the 42-events headline still
  * doesn't reconcile (documented, not silently forced).
@@ -31,7 +32,7 @@ import { FACT_SHEETS } from '../content/factsheets';
 describe('the timeline (§14.2)', () => {
   it('matches the reconciled §14.2 table plus the three §10 rule 1 popup offers', () => {
     const stats = timelineStats();
-    expect(stats.totalEvents).toBe(49);
+    expect(stats.totalEvents).toBe(55);
     expect(stats.offers).toBe(17);
     expect(stats.mailOffers).toBe(9);
     expect(stats.popupOffers).toBe(8);
@@ -41,6 +42,27 @@ describe('the timeline (§14.2)', () => {
     expect(stats.windfalls).toBe(3);
     expect(stats.junk).toBe(8);
     expect(stats.credit).toBe(2);
+  });
+
+  it('adds exactly six passive ambient mails with no financial or decision payload', () => {
+    const ambient = TIMELINE.filter((event) => event.id.includes('.ambient-'));
+    expect(ambient).toHaveLength(6);
+    expect(ambient.map((event) => event.date)).toEqual([
+      '1996-06',
+      '1997-11',
+      '1999-04',
+      '2001-06',
+      '2002-06',
+      '2005-06',
+    ]);
+    for (const event of ambient) {
+      expect(event.channel, event.id).toBe('MAIL');
+      expect(event.cls, event.id).toBe('flavour');
+      expect(event.expiresDays, event.id).toBe(120);
+      expect(event.vehicleId, event.id).toBeUndefined();
+      expect(event.amount, event.id).toBeUndefined();
+      expect(event.blocksTime, event.id).toBe(false);
+    }
   });
 
   // §10 rule 1 regression guard — the popup channel must never be 100%
@@ -155,7 +177,23 @@ describe('the timeline (§14.2)', () => {
             ? POPUP_MESSAGES[e.contentId]
             : DIALOGS[e.contentId];
       expect(resolved, `${e.id} (${e.channel}) has no content for "${e.contentId}"`).toBeDefined();
+      for (const companionId of e.popupCompanionContentIds ?? []) {
+        expect(POPUP_MESSAGES[companionId], `${e.id} has no companion content for "${companionId}"`).toBeDefined();
+      }
     }
+  });
+
+  it('keeps core educational mail visible for at least 45 simulated days', () => {
+    const coreIds = new Set([
+      'ev.1997-05.brightwell-pension',
+      'ev.1997-07.fenwick-index',
+      'ev.1998-10.ashcombe',
+      'ev.1999-01.fenwick-world',
+      'ev.2003-09.marlow',
+    ]);
+    const coreMail = TIMELINE.filter((e) => coreIds.has(e.id));
+    expect(coreMail).toHaveLength(coreIds.size);
+    for (const event of coreMail) expect(event.expiresDays, event.id).toBeGreaterThanOrEqual(45);
   });
 
   // Every offer's vehicle carries a fact sheet.

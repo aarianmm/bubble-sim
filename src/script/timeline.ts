@@ -28,12 +28,11 @@
  * links here instead of to Cavendish — §21's central lesson: loud does not
  * mean scam), `kingsley-gilt` (1999-03, well ahead of the 1999 mania peak so
  * it can do its §9.1 job as the crash dampener) and `granville-plc`
- * (2001-03, in the quiet stretch after the Halcyon collapse). This raises
- * total events to 49 and popup offers from 5 to 8 (17 offers total, 9 mail +
- * 8 popup — matching §14.2's own headline split exactly, even though the
- * event-count headline still doesn't reconcile). See each event's `notes`
- * field, below, and `src/content/messages.ts` / `offerpages.ts` for their
- * copy and site style.
+ * (2001-03, in the quiet stretch after the Halcyon collapse). This raised
+ * popup offers from 5 to 8 (17 offers total, 9 mail + 8 popup). Six passive
+ * ambient mails later bring total events to 55 without changing any offer,
+ * scam, shock, windfall, junk or credit total. See each event's `notes`
+ * field, below, and `src/content/messages.ts` / `offerpages.ts` for copy.
  *
  * §14.3 rule 2 (every windfall followed by a scam within 90 days) is
  * satisfied WITHOUT adding a scam: Restitution Partners is moved from
@@ -86,6 +85,17 @@ export const TIMELINE: ScriptEvent[] = [
     notes: 'The discoverability floor (§16). Rate is on the fact sheet only. Hideous site (§21 rule 2).',
   },
   {
+    id: 'ev.1996-06.ambient-bank-admin',
+    date: '1996-06',
+    month: monthIndex(1996, 6),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.ambient-bank-admin-1996-06',
+    expiresDays: 120,
+    blocksTime: false,
+    notes: 'Passive current-account administration; no state or decision effect.',
+  },
+  {
     id: 'ev.1996-09.junk',
     date: '1996-09',
     month: monthIndex(1996, 9),
@@ -106,7 +116,7 @@ export const TIMELINE: ScriptEvent[] = [
     vehicleId: 'northmoor-bond',
     expiresDays: null,
     blocksTime: false,
-    notes: 'Shows interest earned: £31, against £28/yr of rent inflation. The joke lands silently.',
+    notes: 'Illustrates £31 interest on £600, against £28/yr of rent inflation. The joke lands silently without assuming the player invested.',
   },
   {
     id: 'ev.1997-02.windfall-1',
@@ -129,6 +139,7 @@ export const TIMELINE: ScriptEvent[] = [
     contentId: 'pop.meridian-1997-03',
     vehicleId: 'meridian-guaranteed',
     count: 2,
+    popupCompanionContentIds: ['pop.junk-meridian-companion-1997-03'],
     expiresDays: 45,
     blocksTime: false,
     notes: 'Scam 1. Arrives with a companion junk popup (count 2). Loud, cheap, obvious — three weeks after windfall #1.',
@@ -141,7 +152,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'life-admin',
     contentId: 'msg.brightwell-pension',
     vehicleId: 'brightwell-pension',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
     notes: 'Teaches allocation diegetically.',
   },
@@ -153,7 +164,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'legit',
     contentId: 'msg.fenwick-index',
     vehicleId: 'fenwick-index',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
     notes: 'The correct answer. Dull page, dull copy, correct.',
   },
@@ -178,6 +189,17 @@ export const TIMELINE: ScriptEvent[] = [
     count: 1,
     expiresDays: 45,
     blocksTime: false,
+  },
+  {
+    id: 'ev.1997-11.ambient-work-social',
+    date: '1997-11',
+    month: monthIndex(1997, 11),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.ambient-work-social-1997-11',
+    expiresDays: 120,
+    blocksTime: false,
+    notes: 'Passive workplace atmosphere; no state or decision effect.',
   },
   {
     id: 'ev.1998-02.dave-fomo',
@@ -265,7 +287,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'mediocre',
     contentId: 'msg.ashcombe-managed',
     vehicleId: 'ashcombe-managed',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
     notes: 'Legal, legitimate, a mistake.',
   },
@@ -288,7 +310,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'legit',
     contentId: 'msg.fenwick-world',
     vehicleId: 'fenwick-world',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
   },
   {
@@ -309,6 +331,17 @@ export const TIMELINE: ScriptEvent[] = [
     notes: 'Legit popup offer, added for §10 rule 1. Arrives well ahead of the crash so it can plausibly be held through it.',
   },
   {
+    id: 'ev.1999-04.ambient-internet-investor',
+    date: '1999-04',
+    month: monthIndex(1999, 4),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.ambient-internet-investor-1999-04',
+    expiresDays: 120,
+    blocksTime: false,
+    notes: 'Passive dot-com-era newsletter; no offer or decision.',
+  },
+  {
     id: 'ev.1999-05.vertex',
     date: '1999-05',
     month: monthIndex(1999, 5),
@@ -317,6 +350,10 @@ export const TIMELINE: ScriptEvent[] = [
     contentId: 'pop.vertex-1999-05',
     vehicleId: 'vertex-communications',
     count: 3,
+    popupCompanionContentIds: [
+      'pop.junk-vertex-companion-a-1999-05',
+      'pop.junk-vertex-companion-b-1999-05',
+    ],
     expiresDays: 45,
     blocksTime: false,
     notes: 'Scam 4 — the pump. Mania peak: three popups at once, the §20.2 cap.',
@@ -499,6 +536,17 @@ export const TIMELINE: ScriptEvent[] = [
     notes: 'Legit popup offer, added for §10 rule 1.',
   },
   {
+    id: 'ev.2001-06.ambient-market-bulletin',
+    date: '2001-06',
+    month: monthIndex(2001, 6),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.ambient-market-bulletin-2001-06',
+    expiresDays: 120,
+    blocksTime: false,
+    notes: 'Passive post-crash financial context; no offer or decision.',
+  },
+  {
     id: 'ev.2001-09.shock-trough',
     date: '2001-09',
     month: monthIndex(2001, 9),
@@ -539,6 +587,17 @@ export const TIMELINE: ScriptEvent[] = [
     expiresDays: 45,
     blocksTime: false,
     notes: 'Popup blocker now active — status bar reports blocks.',
+  },
+  {
+    id: 'ev.2002-06.ambient-utility-admin',
+    date: '2002-06',
+    month: monthIndex(2002, 6),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.ambient-utility-admin-2002-06',
+    expiresDays: 120,
+    blocksTime: false,
+    notes: 'Passive utility administration; no state or decision effect.',
   },
   {
     id: 'ev.2002-10.shock',
@@ -584,7 +643,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'legit',
     contentId: 'msg.marlow-corporate-bond',
     vehicleId: 'marlow-corporate-bond',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
   },
   {
@@ -618,6 +677,17 @@ export const TIMELINE: ScriptEvent[] = [
     contentId: 'dlg.shock-2005-05',
     amount: 700,
     blocksTime: true,
+  },
+  {
+    id: 'ev.2005-06.ambient-dave-broadband',
+    date: '2005-06',
+    month: monthIndex(2005, 6),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.ambient-dave-broadband-2005-06',
+    expiresDays: 120,
+    blocksTime: false,
+    notes: 'Passive social and technology atmosphere; no state or decision effect.',
   },
   {
     id: 'ev.2005-11.late-junk',

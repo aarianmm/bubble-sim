@@ -218,23 +218,24 @@ describe('§25.5 — the demo path, beat by beat, driven through the real <App/>
     expect(container!.querySelector('.money-confirm')).toBeNull();
   });
 
-  it('Feb/Mar 1997 — the windfall opens, and the Meridian popup is loud, readable, and cleanly declined', () => {
+  it('Feb/Mar 1997 — the windfall opens, and the queued Meridian batch is cleanly declined', async () => {
     mountApp();
     jumpToMonth(MAR_1997);
 
-    // §20.2's cap, and the timeline's own event (`ev.1997-03.meridian`,
-    // `count: 2`): TWO copies of the same Meridian popup arrive together,
-    // not a separate distinct junk popup — the "companion junk" language in
-    // the timeline's notes describes the effect (two loud windows at once),
-    // not a second vehicle.
-    expect(popups()).toHaveLength(2);
-    expect(popups().every((p) => p.textContent?.includes('GUARANTEED'))).toBe(true);
+    // The authored batch is one Meridian offer plus one unrelated junk ad,
+    // presented sequentially with a short gap rather than overlapping.
+    expect(popups()).toHaveLength(1);
     expect(popups()[0].textContent).toMatch(/30%|GUARANTEED/);
+    click(popups()[0].querySelector<HTMLButtonElement>('.comet-popup__close'));
+    expect(popups()).toHaveLength(0);
+    await act(async () => {
+      await new Promise((resolve) => window.setTimeout(resolve, 1800));
+    });
+    expect(popups()).toHaveLength(1);
+    expect(popups()[0].textContent).toContain('CHEAPER CALLS');
 
-    // Decline: close both, free and safe (§10 rule 2), no navigation forced.
-    for (const p of popups()) {
-      click(p.querySelector<HTMLButtonElement>('.comet-popup__close'));
-    }
+    // Decline: close the companion too, free and safe (§10 rule 2).
+    click(popups()[0].querySelector<HTMLButtonElement>('.comet-popup__close'));
     expect(popups()).toHaveLength(0);
 
     // The windfall itself is a MAIL item, not a popup — open it from /mail.

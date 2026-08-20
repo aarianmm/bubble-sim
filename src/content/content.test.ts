@@ -136,12 +136,55 @@ describe('every contentId in the timeline resolves (§25.3)', () => {
       if (e.channel === 'MAIL') expect(MAIL_MESSAGES[e.contentId], e.id).toBeDefined();
       if (e.channel === 'POP') expect(POPUP_MESSAGES[e.contentId], e.id).toBeDefined();
       if (e.channel === 'DLG') expect(DIALOGS[e.contentId], e.id).toBeDefined();
+      for (const companionId of e.popupCompanionContentIds ?? []) {
+        expect(POPUP_MESSAGES[companionId], `${e.id} -> ${companionId}`).toBeDefined();
+      }
     }
   });
 
   it('gives every offer event a vehicle with a fact sheet', () => {
     for (const e of TIMELINE) {
       if (e.vehicleId) expect(FACT_SHEETS[e.vehicleId], `${e.id} -> ${e.vehicleId}`).toBeDefined();
+    }
+  });
+});
+
+describe('state-independent storyline copy', () => {
+  it('does not claim the player personally funded Northmoor or Halcyon', () => {
+    expect(MAIL_MESSAGES['msg.northmoor-annual-statement'].body.join(' ')).not.toMatch(/your account earned/i);
+    expect(DIALOGS['dlg.halcyon-suspended-2000-11'].body).not.toMatch(/your balance/i);
+  });
+
+  it('frames April 2000 Restitution around the recent crash, not a later fund collapse', () => {
+    const copy = [
+      MAIL_MESSAGES['msg.restitution-partners'].subject,
+      ...MAIL_MESSAGES['msg.restitution-partners'].body,
+      OFFER_PAGES['restitution-partners'].subCopy,
+    ].join(' ');
+    expect(copy).toMatch(/recent market (crash|fall)/i);
+    expect(copy).not.toMatch(/fund (that )?(ceased trading|collapsed|failed)/i);
+  });
+});
+
+describe('lightweight junk popup copy', () => {
+  const junkContentIds = [
+    'pop.freestuff-1996-02',
+    'pop.junk-1996-09',
+    'pop.junk-meridian-companion-1997-03',
+    'pop.junk-1997-11',
+    'pop.junk-1998-12',
+    'pop.junk-vertex-companion-a-1999-05',
+    'pop.junk-vertex-companion-b-1999-05',
+    'pop.y2k-1999-12',
+    'pop.buy-the-dip-2000-06',
+    'pop.recovery-room-2002-03',
+    'pop.late-junk-2005-11',
+  ];
+
+  it('does not instruct the player to use a nonexistent CTA', () => {
+    for (const id of junkContentIds) {
+      const copy = POPUP_MESSAGES[id].body.join(' ');
+      expect(copy, id).not.toMatch(/\b(click|sign up|order|join|claim|register|forward this)\b/i);
     }
   });
 });

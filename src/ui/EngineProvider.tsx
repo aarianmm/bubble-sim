@@ -52,12 +52,13 @@ import {
   MS_PER_MONTH,
   RATE_NORMAL,
   type Engine,
+  type PopupPresentationState,
   type PresetName,
 } from './engine';
-import type { Band, Decision, DialogAction, DeathCauseId, EventId, GameState, RunFlags, RunStats, ScriptEvent } from '../sim/types';
+import type { Band, Decision, DialogAction, DeathCauseId, EventId, GameState, PopupItem, RunFlags, RunStats, ScriptEvent } from '../sim/types';
 import { isValidMonth, monthIndex, MONTH_COUNT, type MonthIndex } from '../sim/month';
 import { tick, fireScheduledEvents } from '../sim/tick';
-import { EVENTS_BY_ID, eventsForMonth, materializeDialog } from '../sim/scheduler';
+import { EVENTS_BY_ID, eventsForMonth, materializeDialog, materializePopups } from '../sim/scheduler';
 import { TIMELINE } from '../script/timeline';
 import { VEHICLES } from '../sim/vehicles';
 import { currentAllocation } from '../sim/selectors';
@@ -223,15 +224,91 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   const [paused, setPausedState] = useState(false);
   const [rateOverride, setRateOverride] = useState<number>(RATE_NORMAL);
   const [forcedSale, setForcedSale] = useState<PendingForcedSale | null>(null);
+  const [popupPresentation, setPopupPresentation] = useState<PopupPresentationState>({
+    active: null,
+    pending: [],
+    phase: 'showing',
+  });
 
   const stateRef = useRef(state);
   const processedRef = useRef(-1); // last month whose full tick() has committed; -1 = none yet
   const pendingRef = useRef<PendingDialog | null>(null);
   const forcedSaleTrialRef = useRef<GameState | null>(null);
+  const popupPresentationRef = useRef(popupPresentation);
+  const capturedPopupIdsRef = useRef(new Set<string>());
 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
+
+  const commitPopupPresentation = useCallback((next: PopupPresentationState) => {
+    popupPresentationRef.current = next;
+    setPopupPresentation(next);
+  }, []);
+
+  const clearPopupPresentation = useCallback(() => {
+    capturedPopupIdsRef.current = new Set();
+    commitPopupPresentation({ active: null, pending: [], phase: 'showing' });
+  }, [commitPopupPresentation]);
+
+  const enqueuePopups = useCallback(
+    (arrivals: readonly PopupItem[]) => {
+      if (arrivals.length === 0) return;
+      const next = popupPresentationRef.current;
+      let active = next.active;
+      let pending = [...next.pending];
+
+      for (const popup of arrivals) {
+        if (capturedPopupIdsRef.current.has(popup.id)) continue;
+        capturedPopupIdsRef.current.add(popup.id);
+
+        if (!active && next.phase === 'showing') {
+          active = popup;
+          continue;
+        }
+
+        if (popup.cls === 'junk') {
+          const queuedJunk = pending.filter((item) => item.cls === 'junk');
+          if (queuedJunk.length >= 1) {
+            const oldestJunkId = queuedJunk[0].id;
+            pending = pending.filter((item) => item.id !== oldestJunkId);
+          }
+          while (pending.length >= 6) {
+            const junkIndex = pending.findIndex((item) => item.cls === 'junk');
+            if (junkIndex < 0) break;
+            pending.splice(junkIndex, 1);
+          }
+          if (pending.length >= 6) continue;
+        } else {
+          while (pending.length >= 6) {
+            const junkIndex = pending.findIndex((item) => item.cls === 'junk');
+            if (junkIndex < 0) break;
+            pending.splice(junkIndex, 1);
+          }
+        }
+        // Important/normal arrivals retain their authored order ahead of
+        // queued junk. Active junk is never pre-empted.
+        const firstJunkIndex = popup.cls === 'junk'
+          ? -1
+          : pending.findIndex((item) => item.cls === 'junk');
+        if (firstJunkIndex >= 0) pending.splice(firstJunkIndex, 0, popup);
+        else pending.push(popup);
+      }
+
+      commitPopupPresentation({ active, pending, phase: next.phase });
+    },
+    [commitPopupPresentation],
+  );
+
+  const capturePopupEvents = useCallback(
+    (events: readonly ScriptEvent[], month: MonthIndex) => {
+      const arrivals = events.flatMap((event) =>
+        event.channel === 'POP' ? materializePopups(event, month) : [],
+      );
+      enqueuePopups(arrivals);
+    },
+    [enqueuePopups],
+  );
 
   const commitState = useCallback((next: GameState) => {
     stateRef.current = next;
@@ -254,7 +331,10 @@ export function EngineProvider({ children }: { children: ReactNode }) {
    * ---------------------------------------------------------------- */
   const attemptCommit = useCallback(
     (before: GameState, month: MonthIndex, decisions: Decision[]) => {
-      const trial = tick({ ...before, month }, eventsForMonth(month), decisions);
+      const events = eventsForMonth(month);
+      const trial = tick({ ...before, month }, events, decisions);
+      if (trial.status === 'running') capturePopupEvents(events, month);
+      else clearPopupPresentation();
       const newForcedSale = trial.stats.forcedSales > before.stats.forcedSales;
       if (!newForcedSale) {
         processedRef.current = month;
@@ -271,7 +351,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       forcedSaleTrialRef.current = trial;
       setForcedSale({ before, month, decisions, items, shortfall, alternatives, nothingLeft });
     },
-    [commitState],
+    [capturePopupEvents, clearPopupPresentation, commitState],
   );
 
   const advancePending = useCallback(() => {
@@ -375,6 +455,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
    * ---------------------------------------------------------------- */
   const landOnMonth = useCallback(
     (month: MonthIndex, extraByMonth: Map<MonthIndex, Decision[]>) => {
+      clearPopupPresentation();
       let s = createInitialState();
       for (let m = 0; m < month; m++) {
         const d = extraByMonth.get(m) ?? [];
@@ -404,7 +485,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       pendingRef.current = { month, queue: rest, decisions: extra };
       commitState({ ...s, month, dialogs: [materializeDialog(first, month)] });
     },
-    [attemptCommit, commitState],
+    [attemptCommit, clearPopupPresentation, commitState],
   );
 
   const jumpToMonth = useCallback(
@@ -429,15 +510,17 @@ export function EngineProvider({ children }: { children: ReactNode }) {
         commitState({ ...s, dialogs: [...s.dialogs, materializeDialog(event, s.month)] });
         return;
       }
+      capturePopupEvents([event], s.month);
       commitState(fireScheduledEvents(s, [event], []));
     },
-    [forcedSale, commitState],
+    [capturePopupEvents, forcedSale, commitState],
   );
 
   const loadPreset = useCallback(
     (preset: PresetName) => {
       switch (preset) {
         case 'start':
+          clearPopupPresentation();
           pendingRef.current = null;
           forcedSaleTrialRef.current = null;
           setForcedSale(null);
@@ -472,7 +555,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
           return;
       }
     },
-    [landOnMonth, commitState],
+    [clearPopupPresentation, landOnMonth, commitState],
   );
 
   /**
@@ -482,6 +565,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   const showDeathCard = useCallback(
     (band: Band, causeId: DeathCauseId) => {
       pendingRef.current = null;
+      clearPopupPresentation();
       forcedSaleTrialRef.current = null;
       setForcedSale(null);
       const s = stateRef.current;
@@ -493,7 +577,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       });
       setPausedState(true);
     },
-    [commitState],
+    [clearPopupPresentation, commitState],
   );
 
   const reset = useCallback(() => {
@@ -514,6 +598,58 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     [resolveDialogFlow, forcedSale, commitState],
   );
 
+  const enterPopupGap = useCallback(
+    (popupId: string) => {
+      const current = popupPresentationRef.current;
+      if (current.active?.id !== popupId) return;
+      commitPopupPresentation({ active: null, pending: current.pending, phase: 'gap' });
+    },
+    [commitPopupPresentation],
+  );
+
+  const closePresentedPopup = useCallback(
+    (popupId: string) => {
+      const decision: Decision = { type: 'close-popup', month: stateRef.current.month, popupId };
+      const next = fireScheduledEvents(stateRef.current, [], [decision]);
+      commitState({ ...next, decisions: [...next.decisions, decision] });
+      enterPopupGap(popupId);
+    },
+    [commitState, enterPopupGap],
+  );
+
+  const filePresentedPopup = useCallback(
+    (popup: PopupItem) => {
+      const decision: Decision = { type: 'file-popup-as-mail', month: stateRef.current.month, popup };
+      const next = fireScheduledEvents(stateRef.current, [], [decision]);
+      commitState({ ...next, decisions: [...next.decisions, decision] });
+      enterPopupGap(popup.id);
+    },
+    [commitState, enterPopupGap],
+  );
+
+  const deferPresentedPopup = useCallback(
+    (popupId: string) => {
+      const current = popupPresentationRef.current;
+      const active = current.active;
+      if (current.phase !== 'showing' || active?.id !== popupId) return;
+      const nonJunk = current.pending.filter((item) => item.cls !== 'junk');
+      const junk = current.pending.filter((item) => item.cls === 'junk');
+      const pending = active.cls === 'junk'
+        ? [...nonJunk, active]
+        : [active, ...nonJunk, ...junk];
+      commitPopupPresentation({ active: null, pending, phase: 'gap' });
+    },
+    [commitPopupPresentation],
+  );
+
+  const finishPopupGap = useCallback(() => {
+    if (stateRef.current.dialogs.length > 0 || forcedSale !== null) return;
+    const current = popupPresentationRef.current;
+    if (current.phase !== 'gap') return;
+    const [active = null, ...pending] = current.pending;
+    commitPopupPresentation({ active, pending, phase: 'showing' });
+  }, [commitPopupPresentation, forcedSale]);
+
   /* ---------------------------------------------------------------- *
    * §12.3 — the two ForcedSale choices.
    * ---------------------------------------------------------------- */
@@ -523,8 +659,9 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     processedRef.current = forcedSale.month;
     forcedSaleTrialRef.current = null;
     setForcedSale(null);
+    if (trial.status !== 'running') clearPopupPresentation();
     commitState({ ...trial, decisions: [...trial.decisions, ...forcedSale.decisions] });
-  }, [forcedSale, commitState]);
+  }, [clearPopupPresentation, forcedSale, commitState]);
 
   const onForcedSalePickAlternative = useCallback(
     (vehicleId: VehicleId) => {
@@ -547,16 +684,21 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       state,
       paused,
       timeRate,
+      popupPresentation,
       dispatch,
       setPaused,
       setTimeRate,
+      closePresentedPopup,
+      filePresentedPopup,
+      deferPresentedPopup,
+      finishPopupGap,
       jumpToMonth,
       forceEvent,
       loadPreset,
       showDeathCard,
       reset,
     }),
-    [state, paused, timeRate, dispatch, setPaused, setTimeRate, jumpToMonth, forceEvent, loadPreset, showDeathCard, reset],
+    [state, paused, timeRate, popupPresentation, dispatch, setPaused, setTimeRate, closePresentedPopup, filePresentedPopup, deferPresentedPopup, finishPopupGap, jumpToMonth, forceEvent, loadPreset, showDeathCard, reset],
   );
 
   return (

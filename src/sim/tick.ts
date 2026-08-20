@@ -245,8 +245,8 @@ function applyDecision(state: GameState, decision: Decision): GameState {
       // is filed in the inbox (unread, never expiring — mirrors
       // chrome/popupPlacement.ts's popupToMailItem exactly) and the popup
       // itself closes, same as the main window navigating away from it.
-      const popup = state.popups.find((p) => p.id === decision.popupId);
-      if (!popup) return state;
+      const popup = decision.popup;
+      if (state.inbox.some((item) => item.id === `${popup.id}.filed`)) return state;
       const msg = POPUP_MESSAGES[popup.contentId];
       const filed: MailItem = {
         id: `${popup.id}.filed`,
@@ -395,13 +395,24 @@ export function fireScheduledEvents(state: GameState, monthEvents: ScriptEvent[]
     if (event.channel === 'MAIL') {
       next = { ...next, inbox: [...next.inbox, materializeMail(event, state.month)] };
     } else if (event.channel === 'POP') {
-      // §20.2: "never more than 3 at once" — a new authored batch (e.g. the
-      // May 1999 mania peak) always gets to open in full; if that would push
-      // the total over the cap, the oldest already-open popups close early
-      // to make room, exactly as if their own 45-day timer had run out.
+      // §20.2: never more than three. Offers outrank lightweight junk;
+      // within a tier newer popups win, with stable source order breaking
+      // ties. This prevents stale junk from evicting a current offer while
+      // keeping the result entirely authored and deterministic.
       let popups = [...next.popups, ...materializePopups(event, state.month)];
       if (popups.length > MAX_CONCURRENT_POPUPS) {
-        popups = popups.slice(popups.length - MAX_CONCURRENT_POPUPS);
+        const ranked = popups
+          .map((popup, index) => ({ popup, index }))
+          .sort((a, b) => {
+            const importance = Number(b.popup.cls !== 'junk') - Number(a.popup.cls !== 'junk');
+            if (importance !== 0) return importance;
+            const recency = b.popup.openedMonth - a.popup.openedMonth;
+            if (recency !== 0) return recency;
+            return a.index - b.index;
+          })
+          .slice(0, MAX_CONCURRENT_POPUPS)
+          .sort((a, b) => a.index - b.index);
+        popups = ranked.map(({ popup }) => popup);
       }
       next = { ...next, popups };
     } else if (event.channel === 'DLG') {

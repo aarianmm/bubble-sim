@@ -39,7 +39,7 @@ export const DIALOGS: Record<string, DialogCopy> = {
 
   'dlg.shock-1998-08': {
     title: 'The car failed its MOT',
-    body: 'A new one isn’t in the budget. The repair is £1,100, due now.',
+    body: 'A new one isn’t in the budget. The repair is £500, due now.',
     buttons: PAY_OR_SELL,
   },
 
@@ -70,7 +70,7 @@ export const DIALOGS: Record<string, DialogCopy> = {
 
   'dlg.halcyon-suspended-2000-11': {
     title: 'HALCYON RESERVE — SUSPENDED PENDING REVIEW',
-    body: 'Seventeen months of returns, and then nothing. Your balance is £0.',
+    body: 'Seventeen months of reported returns, and then nothing. Investor balances are now valued at £0.',
     buttons: ACKNOWLEDGE(),
   },
 
