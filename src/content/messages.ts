@@ -16,19 +16,10 @@ export const SIMULATED_DISCLAIMER =
   'Simulated. Historical data is real; every company and fund in this game is invented. This is not financial advice.';
 
 /* ------------------------------------------------------------------ *
- * Mail (§22.2) — core messages plus passive period atmosphere
+ * Mail (§22.2) — 17 messages
  * ------------------------------------------------------------------ */
 
 export const MAIL_MESSAGES: Record<string, MessageBody> = {
-  'msg.ambient-bank-admin-1996-06': {
-    from: 'Meadowbank Current Accounts',
-    subject: 'A change to your monthly statement',
-    body: [
-      'From July, cash-machine withdrawals will be listed separately from counter transactions on your monthly statement.',
-      'This is for information only. Your account terms are unchanged.',
-    ],
-  },
-
   'msg.northmoor-bond': {
     from: 'Northmoor Building Society',
     subject: 'Your savings, working harder',
@@ -81,15 +72,6 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
-  'msg.ambient-work-social-1997-11': {
-    from: 'Brightwell Social Club',
-    subject: 'Winter social — names by Friday',
-    body: [
-      'The staff winter social will be held in the function room at The Railway Arms next month.',
-      'The sign-up sheet is beside the photocopier. Partners welcome; novelty jumpers optional.',
-    ],
-  },
-
   'msg.dave-fomo-1998-02': {
     from: 'Dave',
     subject: 'mate you have to see this',
@@ -123,15 +105,6 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     subject: 'Fenwick World Trust — now available',
     body: [
       'The same idea as the Index Trust, further afield: 1,850 companies across global developed markets, for a 0.5% annual fee.',
-    ],
-  },
-
-  'msg.ambient-internet-investor-1999-04': {
-    from: 'Internet Investor Weekly',
-    subject: 'Can the internet change investing forever?',
-    body: [
-      'This week: portals, online retailers and the growing rush to put familiar businesses on the web.',
-      'Plus: why some analysts still insist that profits matter.',
     ],
   },
 
@@ -181,24 +154,6 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
-  'msg.ambient-market-bulletin-2001-06': {
-    from: 'Meadowbank Market Bulletin',
-    subject: 'Markets one year after the fall',
-    body: [
-      'Technology shares remain unsettled and forecasts continue to change quickly.',
-      'Our quarterly bulletin looks at diversification, patience and the difficulty of calling a market bottom.',
-    ],
-  },
-
-  'msg.ambient-utility-admin-2002-06': {
-    from: 'North Borough Energy',
-    subject: 'Your account reference is changing',
-    body: [
-      'We are updating our billing system this summer. Your next statement may show a new account reference.',
-      'Your tariff and payment arrangements are not affected.',
-    ],
-  },
-
   'msg.windfall-2003-02': {
     from: 'Hepworth & Grey, Solicitors',
     subject: 'Estate settlement — your legacy',
@@ -226,15 +181,6 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
-  'msg.ambient-dave-broadband-2005-06': {
-    from: 'Dave',
-    subject: 'finally got broadband',
-    body: [
-      'mate',
-      "it is actually always on. no dialling, no one shouting because they need the phone. this is the future",
-      'dave',
-    ],
-  },
 };
 
 /* ------------------------------------------------------------------ *

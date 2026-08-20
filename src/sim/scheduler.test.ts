@@ -38,14 +38,6 @@ describe('materializeMail', () => {
     expect(mail.arrivedMonth).toBe(monthIndex(1997, 2));
   });
 
-  it('materializes ambient mail as temporary, non-actionable inbox content', () => {
-    const event = EVENTS_BY_ID['ev.2001-06.ambient-market-bulletin'];
-    const mail = materializeMail(event, event.month);
-    expect(mail.vehicleId).toBeUndefined();
-    expect(mail.amount).toBeUndefined();
-    expect(mail.expiresMonth).toBe(event.month + 4);
-    expect(mail.status).toBe('unread');
-  });
 });
 
 describe('materializeDialog', () => {
