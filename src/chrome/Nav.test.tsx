@@ -32,7 +32,6 @@ function engineWith(inbox: MailItem[]): Engine {
     timeRate: 1,
     dispatch: () => undefined,
     setPaused: () => undefined,
-    setEvolutionPaused: () => undefined,
     setTimeRate: () => undefined,
     jumpToMonth: () => undefined,
     forceEvent: () => undefined,

@@ -1,12 +1,12 @@
 /**
  * The status bar (§18.1). Left: load state (`Done`, `Opening page http://…`,
  * `Transferring data…`). Centre: load progress. Right: zone indicator, with
- * a reserved popup-blocker-count slot.
+ * a slot for the Era B popup-blocker count.
  *
  * §19.3: "Chrome must never lie about state" — this component only ever
  * displays what it is told; the truthfulness is the caller's job (Step 13+).
  * The popup-blocker segment is always in the DOM; `--popup-blocker-display`
- * controls visibility so this file never asks which milestone it is in.
+ * hides it in Era A so this file never asks which era it is in.
  */
 import type { StatusBarProps } from './Chrome.types';
 

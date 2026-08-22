@@ -128,3 +128,31 @@
   outline: 1px dotted var(--dk-shadow);
   outline-offset: 2px;
 }
+
+/**
+ * The `?dev=1` notification harness (§25.4). Not reachable in a normal run —
+ * it exists so the three §20 tiers are demonstrable before Step 24's
+ * scheduler fires them, and so a presenter can raise a beat on demand.
+ */
+.notification-demo {
+  position: fixed;
+  right: 8px;
+  bottom: 40px;
+  z-index: 9000;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px;
+  background: var(--face);
+  font: var(--font-size-chrome) var(--font-chrome);
+}
+
+.notification-demo__label {
+  color: var(--disabled);
+}
+
+.notification-demo button {
+  padding: 2px 8px;
+  background: var(--face);
+  font: var(--font-size-chrome) var(--font-chrome);
+}

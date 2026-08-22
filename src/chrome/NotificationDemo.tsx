@@ -1,12 +1,14 @@
 /**
- * A test-only harness for the three notification tiers (§20).
+ * A `?dev=1`-only harness for the three notification tiers (§20).
  *
  * ROLE CHANGED BY STEP 24: the scheduler (src/sim/scheduler.ts) now fires
  * every §14.2 event for real, and src/ui/Notifications.tsx renders the
  * genuine `state.dialogs`/`state.popups` through the same Dialog.tsx and
  * Popup.tsx this file uses — this is no longer the only way to see a
  * dialog or three concurrent popups. It stays, unmodified, as a manual,
- * state-independent trigger retained for component tests.
+ * state-independent trigger for the Presenter (§25.4): useful when a
+ * demo needs one of the three tiers on screen RIGHT NOW, off-script,
+ * without touching the real run.
  *
  * Nothing here is reachable in a normal run.
  */
@@ -17,7 +19,6 @@ import { MAX_CONCURRENT_POPUPS, popupOffset } from './popupPlacement';
 import { useEngine } from '../ui/engine';
 import type { DialogItem, PopupItem } from '../sim/types';
 import { DAYS_PER_MONTH } from '../sim/month';
-import './notification-demo.css';
 
 /** §20.2: popups auto-close after ~45 simulated days. */
 const POPUP_LIFETIME_MONTHS = 45 / DAYS_PER_MONTH;

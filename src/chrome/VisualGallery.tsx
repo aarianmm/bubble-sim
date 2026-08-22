@@ -2,99 +2,40 @@
  * The `?visual=1` gallery (Step 11's stated done-condition: "A visual test
  * route renders a raised button, a sunken field and a pressed button
  * correctly at 1×.") Also exercises the full Step 12 Window composition and
- * milestone toggles, so a reviewer can confirm the §25.1 hard rule visually:
- * changing root attributes restyles everything below without touching a
+ * an era toggle, so a reviewer can confirm the §25.1 hard rule visually:
+ * flipping `data-era` must restyle everything below without touching a
  * single component.
  */
 import { useEffect, useState } from 'react';
 import { Window } from './Window';
-import { EraLoadingPage, EraWelcomeDialog } from './EraTransition';
-import { monthIndex } from '../sim/month';
 import './gallery.css';
 
-type TransitionPreview = {
-  year: '1998' | '2000';
-  phase: 'welcome' | 'loading';
-} | null;
-
 export function VisualGallery() {
-  const [year, setYear] = useState<'1996' | '1998' | '2000'>('1996');
-  const [transitionPreview, setTransitionPreview] = useState<TransitionPreview>(null);
+  const [era, setEra] = useState<'a' | 'b'>('a');
 
-  // Exercise the exact root-attribute path used by AppShell. Restored to the
-  // opening style on unmount so leaving the gallery cannot strand the game in
-  // a later visual milestone.
+  // tokens.css keys every theme off `:root[data-era]` — CSS's `:root` is
+  // always the document element, never a nested node, so exercising the
+  // era switch for real means setting the attribute there, exactly as the
+  // real app will (§18.2). Restored to Era A on unmount so leaving the
+  // gallery doesn't strand the document in Era B.
   useEffect(() => {
-    document.documentElement.setAttribute('data-era', year === '2000' ? 'b' : 'a');
-    document.documentElement.setAttribute('data-ui-year', year);
+    document.documentElement.setAttribute('data-era', era);
     return () => {
       document.documentElement.setAttribute('data-era', 'a');
-      document.documentElement.setAttribute('data-ui-year', '1996');
     };
-  }, [year]);
-
-  useEffect(() => {
-    if (!transitionPreview) {
-      document.documentElement.removeAttribute('data-ui-target');
-      return;
-    }
-
-    document.documentElement.setAttribute('data-ui-target', transitionPreview.year);
-    return () => document.documentElement.removeAttribute('data-ui-target');
-  }, [transitionPreview]);
+  }, [era]);
 
   return (
     <div className="gallery-root">
       <div className="chrome gallery-controls">
-        <button type="button" className="bevel-out" onClick={() => setYear('1996')}>
-          1996 baseline
+        <button type="button" className="bevel-out" onClick={() => setEra('a')}>
+          Era A (1996–2000)
         </button>
-        <button type="button" className="bevel-out" onClick={() => setYear('1998')}>
-          1998 refinement
+        <button type="button" className="bevel-out" onClick={() => setEra('b')}>
+          Era B (2001–2006)
         </button>
-        <button type="button" className="bevel-out" onClick={() => setYear('2000')}>
-          2000 refinement
-        </button>
-        <span className="gallery-controls__divider" aria-hidden="true" />
-        <button
-          type="button"
-          className="bevel-out"
-          onClick={() => setTransitionPreview({ year: '1998', phase: 'welcome' })}
-        >
-          Preview 1998 transition
-        </button>
-        <button
-          type="button"
-          className="bevel-out"
-          onClick={() => setTransitionPreview({ year: '2000', phase: 'welcome' })}
-        >
-          Preview 2000 transition
-        </button>
-        {transitionPreview && (
-          <button type="button" className="bevel-out" onClick={() => setTransitionPreview(null)}>
-            Close preview
-          </button>
-        )}
-        <span>current visual milestone: {year}</span>
+        <span>current era: {era}</span>
       </div>
-
-      {transitionPreview?.phase === 'welcome' && (
-        <EraWelcomeDialog
-          year={transitionPreview.year}
-          month={monthIndex(Number(transitionPreview.year), 1)}
-          onContinue={() => setTransitionPreview({ ...transitionPreview, phase: 'loading' })}
-        />
-      )}
-
-      {transitionPreview?.phase === 'loading' && (
-        <div className="gallery-transition-stage">
-          <EraLoadingPage
-            year={transitionPreview.year}
-            loadState={{ kind: 'transferring' }}
-            progressPct={64}
-          />
-        </div>
-      )}
 
       <div className="chrome gallery-section window-face">
         <h2>Bevel primitives</h2>

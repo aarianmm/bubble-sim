@@ -221,7 +221,6 @@ function perfectPlayDecisions(): Decision[] {
 export function EngineProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(createInitialState);
   const [paused, setPausedState] = useState(false);
-  const [evolutionPaused, setEvolutionPausedState] = useState(false);
   const [rateOverride, setRateOverride] = useState<number>(RATE_NORMAL);
   const [forcedSale, setForcedSale] = useState<PendingForcedSale | null>(null);
 
@@ -241,11 +240,8 @@ export function EngineProvider({ children }: { children: ReactNode }) {
 
   // §20.1: a blocking dialog freezes time; a pending forced-sale choice
   // does too (it's the same "time paused until a choice is made" contract,
-  // §12.3). The Jan 1998/2000 interface evolution owns a separate hold so
-  // the player's Pause button cannot release its loading screen early; the
-  // run ending freezes the clock for good.
-  const frozen =
-    paused || evolutionPaused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
+  // §12.3); the run ending freezes it for good.
+  const frozen = paused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
   const timeRate = frozen ? 0 : rateOverride;
 
   const rafRef = useRef<number | null>(null);
@@ -367,7 +363,6 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   }, [timeRate, beginMonth]);
 
   const setPaused = useCallback((p: boolean) => setPausedState(p), []);
-  const setEvolutionPaused = useCallback((p: boolean) => setEvolutionPausedState(p), []);
   const setTimeRate = useCallback((rate: number) => setRateOverride(rate), []);
 
   /* ---------------------------------------------------------------- *
@@ -450,7 +445,6 @@ export function EngineProvider({ children }: { children: ReactNode }) {
           accumulatorRef.current = 0;
           commitState(createInitialState());
           setPausedState(false);
-          setEvolutionPausedState(false);
           setRateOverride(RATE_NORMAL);
           return;
         case 'cash-only-march-2000':
@@ -555,7 +549,6 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       timeRate,
       dispatch,
       setPaused,
-      setEvolutionPaused,
       setTimeRate,
       jumpToMonth,
       forceEvent,
@@ -563,20 +556,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       showDeathCard,
       reset,
     }),
-    [
-      state,
-      paused,
-      timeRate,
-      dispatch,
-      setPaused,
-      setEvolutionPaused,
-      setTimeRate,
-      jumpToMonth,
-      forceEvent,
-      loadPreset,
-      showDeathCard,
-      reset,
-    ],
+    [state, paused, timeRate, dispatch, setPaused, setTimeRate, jumpToMonth, forceEvent, loadPreset, showDeathCard, reset],
   );
 
   return (

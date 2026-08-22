@@ -44,9 +44,6 @@ export interface DialogProps {
    * behind it) is unchanged and still applies.
    */
   bodyOverride?: ReactNode;
-  /** One-off presentation beats may name themselves; authored simulation
-   * dialogs retain the established Comet Navigator title by default. */
-  titleOverride?: string;
 }
 
 /* 32x32, hand-drawn (§24 — no external assets, nothing from Microsoft). */
@@ -65,7 +62,7 @@ function WarningIcon() {
   );
 }
 
-export function Dialog({ dialog, onResolve, bodyOverride, titleOverride }: DialogProps) {
+export function Dialog({ dialog, onResolve, bodyOverride }: DialogProps) {
   const defaultBtnRef = useRef<HTMLButtonElement | null>(null);
   const body = DIALOGS[dialog.contentId]?.body ?? '';
   // §20.1: max two buttons is content's own rule (content.test.ts enforces
@@ -96,7 +93,7 @@ export function Dialog({ dialog, onResolve, bodyOverride, titleOverride }: Dialo
               ⚠
             </span>
             <span id={`${dialog.id}-title`} className="comet-dialog__title">
-              {titleOverride ?? 'Comet Navigator'}
+              Comet Navigator
             </span>
             <button
               type="button"

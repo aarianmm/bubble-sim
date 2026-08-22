@@ -17,10 +17,8 @@ card), `AGENTS.md` (points here).
 2. **The sim is pure and React-free.** `/src/sim` imports no React, no DOM, no
    `Date`. `tick(state, month) -> state`. It is the part that gets unit tested.
 3. **No component knows which era it is in** (§25.1). Every colour, radius, font,
-   metric and duration is a CSS custom property on the root era/milestone
-   attributes. The Jan 1998 and Jan 2000 visual changes must be attribute-only;
-   mounted controls, icon slots and handlers stay invariant. An SVG may contain
-   both hand-drawn art groups and let root tokens select the visible group.
+   metric and duration is a CSS custom property on `:root[data-era="a"|"b"]`.
+   The Jan 2002 switch must be one attribute change.
 4. **No hex colours outside `src/chrome/tokens.css`.**
 5. **Stay inside your step's file list** (§26.2 rule 4). If a step seems to need a
    file outside it, say so rather than widening the change silently.
@@ -64,7 +62,7 @@ src/chrome    the browser shell — window, menus, toolbar, address bar,
               status bar, dialogs, popups. Era-themed via CSS custom props.
 src/pages     the websites rendered into the chrome's content area.
 src/ui        glue. Owns no game logic.
-src/dev       test-only demo driver; not imported by the deployed app.
+src/dev       presenter tools, behind ?dev=1.
 ```
 
 ## Shared contracts — import, don't redefine

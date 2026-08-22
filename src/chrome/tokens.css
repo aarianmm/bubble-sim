@@ -6,14 +6,14 @@
  * a CSS custom property. Nothing outside this file may contain a hex value
  * (§25.1 hard rule #4) — that is the enforceable check for this step.
  *
- * Owner-directed visual milestones land at Jan 1998 and Jan 2000 through
- * `data-era` plus `data-ui-year` on the document root (BUILD STATUS deviation
- * 5). No component file branches on a year or era — it only reads tokens
- * (§25.1 hard rule: "no component knows which era it is in").
+ * The 2002 switch (§18.2) is `data-era="a" | "b"` on the document root. Every
+ * token below is defined once per era; no component file may branch on era —
+ * it only ever reads a token (§25.1 hard rule: "no component knows which era
+ * it is in").
  */
 
 /* ------------------------------------------------------------------ *
- * 1996–1997 — Windows 95 baseline.
+ * ERA A — 1996–2000. Windows 95/98, IE4. "Comet Navigator 4.0" (§18.2)
  * ------------------------------------------------------------------ */
 
 :root[data-era='a'] {
@@ -35,39 +35,6 @@
   --link-visited: #800080;
   --selection-bg: #000080;
   --selection-text: #ffffff;
-
-  /* --- Chrome surfaces ---
-     Separate paint tokens let each milestone change the browser's finish
-     without changing a single component, control, or layout coordinate. */
-  --control-surface: var(--face);
-  --control-hilite: var(--hilite);
-  --control-face-light: var(--face-light);
-  --control-shadow: var(--shadow);
-  --control-dk-shadow: var(--dk-shadow);
-  --menubar-surface: var(--face);
-  --toolbar-surface: var(--face);
-  --addressbar-surface: var(--face);
-  --sidebar-surface: var(--face);
-  --statusbar-surface: var(--face);
-  --toolbar-button-surface: var(--face);
-  --toolbar-button-hover: var(--face);
-  --legacy-icon-display: inline;
-  --millennium-icon-display: none;
-  --toolbar-icon-filter: none;
-  --toolbar-icon-hover-filter: none;
-  --toolbar-label-color: var(--text);
-  --toolbar-button-hilite: var(--hilite);
-  --toolbar-button-face-light: var(--face-light);
-  --toolbar-button-shadow: var(--shadow);
-  --toolbar-button-dk-shadow: var(--dk-shadow);
-  --toolbar-hover-hilite: var(--hilite);
-  --toolbar-hover-face-light: var(--face-light);
-  --toolbar-hover-shadow: var(--shadow);
-  --toolbar-hover-dk-shadow: var(--dk-shadow);
-  --chrome-rule: var(--shadow);
-  --toolbar-grip-dark: transparent;
-  --toolbar-grip-light: transparent;
-  --toolbar-grip-opacity: 0;
 
   /* --- Fonts (§19.1) --- */
   /* W95FA is the bundled bitmap MS Sans Serif clone (§25.4 — offline, no
@@ -109,118 +76,40 @@
   --load-duration-max: 1200ms;
   --image-resolve-duration: 400ms;
 
-  /* Components render these elements unconditionally; tokens own visibility. */
+  /* --- Era-controlled visibility (§18.2) — components render the element
+     unconditionally; the era token decides whether it shows. Keeps
+     Toolbar/AddressBar/StatusBar ignorant of which era they're in. --- */
   --toolbar-label-display: block; /* large icons with labels underneath */
-  --go-button-display: none;
-  --popup-blocker-display: none;
+  --go-button-display: none; /* no Go button in Era A */
+  --popup-blocker-display: none; /* the popup-blocker count is Era B only */
 }
 
 /* ------------------------------------------------------------------ *
- * 1998–1999 — Windows 98 refinement. This layer overrides presentation
- * tokens only; the base Era A component structure remains untouched.
+ * ERA B — 2001–2006. Windows XP Luna, IE6. "Comet Navigator 6" (§18.2)
+ * Written now, unused until a later step sets data-era="b" — the whole
+ * point is that flipping the attribute is enough (§25.1).
  * ------------------------------------------------------------------ */
 
-:root[data-era='a'][data-ui-year='1998'] {
-  --face: #d4d0c8;
-  --face-light: #f0eee8;
-  --shadow: #788796;
-  --dk-shadow: #33495d;
-  --title: linear-gradient(90deg, #000066 0%, #0066cc 62%, #00a6c8 100%);
-  --title-inactive: linear-gradient(90deg, #707b86 0%, #a8b5c1 65%, #d4d0c8 100%);
-  --selection-bg: #006699;
-
-  /* IE4/Windows 98 "coolbar" treatment: visibly segmented, cool-toned
-     raised surfaces beneath the new gradient caption. */
-  --control-surface: var(--face);
-  --menubar-surface: linear-gradient(180deg, #f5f4ef 0%, #d4d0c8 72%, #bac4cd 100%);
-  --toolbar-surface: linear-gradient(180deg, #eef9ff 0%, #c4e4f7 40%, #8fbad8 100%);
-  --addressbar-surface: linear-gradient(180deg, #e5f5ff 0%, #accde3 100%);
-  --sidebar-surface: linear-gradient(180deg, #d5edfb 0%, #a9cce5 100%);
-  --statusbar-surface: linear-gradient(180deg, #eeece7 0%, #c7c3bb 100%);
-  --toolbar-button-surface: linear-gradient(180deg, #ffffff 0%, #e3edf5 42%, #bdcbd7 100%);
-  --toolbar-button-hover: linear-gradient(180deg, #ffffff 0%, #eff8ff 42%, #cde4f6 100%);
-  --toolbar-button-hilite: var(--hilite);
-  --toolbar-button-face-light: var(--face-light);
-  --toolbar-button-shadow: var(--shadow);
-  --toolbar-button-dk-shadow: var(--dk-shadow);
-  --toolbar-hover-hilite: var(--hilite);
-  --toolbar-hover-face-light: var(--face-light);
-  --toolbar-hover-shadow: var(--shadow);
-  --toolbar-hover-dk-shadow: var(--dk-shadow);
-  --chrome-rule: #5b7084;
-  --toolbar-grip-dark: #6c8092;
-  --toolbar-grip-light: #ffffff;
-  --toolbar-grip-opacity: 1;
-
-  /* Keep every control on the same grid as 1996; paint alone advances. */
-  --titlebar-height: 20px;
-  --toolbar-height: 56px;
-  --toolbar-icon-size: 32px;
-  --control-pad-x: 6px;
-  --control-pad-y: 3px;
-}
-
-/* ------------------------------------------------------------------ *
- * 2000–2006 — millennium refinement. Palette, typography and icon artwork
- * improve again while labels, icon slots and the functional control inventory
- * remain identical to the two earlier stages.
- * ------------------------------------------------------------------ */
-
-:root[data-era='b'][data-ui-year='2000'] {
-  /* --- System palette --- */
-  --face: #d4d0c8;
-  --face-light: #f2f0e9;
+:root[data-era='b'] {
+  /* --- System palette (§19.2 + period-accurate Luna fill-ins) --- */
+  --face: #ece9d8;
+  --face-light: #f6f5ec; /* Luna 3D "light" — inner bevel highlight */
   --hilite: #ffffff; /* outer bevel highlight (top/left) */
-  --shadow: #808080;
-  --dk-shadow: #404040;
-  --title: linear-gradient(90deg, #0a246a 0%, #3a6ea5 54%, #a6caf0 100%);
-  --title-inactive: linear-gradient(90deg, #6f7f91 0%, #9daebf 60%, #d4d0c8 100%);
+  --shadow: #aca899; /* Luna 3D shadow — inner bevel shadow */
+  --dk-shadow: #716f64; /* Luna 3D dark shadow — outer bevel shadow */
+  --title: linear-gradient(#0058ee, #3f8cf3);
+  --title-inactive: linear-gradient(#7a96df, #b1c3ee); /* muted, undocumented in spec — approximated to match Luna's inactive blue */
   --title-text: #ffffff;
-  --title-text-shadow: rgba(0, 0, 0, 0.3);
+  --title-text-shadow: rgba(0, 0, 0, 0.4); /* "soft text shadow" (§18.2) */
   --field: #ffffff;
   --text: #000000;
-  --disabled: #8d959b;
+  --disabled: #aca899;
   --disabled-shadow: #ffffff;
   --link: #0000ff;
   --link-visited: #800080;
-  --selection-bg: #1b4f8a;
+  --selection-bg: #316ac5; /* Luna accent (§19.2) */
   --selection-text: #ffffff;
-  --accent: #1b4f8a;
-
-  /* IE5/Windows 2000 integration: cool metallic rebar bands, flat buttons,
-     millennium icon art and a separate coloured hot image on hover. */
-  --legacy-icon-display: none;
-  --millennium-icon-display: inline;
-  --toolbar-icon-filter: grayscale(0.5) saturate(0.7) contrast(1.08) drop-shadow(1px 1px 0 var(--hilite));
-  --toolbar-icon-hover-filter: grayscale(0) saturate(1.18) contrast(1.08) drop-shadow(1px 1px 0 var(--hilite));
-  --toolbar-label-color: #17365d;
-
-  /* The control inventory remains exact while the surfaces read as a visibly
-     newer Windows 2000 rebar. */
-  --control-surface: var(--face);
-  --control-hilite: var(--hilite);
-  --control-face-light: var(--face-light);
-  --control-shadow: var(--shadow);
-  --control-dk-shadow: var(--dk-shadow);
-  --menubar-surface: linear-gradient(180deg, #f7f7f4 0%, #dfddd7 58%, #c5c8ca 100%);
-  --toolbar-surface: linear-gradient(180deg, #f7fbff 0%, #e1e8ed 43%, #bcc9d2 100%);
-  --addressbar-surface: linear-gradient(180deg, #f8fcff 0%, #d0dce5 100%);
-  --sidebar-surface: linear-gradient(180deg, #d9e9f7 0%, #b5cadc 100%);
-  --statusbar-surface: linear-gradient(180deg, #f2f4f4 0%, #cbd1d4 100%);
-  --toolbar-button-surface: transparent;
-  --toolbar-button-hover: linear-gradient(180deg, #ffffff 0%, #dcebfa 48%, #9ebfdf 100%);
-  --toolbar-button-hilite: transparent;
-  --toolbar-button-face-light: transparent;
-  --toolbar-button-shadow: transparent;
-  --toolbar-button-dk-shadow: transparent;
-  --toolbar-hover-hilite: #ffffff;
-  --toolbar-hover-face-light: #eaf4ff;
-  --toolbar-hover-shadow: #7796b2;
-  --toolbar-hover-dk-shadow: #294e73;
-  --chrome-rule: #66839c;
-  --toolbar-grip-dark: #607d96;
-  --toolbar-grip-light: #ffffff;
-  --toolbar-grip-opacity: 1;
+  --accent: #316ac5;
 
   /* --- Fonts (§19.1) --- */
   --font-chrome: Tahoma, 'W95FA', 'MS Sans Serif', Geneva, Verdana, sans-serif;
@@ -233,124 +122,36 @@
   --font-loud: 'Comic Sans MS', 'Comic Sans', cursive;
   --font-mono: 'Courier New', Courier, monospace;
 
-  /* --- Cleaner millennium controls --- */
-  --radius-control: 0;
-  --radius-title: 0;
+  /* --- Radii (§18.2 — "softer, 2px radius on buttons") --- */
+  --radius-control: 2px;
+  --radius-title: 6px; /* rounded top corners on the title bar */
 
   /* --- Metrics --- */
   --bevel-width: 1px;
-  --titlebar-height: 20px;
+  --titlebar-height: 24px;
   --menubar-height: 20px;
-  --toolbar-height: 56px;
-  --toolbar-icon-size: 32px;
+  --toolbar-height: 30px; /* small icons, no labels (§18.2) */
+  --toolbar-icon-size: 16px;
   --addressbar-height: 24px;
   --statusbar-height: 20px;
   --sidebar-width: 160px;
   --scrollbar-width: 16px;
-  --control-pad-x: 6px;
-  --control-pad-y: 3px;
+  --control-pad-x: 7px; /* slightly roomier — softer Luna controls */
+  --control-pad-y: 4px;
   --min-viewport-width: 1024px;
   --min-viewport-height: 768px;
 
   /* --- Durations (§18.3, §23) --- */
   --duration-snap: 0ms;
   --duration-unread-flash: 200ms;
-  --load-duration-min: 600ms;
-  --load-duration-max: 1200ms;
+  --load-duration-min: 200ms; /* the decade gets faster (§18.2) */
+  --load-duration-max: 400ms;
   --image-resolve-duration: 400ms;
 
-  /* Same visible controls in every stage; only their styling changes. */
-  --toolbar-label-display: block;
-  --go-button-display: none;
-  --popup-blocker-display: none;
-}
-
-/* ------------------------------------------------------------------ *
- * Destination preview tokens for the owner-directed 1998 / 2000 evolution
- * pause. `data-ui-year` remains on the installed interface until loading is
- * complete; `data-ui-target` paints only the welcome and loading surfaces.
- * ------------------------------------------------------------------ */
-
-:root[data-ui-target='1998'] {
-  --evolution-dialog-width: 420px;
-  --evolution-welcome-padding: 18px 28px 16px;
-  --evolution-welcome-surface: linear-gradient(180deg, #ffffff 0%, #e8f6ff 58%, #b8d9ee 100%);
-  --evolution-page-surface: #ffffff;
-  --evolution-loading-width: 480px;
-  --evolution-loading-surface: #d4d0c8;
-  --evolution-loading-padding: 20px 22px 18px;
-  --evolution-brand-height: 34px;
-  --evolution-brand-surface: linear-gradient(90deg, #000066 0%, #0066cc 72%, #00a6c8 100%);
-  --evolution-brand-color: #ffffff;
-  --evolution-brand-spacing: 0.04em;
-  --evolution-brand-year-size: 13px;
-  --evolution-heading-color: #000066;
-  --evolution-year-color: #0066cc;
-  --evolution-copy-color: #000000;
-  --evolution-muted: #4f6678;
-  --evolution-kicker-spacing: 0.06em;
-  --evolution-heading-spacing: 0.14em;
-  --evolution-year-size: 40px;
-  --evolution-year-spacing: 0.04em;
-  --evolution-signal-width: 10px;
-  --evolution-signal-height: 7px;
-  --evolution-signal-gap: 3px;
-  --evolution-signal-on: #0066cc;
-  --evolution-signal-off: #9db8cc;
-  --evolution-signal-step: 140ms;
-  --evolution-signal-animation: era-signal-1998;
-  --evolution-loading-title-size: 18px;
-  --evolution-progress-height: 22px;
-  --evolution-progress-padding: 2px;
-  --evolution-progress-track: #ffffff;
-  --evolution-progress-fill: repeating-linear-gradient(90deg, #0066cc 0, #0066cc 12px, #ffffff 12px, #ffffff 14px);
-  --evolution-progress-repeat: repeat;
-  --evolution-progress-size: auto;
-  --evolution-progress-animation: era-progress-idle;
-  --evolution-progress-duration: 1s;
-  --evolution-note-transform: none;
-  --evolution-note-spacing: 0;
-}
-
-:root[data-ui-target='2000'] {
-  --evolution-dialog-width: 450px;
-  --evolution-welcome-padding: 22px 34px 18px;
-  --evolution-welcome-surface: linear-gradient(135deg, #ffffff 0%, #f4f8fb 52%, #d4e4f2 100%);
-  --evolution-page-surface: linear-gradient(135deg, #ffffff 0%, #edf4fa 58%, #c7d8e6 100%);
-  --evolution-loading-width: 550px;
-  --evolution-loading-surface: #f2f4f4;
-  --evolution-loading-padding: 26px 28px 22px;
-  --evolution-brand-height: 48px;
-  --evolution-brand-surface: linear-gradient(90deg, #0a246a 0%, #3a6ea5 62%, #a6caf0 100%);
-  --evolution-brand-color: #ffffff;
-  --evolution-brand-spacing: 0.12em;
-  --evolution-brand-year-size: 20px;
-  --evolution-heading-color: #17365d;
-  --evolution-year-color: #0a246a;
-  --evolution-copy-color: #10263e;
-  --evolution-muted: #587086;
-  --evolution-kicker-spacing: 0.14em;
-  --evolution-heading-spacing: 0.2em;
-  --evolution-year-size: 48px;
-  --evolution-year-spacing: 0.08em;
-  --evolution-signal-width: 22px;
-  --evolution-signal-height: 3px;
-  --evolution-signal-gap: 2px;
-  --evolution-signal-on: #0a62aa;
-  --evolution-signal-off: #a9bfd2;
-  --evolution-signal-step: 180ms;
-  --evolution-signal-animation: era-signal-2000;
-  --evolution-loading-title-size: 20px;
-  --evolution-progress-height: 14px;
-  --evolution-progress-padding: 1px;
-  --evolution-progress-track: #ffffff;
-  --evolution-progress-fill: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.7) 50%, transparent 100%), linear-gradient(180deg, #8fc7f3 0%, #2f79b6 48%, #0a4f8a 100%);
-  --evolution-progress-repeat: no-repeat;
-  --evolution-progress-size: 28% 100%, 100% 100%;
-  --evolution-progress-animation: era-progress-2000;
-  --evolution-progress-duration: 1100ms;
-  --evolution-note-transform: uppercase;
-  --evolution-note-spacing: 0.08em;
+  /* --- Era-controlled visibility (§18.2) --- */
+  --toolbar-label-display: none; /* small icons, no labels */
+  --go-button-display: inline-block; /* Go button present in Era B */
+  --popup-blocker-display: flex; /* status bar popup-blocker count */
 }
 
 /* ------------------------------------------------------------------ *
@@ -387,22 +188,4 @@
   --icon-green: #008000;
   --icon-blue: #0000ff;
   --icon-yellow: #ffff00;
-
-  /* IE5/Windows 2000 toolbar image-list palette. The richer shade ramps let
-     the second SVG group read as 256-colour art without external assets. */
-  --icon2-blue-dark: #003366;
-  --icon2-blue: #3366cc;
-  --icon2-blue-light: #99ccff;
-  --icon2-red-dark: #990000;
-  --icon2-red: #dd3333;
-  --icon2-red-light: #ff9999;
-  --icon2-green-dark: #006633;
-  --icon2-green: #339966;
-  --icon2-green-light: #99ddaa;
-  --icon2-gold-dark: #996600;
-  --icon2-gold: #ffcc33;
-  --icon2-gold-light: #ffff99;
-  --icon2-steel-dark: #4d5d6c;
-  --icon2-steel-light: #d9e3ea;
-  --icon2-paper: #ffffff;
 }

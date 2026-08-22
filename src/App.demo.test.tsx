@@ -5,19 +5,17 @@
  * available in this environment either (no Chrome extension connected —
  * every step agent hit the same wall, see EngineProvider.dates.test.tsx's
  * own header), so this is the fallback the brief asks for: mount `<App/>`
- * inside a test-only harness, drive it with real DOM clicks/changes through
- * the retired Presenter driver and the actual pages (Mail, Offer, FactSheet,
+ * behind `?dev=1`, drive it with real DOM clicks/changes through the actual
+ * Presenter jump-to-date tool and the actual pages (Mail, Offer, FactSheet,
  * Money's sliders, Dialog's buttons, Popup's close button, DeathCard's
  * replay button) — not `engine.dispatch()` calls standing in for a click —
  * and assert what a human would see at each of §25.5's beats.
- * Presenter is deliberately imported by this test only: production App.tsx
- * has no import or render path for it, and a regression below proves the old
- * `?dev=1` URL no longer exposes the panel.
  *
- * ONE IMPORTANT LIMIT, stated up front: the retired test driver's "Jump to
- * date" control (`engine.jumpToMonth`) always replays from Jan 1996 with ZERO
+ * ONE IMPORTANT LIMIT, stated up front: the Presenter's "Jump to date"
+ * control (`engine.jumpToMonth`) always replays from Jan 1996 with ZERO
  * decisions (`ui/EngineProvider.tsx`'s `jumpToMonth` calls
- * `landOnMonth(month, new Map())`). It does NOT carry forward
+ * `landOnMonth(month, new Map())`) — exactly like the real presenter tool a
+ * live demo operator uses to skip boring months. It does NOT carry forward
  * decisions made at an earlier beat in THIS test file. So each beat below
  * is verified in isolation (which vehicle/dialog/popup fires at that date,
  * whether its page renders, whether its controls work) rather than as one
@@ -30,41 +28,16 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { App, AppShell } from './App';
+import { App } from './App';
 import { OFFER_PAGES } from './content/offerpages';
-import { Presenter } from './dev/Presenter';
-import { RouterProvider } from './chrome/router';
-import { EngineProvider } from './ui/EngineProvider';
-import { HOME_URL } from './pages/registry';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let container: HTMLDivElement | null = null;
 let root: Root | null = null;
 
-function TestHarness() {
-  return (
-    <EngineProvider>
-      <RouterProvider initialUrl={HOME_URL}>
-        <AppShell />
-        <Presenter open onClose={() => undefined} />
-      </RouterProvider>
-    </EngineProvider>
-  );
-}
-
 function mountApp() {
-  window.history.pushState({}, '', '/');
-  container = document.createElement('div');
-  document.body.appendChild(container);
-  root = createRoot(container);
-  act(() => {
-    root!.render(<TestHarness />);
-  });
-}
-
-function mountProductionApp(url: string) {
-  window.history.pushState({}, '', url);
+  window.history.pushState({}, '', '/?dev=1');
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -74,7 +47,9 @@ function mountProductionApp(url: string) {
 }
 
 beforeEach(() => {
-  window.history.pushState({}, '', '/');
+  // §25.4: presenter tools also unlock via "Help > About x5" — ?dev=1 is
+  // the direct route this file uses throughout.
+  window.history.pushState({}, '', '/?dev=1');
 });
 
 afterEach(() => {
@@ -127,12 +102,13 @@ function setControlledValue(el: HTMLInputElement | HTMLSelectElement, value: str
 
 function presenterMonthSelect(): HTMLSelectElement {
   const el = document.body.querySelector<HTMLSelectElement>('[aria-label="Jump to any month"]');
-  if (!el) throw new Error('test-driver month select not found — is TestHarness wired?');
+  if (!el) throw new Error('presenter month select not found — is ?dev=1 wired?');
   return el;
 }
 
-/** Drives the retired test driver's "Jump to date" control. It always lands
- * on /home because the driver's jumpTo() does that itself. */
+/** Drives the Presenter's own "Jump to date" control — exactly the button
+ * §25.4 describes ("skip to Mar 2000... without playing eleven minutes of
+ * 1997"). Always lands on /home (Presenter's jumpTo() does this itself). */
 function jumpToMonth(monthIndexValue: number) {
   setControlledValue(presenterMonthSelect(), String(monthIndexValue), 'change');
 }
@@ -162,37 +138,17 @@ function popups(): HTMLElement[] {
   return Array.from(document.body.querySelectorAll<HTMLElement>('.comet-popup'));
 }
 
-async function waitUntil(check: () => boolean, message: string, timeoutMs = 1500) {
-  const deadline = Date.now() + timeoutMs;
-  while (!check()) {
-    if (Date.now() >= deadline) throw new Error(`waitUntil timed out: ${message}`);
-    await act(async () => {
-      await new Promise((resolve) => window.setTimeout(resolve, 20));
-    });
-  }
-}
-
 /* ------------------------------------------------------------------ * */
 
 const APR_1996 = 3; // month 0 = Jan 1996
 const MAR_1997 = 14;
 const JUL_1997 = 18;
 const SEP_1997 = 20;
-const DEC_1997 = 23;
-const JAN_1998 = 24;
 const JUN_1999 = 41;
-const DEC_1999 = 47;
 const JAN_2000 = 48;
 const MAR_2000 = 50;
 
-describe('§25.5 — the demo path, beat by beat, driven through the real AppShell', () => {
-  it('does not expose retired Presenter Tools through the legacy ?dev=1 URL', () => {
-    mountProductionApp('/?dev=1');
-    expect(document.body.textContent).not.toContain('Presenter Tools');
-    expect(document.body.querySelector('.presenter')).toBeNull();
-    expect(document.body.querySelector('.notification-demo')).toBeNull();
-  });
-
+describe('§25.5 — the demo path, beat by beat, driven through the real <App/>', () => {
   it('boot: Back is greyed on the first page, and the chrome tells the truth about it (§19.3)', () => {
     mountApp();
     const backBtn = byText<HTMLButtonElement>(container!, 'button', 'Back');
@@ -215,133 +171,6 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
     expect(container!.querySelector('.comet-addressbar__url')?.textContent).toBe('http://www.bubble.net/home');
     // Back to index 0 — greyed again, exactly as it was at boot.
     expect(byText<HTMLButtonElement>(container!, 'button', 'Back')!.disabled).toBe(true);
-  });
-
-  it('restyles one functional chrome at Jan 1998 and Jan 2000 without changing its controls', () => {
-    mountApp();
-
-    const chromeSignature = () =>
-      Array.from(container!.querySelectorAll<HTMLButtonElement>('.comet-toolbar__btn')).map((button) => ({
-        label: button.querySelector('.comet-toolbar__label')?.textContent,
-        accessibleLabel: button.getAttribute('aria-label'),
-        icons: button.querySelectorAll('svg').length,
-        legacyArt: button.querySelectorAll('.comet-icon__legacy').length,
-        millenniumArt: button.querySelectorAll('.comet-icon__millennium').length,
-      }));
-
-    const initialChrome = chromeSignature();
-    expect(initialChrome.map((button) => button.accessibleLabel)).toEqual([
-      'Back',
-      'Forward',
-      'Stop',
-      'Refresh',
-      'Home',
-      'Search',
-      "Fav'ts",
-      'Mail',
-    ]);
-    expect(initialChrome.every((button) => button.icons === 1)).toBe(true);
-    expect(initialChrome.every((button) => button.legacyArt === 1)).toBe(true);
-    expect(initialChrome.every((button) => button.millenniumArt === 1)).toBe(true);
-    expect(document.documentElement.getAttribute('data-era')).toBe('a');
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1996');
-
-    jumpToMonth(JAN_1998);
-    expect(document.documentElement.getAttribute('data-era')).toBe('a');
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1998');
-    expect(chromeSignature()).toEqual(initialChrome);
-
-    jumpToMonth(JAN_2000);
-    expect(activeDialog()).toBeTruthy();
-    expect(document.documentElement.getAttribute('data-era')).toBe('b');
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('2000');
-    expect(chromeSignature()).toEqual(initialChrome);
-    resolveDialog('Go on');
-    expect(document.documentElement.getAttribute('data-era')).toBe('b');
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('2000');
-    expect(chromeSignature()).toEqual(initialChrome);
-
-    const eventInput = document.body.querySelector<HTMLInputElement>('[aria-label="Event id"]');
-    if (!eventInput) throw new Error('presenter event input not found');
-    setControlledValue(eventInput, 'ev.2002-01.era-switch', 'input');
-    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', 'Force'));
-    expect(activeDialog()?.textContent).toContain('That’s it. That’s the upgrade.');
-    expect(document.documentElement.getAttribute('data-era')).toBe('b');
-    resolveDialog('Continue');
-    expect(document.documentElement.getAttribute('data-era')).toBe('b');
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('2000');
-    expect(chromeSignature()).toEqual(initialChrome);
-
-    click(byText<HTMLButtonElement>(container!, '.comet-sidebar__item', 'INBOX'));
-    expect(container!.querySelector('.comet-addressbar__url')?.textContent).toBe('http://www.bubble.net/mail');
-    click(byText<HTMLButtonElement>(container!, '.comet-toolbar__btn', 'Home'));
-    expect(container!.querySelector('.comet-addressbar__url')?.textContent).toBe('http://www.bubble.net/home');
-  });
-
-  it('pauses continuous play at 1998 and 2000, loads, then applies each visual evolution', async () => {
-    mountApp();
-
-    // Test-driver jumps intentionally apply a milestone immediately; land one
-    // month before it, then let the real live clock cross the boundary.
-    jumpToMonth(DEC_1997);
-    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '20×'));
-    await waitUntil(
-      () => activeDialog()?.textContent?.includes('Welcome to the year 1998') === true,
-      'the Jan 1998 evolution dialog',
-    );
-
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1996');
-    expect(document.documentElement.getAttribute('data-ui-target')).toBe('1998');
-    expect(activeDialog()?.querySelector('.era-welcome-title')?.textContent).toContain('1998');
-    expect(activeDialog()?.querySelectorAll('.era-transition-signal')).toHaveLength(1);
-    resolveDialog('Continue');
-    expect(container!.querySelector('.era-loading-page')?.textContent).toContain('Loading the 1998 interface');
-    expect(container!.querySelector('.era-loading-brand')?.textContent).toContain('1998');
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1996');
-    expect(document.documentElement.getAttribute('data-ui-target')).toBe('1998');
-    const heldDate = container!.querySelector('.comet-nav__date')?.textContent;
-    await act(async () => {
-      await new Promise((resolve) => window.setTimeout(resolve, 300));
-    });
-    expect(container!.querySelector('.comet-nav__date')?.textContent).toBe(heldDate);
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1996');
-    await waitUntil(
-      () => document.documentElement.getAttribute('data-ui-year') === '1998',
-      'the 1998 interface to apply after loading',
-    );
-    expect(container!.querySelector('.era-loading-page')).toBeNull();
-    expect(document.documentElement.hasAttribute('data-ui-target')).toBe(false);
-    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '1×'));
-
-    jumpToMonth(DEC_1999);
-    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '20×'));
-    await waitUntil(
-      () => activeDialog()?.textContent?.includes('pay covers your life exactly') === true,
-      'the authored Jan 2000 year-turn dialog',
-    );
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1998');
-    resolveDialog('Go on');
-    await waitUntil(
-      () => activeDialog()?.textContent?.includes('Welcome to the year 2000') === true,
-      'the Jan 2000 evolution dialog after the year-turn message',
-    );
-
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1998');
-    expect(document.documentElement.getAttribute('data-ui-target')).toBe('2000');
-    expect(activeDialog()?.querySelector('.era-welcome-title')?.textContent).toContain('2000');
-    resolveDialog('Continue');
-    expect(container!.querySelector('.era-loading-page')?.textContent).toContain('Loading the 2000 interface');
-    expect(container!.querySelector('.era-loading-brand')?.textContent).toContain('2000');
-    expect(document.documentElement.getAttribute('data-ui-year')).toBe('1998');
-    expect(document.documentElement.getAttribute('data-ui-target')).toBe('2000');
-    await waitUntil(
-      () => document.documentElement.getAttribute('data-ui-year') === '2000',
-      'the 2000 interface to apply after loading',
-    );
-    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '1×'));
-    expect(container!.querySelector('.era-loading-page')).toBeNull();
-    expect(document.documentElement.hasAttribute('data-ui-target')).toBe(false);
-    expect(document.body.querySelector('[aria-label="Pause"]')).toBeTruthy();
   });
 
   it('1996 — the Northmoor mail, the fact sheet, accept, and a 100% allocation on /money', () => {
@@ -529,7 +358,7 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
     // (§6/§8.4) is already dead by Mar 2000 and so never reaches Nov 2000
     // alive; jumping straight there just lands on the death card, same as
     // the fallback sweep below finds for every date past the crash. The
-    // retired test driver's "Force any event" control checks a
+    // presenter's "Force any event" tool is the one built for checking a
     // single event's channel/content in isolation (EngineProvider.tsx's
     // `forceEvent`, exercised the same way in EngineProvider.dates.test.tsx)
     // — this fires the real Nov 2000 script event into its real DLG
