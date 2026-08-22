@@ -5,8 +5,9 @@
  *
  * §19.3: "Chrome must never lie about state" — this component only ever
  * displays what it is told; the truthfulness is the caller's job (Step 13+).
- * The popup-blocker segment is always in the DOM; `--popup-blocker-display`
- * controls visibility so this file never asks which milestone it is in.
+ * The popup-blocker and connection-tray elements are always in the DOM;
+ * root visibility tokens expose later chrome without this file asking which
+ * milestone it is in.
  */
 import type { StatusBarProps } from './Chrome.types';
 
@@ -33,7 +34,10 @@ export function StatusBar({
 
   return (
     <div className="chrome comet-statusbar window-face">
-      <div className="sunken-field comet-statusbar__state">{loadStateText(loadState)}</div>
+      <div className="sunken-field comet-statusbar__state">
+        <span className="comet-statusbar__state-light" aria-hidden="true" />
+        <span className="comet-statusbar__state-text">{loadStateText(loadState)}</span>
+      </div>
       <div
         className="sunken-field comet-statusbar__progress"
         role="progressbar"
@@ -45,6 +49,15 @@ export function StatusBar({
       </div>
       <div className="sunken-field comet-statusbar__popups">
         Popups blocked: {popupsBlockedCount}
+      </div>
+      <div className="comet-statusbar__connection" aria-hidden="true">
+        <span className="comet-statusbar__connection-light" />
+        <span className="comet-statusbar__connection-label">ONLINE</span>
+        <span className="comet-statusbar__signal">
+          <span />
+          <span />
+          <span />
+        </span>
       </div>
       <div className="sunken-field comet-statusbar__zone">{zoneLabel}</div>
     </div>

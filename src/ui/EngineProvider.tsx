@@ -242,8 +242,8 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   // §20.1: a blocking dialog freezes time; a pending forced-sale choice
   // does too (it's the same "time paused until a choice is made" contract,
   // §12.3). The Jan 1998/2000 interface evolution owns a separate hold so
-  // the player's Pause button cannot release its loading screen early; the
-  // run ending freezes the clock for good.
+  // the player's Pause button cannot release its prompt, installer or final
+  // welcome early; the run ending freezes the clock for good.
   const frozen =
     paused || evolutionPaused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
   const timeRate = frozen ? 0 : rateOverride;

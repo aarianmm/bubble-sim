@@ -30,7 +30,7 @@ function sampleDialog(month: number): DialogItem {
   return {
     id: 'demo-dialog',
     eventId: 'demo',
-    title: 'Comet Navigator',
+    title: 'Bubble Navigator',
     // Authored copy, so the demo shows the real thing rather than lorem.
     contentId: 'dlg.2000-03.shock.boiler',
     cls: 'shock',

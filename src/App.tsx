@@ -22,7 +22,11 @@ import { noop } from './chrome/Chrome.types';
 import { EngineProvider } from './ui/EngineProvider';
 import { useEngine } from './ui/engine';
 import { Notifications } from './ui/Notifications';
-import { EraLoadingPage, EraWelcomeDialog } from './chrome/EraTransition';
+import {
+  EraLoadingPage,
+  EraUpdateCompletePage,
+  EraWelcomeDialog,
+} from './chrome/EraTransition';
 import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
 import { monthIndex, type MonthIndex } from './sim/month';
 
@@ -33,7 +37,7 @@ type VisualMilestone = {
 
 type EvolutionState = {
   target: VisualMilestone;
-  phase: 'queued' | 'welcome' | 'loading';
+  phase: 'queued' | 'welcome' | 'loading' | 'complete';
 };
 
 /** Owner-directed visual progression: presentation changes, game state does
@@ -154,16 +158,20 @@ export function AppShell() {
     if (!evolutionLoadStartedRef.current) return;
 
     setAppliedMilestone(evolution.target);
-    setEvolution(null);
+    setEvolution({ ...evolution, phase: 'complete' });
     evolutionLoadStartedRef.current = false;
-    engine.setEvolutionPaused(false);
-  }, [engine.setEvolutionPaused, evolution, router.loadState.kind]);
+  }, [evolution, router.loadState.kind]);
 
   function beginEvolutionLoad() {
     if (!evolution) return;
     evolutionLoadStartedRef.current = false;
     setEvolution({ ...evolution, phase: 'loading' });
     router.refresh();
+  }
+
+  function finishEvolution() {
+    setEvolution(null);
+    engine.setEvolutionPaused(false);
   }
 
   function newRun() {
@@ -182,7 +190,7 @@ export function AppShell() {
   }, [engine.state.status, router.url]);
 
   function handleAbout() {
-    window.alert('BUBBLE — Comet Navigator\n\nA product of the late 1990s.');
+    window.alert('BUBBLE — Bubble Navigator\n\nA product of the late 1990s.');
   }
 
   const route = resolveRoute(router.url);
@@ -250,17 +258,9 @@ export function AppShell() {
           yearSpineSlot: <YearSpine />,
         }}
       >
-        {evolution?.phase === 'loading' ? (
-          <EraLoadingPage
-            year={evolution.target.year as '1998' | '2000'}
-            loadState={router.loadState}
-            progressPct={router.progressPct}
-          />
-        ) : (
-          <PageComponent key={router.contentKey} />
-        )}
+        <PageComponent key={router.contentKey} />
       </Window>
-      {evolution?.phase !== 'loading' && <Notifications />}
+      {evolution?.phase !== 'loading' && evolution?.phase !== 'complete' && <Notifications />}
       {evolution?.phase === 'welcome' && (
         <EraWelcomeDialog
           year={evolution.target.year as '1998' | '2000'}
@@ -268,7 +268,26 @@ export function AppShell() {
           onContinue={beginEvolutionLoad}
         />
       )}
-      {evolution?.phase === 'loading' && <div className="era-loading-input-blocker" aria-hidden="true" />}
+      {evolution?.phase === 'loading' && (
+        <div className="era-system-overlay">
+          <EraLoadingPage
+            year={evolution.target.year as '1998' | '2000'}
+            loadState={router.loadState}
+            progressPct={router.progressPct}
+          />
+        </div>
+      )}
+      {evolution?.phase === 'complete' && (
+        <div className="era-system-overlay">
+          <EraUpdateCompletePage
+            year={evolution.target.year as '1998' | '2000'}
+            onEnter={finishEvolution}
+          />
+        </div>
+      )}
+      {(evolution?.phase === 'loading' || evolution?.phase === 'complete') && (
+        <div className="era-loading-input-blocker" aria-hidden="true" />
+      )}
     </div>
   );
 }

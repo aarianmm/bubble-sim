@@ -278,7 +278,7 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
     expect(container!.querySelector('.comet-addressbar__url')?.textContent).toBe('http://www.bubble.net/home');
   });
 
-  it('pauses continuous play at 1998 and 2000, loads, then applies each visual evolution', async () => {
+  it('pauses at 1998 and 2000 for a mandatory update, full-screen install, and updated welcome', async () => {
     mountApp();
 
     // Test-driver jumps intentionally apply a milestone immediately; land one
@@ -286,17 +286,22 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
     jumpToMonth(DEC_1997);
     click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '20×'));
     await waitUntil(
-      () => activeDialog()?.textContent?.includes('Welcome to the year 1998') === true,
-      'the Jan 1998 evolution dialog',
+      () => activeDialog()?.textContent?.includes('entering the year 1998') === true,
+      'the Jan 1998 system-update dialog',
     );
 
     expect(document.documentElement.getAttribute('data-ui-year')).toBe('1996');
     expect(document.documentElement.getAttribute('data-ui-target')).toBe('1998');
-    expect(activeDialog()?.querySelector('.era-welcome-title')?.textContent).toContain('1998');
+    expect(activeDialog()?.textContent).toContain('Please update the system');
+    expect(activeDialog()?.textContent).toContain('Bubble Navigator 1996');
+    expect(activeDialog()?.textContent).toContain('Bubble Navigator 1998');
+    expect(activeDialog()?.textContent).not.toContain('Comet');
     expect(activeDialog()?.querySelectorAll('.era-transition-signal')).toHaveLength(1);
-    resolveDialog('Continue');
-    expect(container!.querySelector('.era-loading-page')?.textContent).toContain('Loading the 1998 interface');
-    expect(container!.querySelector('.era-loading-brand')?.textContent).toContain('1998');
+    resolveDialog('Update the system');
+    expect(container!.querySelector('.era-system-overlay')).toBeTruthy();
+    expect(container!.querySelector('.era-loading-page')?.textContent).toContain('Updating your system for 1998');
+    expect(container!.querySelector('.era-loading-brand')?.textContent).toContain('1998 EDITION');
+    expect(container!.querySelector('.era-loading-steps')?.textContent).toContain('Installing interface');
     expect(document.documentElement.getAttribute('data-ui-year')).toBe('1996');
     expect(document.documentElement.getAttribute('data-ui-target')).toBe('1998');
     const heldDate = container!.querySelector('.comet-nav__date')?.textContent;
@@ -310,6 +315,11 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
       'the 1998 interface to apply after loading',
     );
     expect(container!.querySelector('.era-loading-page')).toBeNull();
+    expect(container!.querySelector('.era-update-complete-page')?.textContent).toContain('Welcome to 1998');
+    expect(container!.querySelector('.era-update-complete-page')?.textContent).toContain('interface is installed');
+    expect(document.documentElement.getAttribute('data-ui-target')).toBe('1998');
+    click(byText<HTMLButtonElement>(container!, 'button', 'Enter the updated system'));
+    expect(container!.querySelector('.era-update-complete-page')).toBeNull();
     expect(document.documentElement.hasAttribute('data-ui-target')).toBe(false);
     click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '1×'));
 
@@ -322,25 +332,28 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
     expect(document.documentElement.getAttribute('data-ui-year')).toBe('1998');
     resolveDialog('Go on');
     await waitUntil(
-      () => activeDialog()?.textContent?.includes('Welcome to the year 2000') === true,
-      'the Jan 2000 evolution dialog after the year-turn message',
+      () => activeDialog()?.textContent?.includes('entering the year 2000') === true,
+      'the Jan 2000 system-update dialog after the year-turn message',
     );
 
     expect(document.documentElement.getAttribute('data-ui-year')).toBe('1998');
     expect(document.documentElement.getAttribute('data-ui-target')).toBe('2000');
-    expect(activeDialog()?.querySelector('.era-welcome-title')?.textContent).toContain('2000');
-    resolveDialog('Continue');
-    expect(container!.querySelector('.era-loading-page')?.textContent).toContain('Loading the 2000 interface');
-    expect(container!.querySelector('.era-loading-brand')?.textContent).toContain('2000');
+    expect(activeDialog()?.textContent).toContain('Please update the system');
+    resolveDialog('Update the system');
+    expect(container!.querySelector('.era-system-overlay')).toBeTruthy();
+    expect(container!.querySelector('.era-loading-page')?.textContent).toContain('Updating your system for 2000');
+    expect(container!.querySelector('.era-loading-brand')?.textContent).toContain('2000 EDITION');
     expect(document.documentElement.getAttribute('data-ui-year')).toBe('1998');
     expect(document.documentElement.getAttribute('data-ui-target')).toBe('2000');
     await waitUntil(
       () => document.documentElement.getAttribute('data-ui-year') === '2000',
       'the 2000 interface to apply after loading',
     );
-    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '1×'));
     expect(container!.querySelector('.era-loading-page')).toBeNull();
+    expect(container!.querySelector('.era-update-complete-page')?.textContent).toContain('Welcome to 2000');
+    click(byText<HTMLButtonElement>(container!, 'button', 'Enter the updated system'));
     expect(document.documentElement.hasAttribute('data-ui-target')).toBe(false);
+    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', '1×'));
     expect(document.body.querySelector('[aria-label="Pause"]')).toBeTruthy();
   });
 

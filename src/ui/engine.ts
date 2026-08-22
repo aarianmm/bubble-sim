@@ -34,8 +34,8 @@ export interface Engine {
 
   dispatch(decision: Decision): void;
   setPaused(paused: boolean): void;
-  /** Presentation-owned hold for the Jan 1998/2000 welcome + loading beat.
-   * Independent of the player's Pause toggle, which cannot release it. */
+  /** Presentation-owned hold for the Jan 1998/2000 prompt, install and
+   * completed welcome. Independent of Pause, which cannot release it. */
   setEvolutionPaused(paused: boolean): void;
   /** Hold-to-fast-forward sets RATE_FAST on press and RATE_NORMAL on release. */
   setTimeRate(rate: number): void;

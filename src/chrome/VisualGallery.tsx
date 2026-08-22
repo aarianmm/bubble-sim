@@ -8,14 +8,16 @@
  */
 import { useEffect, useState } from 'react';
 import { Window } from './Window';
-import { EraLoadingPage, EraWelcomeDialog } from './EraTransition';
+import { EraLoadingPage, EraUpdateCompletePage, EraWelcomeDialog } from './EraTransition';
 import { monthIndex } from '../sim/month';
 import './gallery.css';
 
 type TransitionPreview = {
   year: '1998' | '2000';
-  phase: 'welcome' | 'loading';
+  phase: 'welcome' | 'loading' | 'complete';
 } | null;
+
+const SAMPLE_SPINE_YEARS = [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006];
 
 export function VisualGallery() {
   const [year, setYear] = useState<'1996' | '1998' | '2000'>('1996');
@@ -53,7 +55,7 @@ export function VisualGallery() {
           1998 refinement
         </button>
         <button type="button" className="bevel-out" onClick={() => setYear('2000')}>
-          2000 refinement
+          2000 Aero shell
         </button>
         <span className="gallery-controls__divider" aria-hidden="true" />
         <button
@@ -75,6 +77,15 @@ export function VisualGallery() {
             Close preview
           </button>
         )}
+        {transitionPreview?.phase === 'loading' && (
+          <button
+            type="button"
+            className="bevel-out"
+            onClick={() => setTransitionPreview({ ...transitionPreview, phase: 'complete' })}
+          >
+            Show update complete
+          </button>
+        )}
         <span>current visual milestone: {year}</span>
       </div>
 
@@ -92,6 +103,15 @@ export function VisualGallery() {
             year={transitionPreview.year}
             loadState={{ kind: 'transferring' }}
             progressPct={64}
+          />
+        </div>
+      )}
+
+      {transitionPreview?.phase === 'complete' && (
+        <div className="gallery-transition-stage">
+          <EraUpdateCompletePage
+            year={transitionPreview.year}
+            onEnter={() => setTransitionPreview(null)}
           />
         </div>
       )}
@@ -132,7 +152,7 @@ export function VisualGallery() {
         <h2 className="chrome">Full window (§18.1)</h2>
         <div className="gallery-window-frame">
           <Window
-            titleBar={{ title: 'BUBBLE — Comet Navigator' }}
+            titleBar={{ title: 'BUBBLE — Bubble Navigator' }}
             menuBar={{ moneyBaseIs1996: false, soundsOn: true }}
             toolbar={{ unreadCount: 3 }}
             addressBar={{
@@ -140,7 +160,60 @@ export function VisualGallery() {
               visitedUrls: ['http://www.bubble.net/home', 'http://www.bubble.net/mail'],
             }}
             statusBar={{ loadState: { kind: 'done' }, progressPct: 0, popupsBlockedCount: 2 }}
-            sidebar={{ active: 'home', unreadCount: 3 }}
+            sidebar={{
+              active: 'home',
+              unreadCount: 3,
+              dateSlot: (
+                <div className="chrome sunken-field comet-nav__date">JAN {year}</div>
+              ),
+              timeControlsSlot: (
+                <div className="chrome comet-nav__time-controls">
+                  <button type="button" className="bevel-out comet-nav__time-btn">
+                    ▶▶
+                  </button>
+                  <button type="button" className="bevel-out comet-nav__time-btn">
+                    ⏸
+                  </button>
+                </div>
+              ),
+              yearSpineSlot: (
+                <ul className="chrome comet-nav__spine" aria-label="Year progress preview">
+                  {SAMPLE_SPINE_YEARS.map((sampleYear, i) => {
+                    const currentYear = Number(year);
+                    const isCurrent = sampleYear === currentYear;
+                    const isFuture = sampleYear > currentYear;
+                    const isPast = sampleYear < currentYear;
+                    return (
+                      <li
+                        key={sampleYear}
+                        aria-current={isCurrent ? 'date' : undefined}
+                        aria-label={`${sampleYear}: ${isCurrent ? 'current year' : isFuture ? 'upcoming' : 'completed'}`}
+                        className={
+                          'comet-nav__spine-row' +
+                          (isCurrent ? ' comet-nav__spine-row--current' : '') +
+                          (isPast ? ' comet-nav__spine-row--past' : '') +
+                          (isFuture ? ' comet-nav__spine-row--future' : '')
+                        }
+                      >
+                        <span className="comet-nav__spine-node" aria-hidden="true" />
+                        <span className="comet-nav__spine-year">{sampleYear}</span>
+                        <span className="comet-nav__spine-bar" aria-hidden="true">
+                          {'▓'.repeat(i + 1)}
+                        </span>
+                        {isCurrent && (
+                          <span className="comet-nav__spine-marker" aria-hidden="true">
+                            ◄
+                          </span>
+                        )}
+                        <span className="comet-nav__spine-status" aria-hidden="true">
+                          {isCurrent ? 'NOW' : isPast ? '✓' : ''}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ),
+            }}
           >
             <div className="chrome gallery-placeholder-page">
               <p>Content area placeholder — pages mount here (Step 16+).</p>

@@ -1,11 +1,27 @@
-/** Milestone welcome/loading surfaces. Both targets keep identical markup;
+/** Milestone update surfaces. Both targets keep identical markup;
  * `data-ui-target` tokens paint the destination before App.tsx installs it.
- * Motion is deliberately discrete and tiny — the owner-requested evolution
- * beat documented under BUILD STATUS deviation 5, never modern easing. */
+ * The update uses only discrete motion and stops under reduced motion. */
+
+.comet-dialog-backdrop:has(+ .comet-dialog-overlay .era-welcome-copy) {
+  background: var(--evolution-page-surface);
+  opacity: var(--evolution-backdrop-opacity);
+}
 
 .comet-dialog:has(.era-welcome-copy) {
   width: var(--evolution-dialog-width);
+  min-height: var(--evolution-dialog-min-height);
+  overflow: hidden;
   background: var(--evolution-welcome-surface);
+  border-radius: var(--evolution-dialog-radius);
+  box-shadow: var(--evolution-dialog-shadow);
+}
+
+.comet-dialog:has(.era-welcome-copy) .comet-dialog__titlebar {
+  min-height: var(--evolution-brand-height);
+  background: var(--evolution-brand-surface);
+  border-top-left-radius: var(--evolution-dialog-radius);
+  border-top-right-radius: var(--evolution-dialog-radius);
+  box-shadow: var(--evolution-titlebar-shadow);
 }
 
 .comet-dialog__body:has(.era-welcome-copy) {
@@ -16,12 +32,85 @@
   display: none;
 }
 
+.comet-dialog:has(.era-welcome-copy) .comet-dialog__buttons {
+  padding: 0 28px 24px;
+}
+
+.comet-dialog:has(.era-welcome-copy) .comet-dialog__btn {
+  --control-surface: var(--evolution-dialog-button-surface);
+  min-width: 168px;
+  height: 31px;
+  color: var(--evolution-dialog-button-text);
+  font-weight: 700;
+}
+
 .era-welcome-copy {
   display: flex;
   flex-direction: column;
-  align-items: center;
   width: 100%;
-  text-align: center;
+}
+
+.era-welcome-hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 24px;
+  background: var(--evolution-hero-surface);
+  border: 1px solid var(--evolution-hero-border);
+  border-radius: var(--evolution-panel-radius);
+  box-shadow: inset 0 1px 0 var(--hilite);
+}
+
+.era-update-orb,
+.era-loading-orb {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--evolution-orb-size);
+  height: var(--evolution-orb-size);
+  overflow: hidden;
+  background: var(--evolution-orb-surface);
+  border: 1px solid var(--evolution-orb-border);
+  border-radius: 50%;
+  box-shadow: var(--evolution-orb-shadow);
+}
+
+.era-update-orb span,
+.era-loading-orb span {
+  position: absolute;
+  width: 31%;
+  height: 31%;
+  background: var(--evolution-orb-tile);
+  border-radius: var(--evolution-panel-radius);
+  box-shadow: inset 0 1px 0 var(--hilite);
+}
+
+.era-update-orb span:nth-child(1),
+.era-loading-orb span:nth-child(1) {
+  top: 17%;
+  left: 17%;
+}
+
+.era-update-orb span:nth-child(2),
+.era-loading-orb span:nth-child(2) {
+  top: 17%;
+  right: 17%;
+}
+
+.era-update-orb span:nth-child(3),
+.era-loading-orb span:nth-child(3) {
+  bottom: 17%;
+  left: 17%;
+}
+
+.era-update-orb span:nth-child(4),
+.era-loading-orb span:nth-child(4) {
+  right: 17%;
+  bottom: 17%;
+}
+
+.era-welcome-message {
+  min-width: 0;
 }
 
 .era-welcome-kicker {
@@ -29,28 +118,94 @@
   color: var(--evolution-muted);
   font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 700;
   letter-spacing: var(--evolution-kicker-spacing);
 }
 
 .era-welcome-title {
   margin: 0;
-  color: var(--evolution-year-color);
-  line-height: 1;
-}
-
-.era-welcome-title span {
-  display: block;
-  margin-bottom: 3px;
   color: var(--evolution-heading-color);
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: var(--evolution-heading-spacing);
+  font-size: var(--evolution-loading-title-size);
+  line-height: 1.18;
 }
 
 .era-welcome-title strong {
-  display: block;
+  color: var(--evolution-year-color);
   font-size: var(--evolution-year-size);
   letter-spacing: var(--evolution-year-spacing);
+}
+
+.era-welcome-note {
+  margin: 10px 0 0;
+  color: var(--evolution-copy-color);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.era-update-path {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.era-update-path__card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--evolution-path-surface);
+  border: 1px solid var(--evolution-path-border);
+  border-radius: var(--evolution-panel-radius);
+}
+
+.era-update-path__card--new {
+  background: var(--evolution-path-new-surface);
+}
+
+.era-update-path__card span {
+  color: var(--evolution-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: var(--evolution-note-spacing);
+}
+
+.era-update-path__card strong {
+  color: var(--evolution-heading-color);
+  font-size: 12px;
+}
+
+.era-update-path__arrow {
+  color: var(--evolution-path-arrow);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.era-update-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.era-update-features li {
+  position: relative;
+  padding: 8px 8px 8px 23px;
+  color: var(--evolution-copy-color);
+  font-size: 10px;
+}
+
+.era-update-features li::before {
+  content: '✓';
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  color: var(--evolution-feature-marker);
+  font-weight: 700;
 }
 
 .era-transition-signal {
@@ -58,7 +213,7 @@
   justify-content: center;
   gap: var(--evolution-signal-gap);
   min-height: 10px;
-  margin: 12px 0 10px;
+  margin-top: 12px;
 }
 
 .era-transition-signal span {
@@ -83,27 +238,76 @@
   animation-delay: calc(var(--evolution-signal-step) * 3);
 }
 
-.era-welcome-note {
-  margin: 0;
-  color: var(--evolution-copy-color);
-  font-size: 11px;
+.era-system-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8950;
+  overflow: hidden;
 }
 
-.era-loading-page {
+.era-loading-page,
+.era-update-complete-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
   min-height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
+  overflow: hidden;
   background: var(--evolution-page-surface);
   color: var(--evolution-copy-color);
 }
 
+.era-loading-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.era-loading-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.era-loading-atmosphere span {
+  position: absolute;
+  display: block;
+  background: var(--evolution-atmosphere-surface);
+  border: 1px solid var(--evolution-atmosphere-border);
+  border-radius: 50%;
+  box-shadow: var(--evolution-atmosphere-shadow);
+}
+
+.era-loading-atmosphere span:nth-child(1) {
+  top: -90px;
+  right: 8%;
+  width: 260px;
+  height: 260px;
+}
+
+.era-loading-atmosphere span:nth-child(2) {
+  bottom: -120px;
+  left: 5%;
+  width: 340px;
+  height: 340px;
+}
+
+.era-loading-atmosphere span:nth-child(3) {
+  top: 18%;
+  left: 15%;
+  width: 72px;
+  height: 72px;
+}
+
 .era-loading-panel {
+  --control-surface: var(--evolution-loading-surface);
+  position: relative;
+  z-index: 1;
   width: min(var(--evolution-loading-width), 100%);
   padding: 0;
   overflow: hidden;
-  background: var(--evolution-loading-surface);
+  border-radius: var(--evolution-dialog-radius);
+  box-shadow: var(--evolution-loading-panel-shadow);
 }
 
 .era-loading-brand {
@@ -111,9 +315,10 @@
   align-items: center;
   justify-content: space-between;
   min-height: var(--evolution-brand-height);
-  padding: 0 16px;
+  padding: 0 18px;
   background: var(--evolution-brand-surface);
   color: var(--evolution-brand-color);
+  box-shadow: var(--evolution-titlebar-shadow);
 }
 
 .era-loading-brand__name {
@@ -130,16 +335,30 @@
   padding: var(--evolution-loading-padding);
 }
 
+.era-loading-heading {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.era-loading-orb {
+  --evolution-orb-size: 76px;
+}
+
+.era-loading-heading > div:last-child {
+  min-width: 0;
+}
+
 .era-loading-kicker {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
+  color: var(--evolution-muted);
   font-family: var(--font-mono);
   font-size: 10px;
-  color: var(--evolution-muted);
   letter-spacing: var(--evolution-kicker-spacing);
 }
 
 .era-loading-panel h1 {
-  margin: 0 0 18px;
+  margin: 0;
   color: var(--evolution-heading-color);
   font-size: var(--evolution-loading-title-size);
   font-weight: 400;
@@ -149,11 +368,62 @@
   color: var(--evolution-year-color);
 }
 
+.era-loading-description {
+  margin: 7px 0 0;
+  color: var(--evolution-loading-description);
+  font-size: 11px;
+}
+
+.era-loading-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 24px 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.era-loading-steps li {
+  position: relative;
+  padding: 8px 8px 8px 26px;
+  background: var(--evolution-step-surface);
+  border-radius: var(--evolution-panel-radius);
+  color: var(--evolution-muted);
+  font-size: 10px;
+}
+
+.era-loading-steps li::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  width: 8px;
+  height: 8px;
+  background: var(--evolution-signal-off);
+  border-radius: 50%;
+}
+
+.era-loading-steps .era-loading-step--active {
+  color: var(--evolution-copy-color);
+  font-weight: 700;
+}
+
+.era-loading-steps .era-loading-step--active::before {
+  background: var(--evolution-step-active);
+  box-shadow: var(--evolution-step-active-shadow);
+}
+
+.era-loading-steps .era-loading-step--done::before {
+  background: var(--evolution-step-done);
+}
+
 .era-loading-progress {
+  --sunken-surface: var(--evolution-progress-track);
   width: 100%;
   height: var(--evolution-progress-height);
   padding: var(--evolution-progress-padding);
-  background: var(--evolution-progress-track);
+  border-radius: var(--evolution-panel-radius);
+  box-shadow: var(--evolution-progress-shadow);
 }
 
 .era-loading-progress__fill {
@@ -163,6 +433,8 @@
   background: var(--evolution-progress-fill);
   background-repeat: var(--evolution-progress-repeat);
   background-size: var(--evolution-progress-size);
+  border-radius: var(--evolution-panel-radius);
+  box-shadow: inset 0 1px 0 var(--hilite);
   animation-name: var(--evolution-progress-animation);
   animation-duration: var(--evolution-progress-duration);
   animation-timing-function: steps(8, end);
@@ -177,17 +449,123 @@
   margin-top: 10px;
 }
 
-.era-loading-state {
+.era-loading-state,
+.era-loading-percent,
+.era-loading-note {
   margin: 0;
+}
+
+.era-loading-state,
+.era-loading-percent {
   font-weight: 700;
 }
 
+.era-loading-percent {
+  color: var(--evolution-year-color);
+  font-family: var(--font-mono);
+}
+
 .era-loading-note {
-  margin: 0;
+  margin-top: 16px;
   color: var(--evolution-muted);
   font-size: 10px;
+  text-align: center;
   text-transform: var(--evolution-note-transform);
   letter-spacing: var(--evolution-note-spacing);
+}
+
+.era-update-complete-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+}
+
+.era-update-complete-panel {
+  position: relative;
+  z-index: 1;
+  width: min(var(--evolution-loading-width), 100%);
+  padding: 38px 42px 34px;
+  background: var(--evolution-complete-surface);
+  border: 1px solid var(--evolution-complete-border);
+  border-radius: var(--evolution-dialog-radius);
+  box-shadow: var(--evolution-complete-shadow);
+}
+
+.era-update-complete-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 15px;
+  background: var(--evolution-complete-badge-surface);
+  border-radius: 50%;
+  box-shadow: var(--evolution-orb-shadow);
+  color: var(--evolution-complete-badge-text);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.era-update-complete-panel h1 {
+  margin: 0;
+  color: var(--evolution-heading-color);
+  font-size: var(--evolution-year-size);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.era-update-complete-panel h1 strong {
+  color: var(--evolution-year-color);
+}
+
+.era-update-complete-copy {
+  margin: 13px 0 0;
+  color: var(--evolution-copy-color);
+  font-size: 12px;
+}
+
+.era-update-complete-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 24px 0;
+}
+
+.era-update-complete-features > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 14px 8px;
+  background: var(--evolution-complete-card-surface);
+  border: 1px solid var(--evolution-complete-card-border);
+  border-radius: var(--evolution-panel-radius);
+}
+
+.era-update-complete-features span {
+  color: var(--evolution-complete-icon);
+  font-size: 22px;
+}
+
+.era-update-complete-features strong {
+  color: var(--evolution-heading-color);
+  font-size: 11px;
+}
+
+.era-update-complete-features small {
+  color: var(--evolution-muted);
+  font-size: 9px;
+}
+
+.era-update-complete-button {
+  --control-surface: var(--evolution-complete-button-surface);
+  min-width: 210px;
+  height: 34px;
+  color: var(--evolution-complete-button-text);
+  font-weight: 700;
 }
 
 @keyframes era-signal-1998 {
@@ -246,11 +624,12 @@
   }
 }
 
-/* The loading page stays visible while this transparent layer prevents any
- * chrome control from resuming or navigating the paused game mid-install. */
+/* The visual overlay sits above this transparent layer. It prevents any
+ * chrome control from navigating the paused game mid-install or before the
+ * player enters the completed interface. */
 .era-loading-input-blocker {
   position: fixed;
   inset: 0;
-  z-index: 8900;
+  z-index: 8940;
   cursor: wait;
 }

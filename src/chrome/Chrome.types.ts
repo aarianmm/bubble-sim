@@ -41,7 +41,7 @@ export const noop = (): void => {};
  * ------------------------------------------------------------------ */
 
 export interface TitleBarProps {
-  /** Full title bar text, e.g. "BUBBLE — Comet Navigator" or a page title. */
+  /** Full title bar text, e.g. "BUBBLE — Bubble Navigator" or a page title. */
   title: string;
   /** Clicking ✕ prompts "Are you sure you want to leave?" (§18.1); this
    * fires only after the player confirms. */

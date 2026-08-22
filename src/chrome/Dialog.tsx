@@ -45,7 +45,7 @@ export interface DialogProps {
    */
   bodyOverride?: ReactNode;
   /** One-off presentation beats may name themselves; authored simulation
-   * dialogs retain the established Comet Navigator title by default. */
+   * dialogs retain the established Bubble Navigator title by default. */
   titleOverride?: string;
 }
 
@@ -96,7 +96,7 @@ export function Dialog({ dialog, onResolve, bodyOverride, titleOverride }: Dialo
               ⚠
             </span>
             <span id={`${dialog.id}-title`} className="comet-dialog__title">
-              {titleOverride ?? 'Comet Navigator'}
+              {titleOverride ?? 'Bubble Navigator'}
             </span>
             <button
               type="button"

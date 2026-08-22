@@ -99,7 +99,7 @@ export function MenuBar({
     {
       label: 'Help',
       items: [
-        { kind: 'item', label: 'About Comet Navigator...', onSelect: onAbout },
+        { kind: 'item', label: 'About Bubble Navigator...', onSelect: onAbout },
         { kind: 'item', label: 'This is not financial advice', onSelect: onDisclaimer },
         { kind: 'separator' },
         { kind: 'item', label: 'Contents and Index', disabled: true },

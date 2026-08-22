@@ -16,6 +16,7 @@
  * ------------------------------------------------------------------ */
 
 .comet-window {
+  position: relative;
   display: grid;
   grid-template-rows:
     var(--titlebar-height)
@@ -34,6 +35,7 @@
   min-height: var(--min-viewport-height);
   overflow: hidden;
   border-radius: var(--radius-title);
+  box-shadow: var(--window-shell-shadow);
 }
 
 /* ------------------------------------------------------------------ *
@@ -41,18 +43,53 @@
  * ------------------------------------------------------------------ */
 
 .comet-titlebar {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--titlebar-gap);
   height: var(--titlebar-height);
-  padding: 0 4px;
+  padding: var(--titlebar-padding);
   background: var(--title);
   color: var(--title-text);
   border-top-left-radius: var(--radius-title);
   border-top-right-radius: var(--radius-title);
+  box-shadow: var(--titlebar-shadow);
+}
+
+.comet-titlebar::before {
+  content: '';
+  display: var(--chrome-decoration-display);
+  position: absolute;
+  inset: 1px 2px auto;
+  height: var(--titlebar-gloss-height);
+  border-radius: var(--titlebar-gloss-radius);
+  background: var(--titlebar-gloss-surface);
+  pointer-events: none;
+}
+
+.comet-titlebar::after {
+  content: var(--titlebar-era-label);
+  display: var(--titlebar-era-display);
+  position: absolute;
+  right: var(--titlebar-era-right);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: var(--titlebar-era-padding);
+  background: var(--titlebar-era-surface);
+  border: 1px solid var(--titlebar-era-border);
+  border-radius: var(--titlebar-era-radius);
+  box-shadow: var(--titlebar-era-shadow);
+  color: var(--titlebar-era-text);
+  font-size: var(--titlebar-era-font-size);
+  font-weight: 700;
+  letter-spacing: var(--titlebar-era-spacing);
+  line-height: 1;
+  pointer-events: none;
 }
 
 .comet-titlebar__icon {
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
   width: 14px;
   height: 14px;
@@ -66,25 +103,31 @@
 }
 
 .comet-titlebar__title {
+  position: relative;
+  z-index: 1;
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding-right: var(--titlebar-title-end-padding);
   font-weight: 700;
   color: var(--title-text);
   text-shadow: 0 1px 1px var(--title-text-shadow);
 }
 
 .comet-titlebar__controls {
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
   display: flex;
   gap: 2px;
 }
 
 .comet-titlebar__btn {
-  width: 18px;
-  height: 15px;
+  --control-surface: var(--title-control-surface);
+  width: var(--title-control-width);
+  height: var(--title-control-height);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -116,9 +159,39 @@
   display: flex;
   align-items: center;
   height: var(--menubar-height);
-  padding: 0 2px;
+  gap: var(--menubar-gap);
+  padding: var(--menubar-padding);
   background: var(--menubar-surface);
   border-bottom: 1px solid var(--chrome-rule);
+  box-shadow: var(--menubar-shadow);
+}
+
+.comet-menubar::before {
+  content: '';
+  display: var(--chrome-decoration-display);
+  flex: 0 0 var(--rebar-grip-width);
+  align-self: stretch;
+  margin: var(--rebar-grip-margin);
+  background: var(--rebar-grip-surface);
+  box-shadow: var(--rebar-grip-shadow);
+  pointer-events: none;
+}
+
+.comet-menubar::after {
+  content: var(--menubar-era-label);
+  display: var(--menubar-era-display);
+  align-items: center;
+  align-self: stretch;
+  margin-left: auto;
+  padding: var(--menubar-era-padding);
+  background: var(--menubar-era-surface);
+  border-left: 1px solid var(--menubar-era-border);
+  box-shadow: var(--menubar-era-shadow);
+  color: var(--menubar-era-text);
+  font-size: var(--menubar-era-font-size);
+  font-weight: 700;
+  letter-spacing: var(--menubar-era-spacing);
+  pointer-events: none;
 }
 
 .comet-menubar__menu {
@@ -128,7 +201,7 @@
 .comet-menubar__top {
   background: transparent;
   border: 1px solid transparent;
-  padding: 2px 8px;
+  padding: var(--menubar-item-padding);
   color: var(--text);
   cursor: default;
 }
@@ -197,12 +270,13 @@
 .comet-toolbar {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: var(--toolbar-align-items);
+  gap: var(--toolbar-gap);
   height: var(--toolbar-height);
-  padding: 2px 4px;
+  padding: var(--toolbar-padding);
   background: var(--toolbar-surface);
   border-bottom: 1px solid var(--chrome-rule);
+  box-shadow: var(--toolbar-shadow);
   overflow: hidden;
 }
 
@@ -211,13 +285,36 @@
 .comet-toolbar::before {
   content: '';
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 1px;
-  width: 2px;
+  top: var(--toolbar-grip-inset);
+  bottom: var(--toolbar-grip-inset);
+  left: var(--toolbar-grip-left);
+  width: var(--toolbar-grip-width);
   border-left: 1px solid var(--toolbar-grip-dark);
   border-right: 1px solid var(--toolbar-grip-light);
   opacity: var(--toolbar-grip-opacity);
+  pointer-events: none;
+}
+
+.comet-toolbar::after {
+  content: var(--toolbar-brand-label);
+  display: var(--toolbar-brand-display);
+  position: absolute;
+  top: var(--toolbar-brand-inset);
+  right: var(--toolbar-brand-inset);
+  bottom: var(--toolbar-brand-inset);
+  width: var(--toolbar-brand-width);
+  align-items: center;
+  justify-content: center;
+  background: var(--toolbar-brand-surface);
+  border: 1px solid var(--toolbar-brand-border);
+  border-radius: var(--toolbar-brand-radius);
+  box-shadow: var(--toolbar-brand-shadow);
+  color: var(--toolbar-brand-text);
+  font-size: var(--toolbar-brand-font-size);
+  font-weight: 700;
+  letter-spacing: var(--toolbar-brand-spacing);
+  text-align: center;
+  white-space: pre-line;
   pointer-events: none;
 }
 
@@ -228,10 +325,13 @@
   --control-shadow: var(--toolbar-button-shadow);
   --control-dk-shadow: var(--toolbar-button-dk-shadow);
   display: flex;
-  flex-direction: column;
+  flex-direction: var(--toolbar-button-direction);
   align-items: center;
-  gap: 2px;
-  min-width: 42px;
+  justify-content: var(--toolbar-button-justify);
+  gap: var(--toolbar-button-gap);
+  min-width: var(--toolbar-button-min-width);
+  height: var(--toolbar-button-height);
+  padding: var(--toolbar-button-padding);
   cursor: default;
 }
 
@@ -303,23 +403,56 @@
  * ------------------------------------------------------------------ */
 
 .comet-addressbar {
+  position: relative;
   display: flex;
   align-items: stretch;
-  gap: 4px;
+  gap: var(--addressbar-gap);
   height: var(--addressbar-height);
-  padding: 2px 4px;
+  padding: var(--addressbar-padding);
   background: var(--addressbar-surface);
   border-bottom: 1px solid var(--chrome-rule);
+  box-shadow: var(--addressbar-shadow);
+}
+
+.comet-addressbar::before {
+  content: '';
+  display: var(--chrome-decoration-display);
+  flex: 0 0 var(--rebar-grip-width);
+  align-self: stretch;
+  margin: var(--rebar-grip-margin);
+  background: var(--rebar-grip-surface);
+  box-shadow: var(--rebar-grip-shadow);
+  pointer-events: none;
+}
+
+.comet-addressbar::after {
+  content: var(--addressbar-era-label);
+  display: var(--addressbar-era-display);
+  flex: 0 0 auto;
+  align-items: center;
+  padding: var(--addressbar-era-padding);
+  background: var(--addressbar-era-surface);
+  border: 1px solid var(--addressbar-era-border);
+  border-radius: var(--addressbar-era-radius);
+  box-shadow: var(--addressbar-era-shadow);
+  color: var(--addressbar-era-text);
+  font-size: var(--addressbar-era-font-size);
+  font-weight: 700;
+  letter-spacing: var(--addressbar-era-spacing);
+  pointer-events: none;
 }
 
 .comet-addressbar__label {
+  --control-surface: var(--address-label-surface);
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  padding: 0 8px;
+  padding: var(--address-label-padding);
+  color: var(--address-label-text);
 }
 
 .comet-addressbar__field {
+  --sunken-surface: var(--address-field-surface);
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
@@ -327,6 +460,7 @@
   align-items: center;
   gap: 4px;
   overflow: visible;
+  color: var(--address-field-text);
 }
 
 .comet-addressbar__doc-icon {
@@ -394,6 +528,11 @@
 .comet-addressbar__go {
   display: var(--go-button-display);
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--go-button-width);
+  color: var(--go-button-text);
+  box-shadow: var(--go-button-shadow);
 }
 
 /* ------------------------------------------------------------------ *
@@ -401,20 +540,74 @@
  * ------------------------------------------------------------------ */
 
 .comet-body {
+  position: relative;
   display: grid;
   grid-template-columns: var(--sidebar-width) 1fr;
   min-height: 0;
   overflow: hidden;
+  background: var(--body-surface);
+}
+
+.comet-body::after {
+  content: '';
+  display: var(--body-edge-display);
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--body-edge-width);
+  background: var(--body-edge-surface);
+  box-shadow: var(--body-edge-shadow);
+  pointer-events: none;
 }
 
 .comet-sidebar {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 4px;
+  gap: var(--sidebar-gap);
+  padding: var(--sidebar-padding);
   overflow-y: auto;
   background: var(--sidebar-surface);
   border-right: 1px solid var(--chrome-rule);
+  box-shadow: var(--sidebar-shadow);
+  color: var(--sidebar-text);
+}
+
+.comet-sidebar::before {
+  content: var(--sidebar-header-label);
+  display: var(--sidebar-header-display);
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: var(--sidebar-header-height);
+  padding: var(--sidebar-header-padding);
+  background: var(--sidebar-header-surface);
+  border: 1px solid var(--sidebar-header-border);
+  border-radius: var(--sidebar-header-radius);
+  box-shadow: var(--sidebar-header-shadow);
+  color: var(--sidebar-header-text);
+  font-size: var(--sidebar-header-font-size);
+  font-weight: 700;
+  letter-spacing: var(--sidebar-header-spacing);
+}
+
+.comet-sidebar::after {
+  content: var(--sidebar-footer-label);
+  display: var(--sidebar-footer-display);
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: var(--sidebar-footer-height);
+  margin-top: auto;
+  padding: var(--sidebar-footer-padding);
+  background: var(--sidebar-footer-surface);
+  border: 1px solid var(--sidebar-footer-border);
+  border-radius: var(--sidebar-footer-radius);
+  box-shadow: var(--sidebar-footer-shadow);
+  color: var(--sidebar-footer-text);
+  font-size: var(--sidebar-footer-font-size);
+  font-weight: 700;
+  letter-spacing: var(--sidebar-footer-spacing);
 }
 
 .comet-sidebar__list {
@@ -423,31 +616,44 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--sidebar-list-gap);
 }
 
 .comet-sidebar__item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sidebar-item-gap);
   width: 100%;
-  padding: 3px 4px;
-  background: transparent;
+  min-height: var(--sidebar-item-height);
+  padding: var(--sidebar-item-padding);
+  background: var(--sidebar-item-surface);
   border: none;
+  border-radius: var(--radius-control);
+  box-shadow: var(--sidebar-item-shadow);
   text-align: left;
-  color: var(--text);
+  color: var(--sidebar-text);
   font-weight: 700;
   cursor: default;
 }
 
+.comet-sidebar__item:hover {
+  background: var(--sidebar-item-hover);
+}
+
 .comet-sidebar__item--active {
-  background: var(--selection-bg);
-  color: var(--selection-text);
+  background: var(--sidebar-active-surface);
+  color: var(--sidebar-active-text);
+  box-shadow: var(--sidebar-active-shadow);
 }
 
 .comet-sidebar__bullet {
   font-size: 9px;
   flex: 0 0 auto;
+  color: var(--sidebar-bullet-color);
+}
+
+.comet-sidebar__item--active .comet-sidebar__bullet {
+  color: currentColor;
 }
 
 .comet-sidebar__count {
@@ -457,7 +663,7 @@
 
 .comet-sidebar__divider {
   height: 0;
-  margin: 6px 2px;
+  margin: var(--sidebar-divider-margin);
   border-top: 1px solid var(--shadow);
   border-bottom: 1px solid var(--hilite);
 }
@@ -471,7 +677,8 @@
 .comet-content {
   overflow: auto;
   padding: 0;
-  background: var(--field);
+  background: var(--content-surface);
+  box-shadow: var(--content-frame-shadow);
 }
 
 /* ------------------------------------------------------------------ *
@@ -479,15 +686,34 @@
  * ------------------------------------------------------------------ */
 
 .comet-statusbar {
+  position: relative;
   display: flex;
   align-items: stretch;
-  gap: 3px;
+  gap: var(--statusbar-gap);
   height: var(--statusbar-height);
-  padding: 2px 3px;
+  padding: var(--statusbar-padding);
   background: var(--statusbar-surface);
+  box-shadow: var(--statusbar-shadow);
+}
+
+.comet-statusbar::before {
+  content: var(--status-brand-label);
+  display: var(--status-enhancement-display);
+  flex: 0 0 var(--status-brand-width);
+  align-items: center;
+  justify-content: center;
+  background: var(--status-brand-surface);
+  border: 1px solid var(--status-brand-border);
+  border-radius: var(--status-brand-radius);
+  box-shadow: var(--status-brand-shadow);
+  color: var(--status-brand-text);
+  font-size: var(--status-brand-font-size);
+  font-weight: 700;
+  letter-spacing: var(--status-brand-spacing);
 }
 
 .comet-statusbar__state {
+  --sunken-surface: var(--status-cell-surface);
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
@@ -496,10 +722,30 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--status-cell-text);
+}
+
+.comet-statusbar__state-light {
+  display: var(--status-enhancement-display);
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  background: var(--status-state-light-surface);
+  border: 1px solid var(--status-state-light-border);
+  border-radius: var(--status-state-light-radius);
+  box-shadow: var(--status-state-light-shadow);
+}
+
+.comet-statusbar__state-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .comet-statusbar__progress {
-  flex: 0 0 100px;
+  --sunken-surface: var(--status-cell-surface);
+  flex: 0 0 var(--status-progress-width);
   display: flex;
   align-items: center;
   padding: 1px;
@@ -508,29 +754,95 @@
 .comet-statusbar__progress-fill {
   height: 100%;
   min-height: 10px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    var(--icon-green) 0,
-    var(--icon-green) 5px,
-    var(--field) 5px,
-    var(--field) 7px
-  );
+  background: var(--status-progress-surface);
+  border-radius: var(--radius-control);
 }
 
 .comet-statusbar__popups {
+  --sunken-surface: var(--status-cell-surface);
   display: var(--popup-blocker-display);
   flex: 0 0 auto;
   align-items: center;
   padding: 0 4px;
   white-space: nowrap;
+  color: var(--status-cell-text);
+}
+
+.comet-statusbar__connection {
+  display: var(--status-enhancement-display);
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: var(--status-connection-width);
+  padding: var(--status-connection-padding);
+  background: var(--status-connection-surface);
+  border: 1px solid var(--status-connection-border);
+  border-radius: var(--status-connection-radius);
+  box-shadow: var(--status-connection-shadow);
+  color: var(--status-connection-text);
+}
+
+.comet-statusbar__connection-light {
+  width: 6px;
+  height: 6px;
+  background: var(--status-connection-light);
+  border: 1px solid var(--status-connection-light-border);
+  border-radius: 50%;
+  box-shadow: var(--status-connection-light-shadow);
+}
+
+.comet-statusbar__connection-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.comet-statusbar__signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 9px;
+  margin-left: auto;
+}
+
+.comet-statusbar__signal span {
+  display: block;
+  width: 2px;
+  background: var(--status-signal-surface);
+  box-shadow: var(--status-signal-shadow);
+}
+
+.comet-statusbar__signal span:nth-child(1) {
+  height: 3px;
+}
+
+.comet-statusbar__signal span:nth-child(2) {
+  height: 6px;
+}
+
+.comet-statusbar__signal span:nth-child(3) {
+  height: 9px;
 }
 
 .comet-statusbar__zone {
+  --sunken-surface: var(--status-zone-surface);
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   padding: 0 4px;
   white-space: nowrap;
+  color: var(--status-cell-text);
+}
+
+.comet-statusbar::after {
+  content: '';
+  display: var(--status-grip-display);
+  flex: 0 0 11px;
+  align-self: flex-end;
+  width: 11px;
+  height: 11px;
+  background: var(--status-grip-surface);
+  pointer-events: none;
 }
 
 /* ------------------------------------------------------------------ *

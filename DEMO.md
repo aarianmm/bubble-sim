@@ -17,9 +17,9 @@ Pace reference: the clock runs 1.2s/month normally, 0.3s/month held at 4×
 (the in-game fast-forward button). A blocking dialog (shocks, year-turns,
 the crash, the Halcyon suspension) **pauses the clock itself** the instant
 it's due — you cannot fast-forward past one by accident. The Jan 1998 and
-Jan 2000 interface welcomes also
-hold the clock through their loading pages; `[ Continue ]` starts the load,
-not the clock.
+Jan 2000 system updates also hold the clock through the large update prompt,
+full-screen installation, and final welcome; `[ Enter the updated system ]`
+returns control only after the new interface is installed.
 
 ---
 
@@ -37,9 +37,9 @@ clock on its own the moment it's due.
 | 2 | **Mar 1997** | Two Meridian popups arrive together (same offer, twice — §20.2's cap). Read one aloud, then close both with their `✕` — free, no penalty. `INBOX` → open "Your child savings account has matured" (the windfall) to bank it | *"Guaranteed 30%, no downside, limited places — three red flags before you've even opened the fact sheet."* Declining costs nothing. |
 | 3 | **Jul 1997** | `INBOX` → open the Fenwick Index Trust mail → its link → fact sheet → `[ Accept ]` → `MY MONEY` → **two drags, in this order:** Northmoor's slider to 0% first, *then* Fenwick's to 70% → `[ Rebalance Now ]` → confirm | *"The correct play, made to look boring on purpose."* Plain site, 0.4% fee, tracks the index. Dragging Fenwick straight to 70% in one go leaves 30% stranded in Northmoor instead of cash — the slider redistributes proportionally by current weight (§12.2), so zero out Northmoor first. |
 | 4 | **Sep 1997** | The clock stops on its own — a £600 shock dialog. Click **Pay from cash** | No `[Later]`, no working `✕` — a real dialog is never optional. |
-| 4a | **Jan 1998** | The clock stops on the old grey interface. Let the compact **WELCOME TO 1998** beat register, click **Continue**, and let its stepped blue loading page finish | The new blue IE4/Win98 coolbar appears only after the load. The controls never move. |
+| 4a | **Jan 1998** | The clock stops on the old grey interface. Read the large **WE ARE NOW ENTERING THE YEAR 1998** system prompt, click **Update the system**, let the blue full-screen installation finish, then click **Enter the updated system** on the welcome screen | The taller IE4/Win98 shell appears only after installation: visible rebar grips, Channel Bar, branded Channels panel, wider navigator, timeline, modem footer and sectional WEB 98 status strip. The functions are unchanged, but it should now read immediately as a newly installed interface. |
 | 5 | **Jun 1999** | The Halcyon popup arrives — click its CTA to open the site. **This is the money shot** — see §2 below. Open the fact sheet, then `[ Back ]` (never `[ Accept ]`) | Slow down here. |
-| 6 | **Jan 2000** | The clock stops — read the year-turn line, then **Go on**. Let the cleaner **WELCOME TO 2000** beat register; click **Continue** and watch the metallic-blue setup page finish | *"This year, your pay covers your life exactly. From here it doesn't."* The cool metallic IE5 rebar and newly shaded toolbar icons arrive only after the second pause completes; hover one to show the full-colour hot image. |
+| 6 | **Jan 2000** | The clock stops — read the year-turn line, then **Go on**. On the glass system prompt, click **Update the system**, watch the blue/aqua full-screen installer, then click **Enter the updated system** on **WELCOME TO 2000** | *"This year, your pay covers your life exactly. From here it doesn't."* The same tools have become horizontal glass pills, the Go button and trusted-zone capsule appear, both side rails widen and glow, and the bottom becomes a branded broadband tray with a green signal meter. Hover a tool to show its full-colour hot image. |
 | 7 | **Mar 2000** | The crash dialog stops the clock first — **Go on**. The boiler dialog follows immediately, same month — **Sell to cover**. With Northmoor + Fenwick actually held (beats 1 and 3), this triggers a real forced sale — follow whatever the sale panel shows | The NASDAQ falls, then the boiler goes, same month. Narrate the sale panel as it appears: what's being sold, at what loss, to cover a £900 bill. |
 | 8 | **Nov 2000** | The clock stops — Halcyon suspended. Click **Go on** | *"Seventeen months of returns, and then nothing. Your balance is £0."* You don't have a balance in it — you declined in beat 5. Land this line and the room has understood the game. |
 | 9 | **2001 → 2006** | Nothing scripted left to narrate. Hold fast-forward and let it run to the end | Keep talking over this — it's the fastest stretch, not a pause in the demo. |
