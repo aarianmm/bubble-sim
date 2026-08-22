@@ -119,6 +119,21 @@ describe('popup presentation timing', () => {
     expect(popupPresentationDurationMs(makePopup({ cls: 'junk', vehicleId: undefined }))).toBe(3500);
     expect(popupPresentationDurationMs(makePopup({ cls: 'social', vehicleId: undefined }))).toBe(9000);
     expect(popupPresentationDurationMs(makePopup())).toBe(11000);
+    expect(popupPresentationDurationMs(makePopup({ cls: 'security', vehicleId: undefined }))).toBe(9000);
+  });
+
+  it('renders the Meadowbank phishing popup X-only with no offer CTA', () => {
+    const active = makePopup({
+      id: 'ev.2005-09.meadowbank-phishing',
+      eventId: 'ev.2005-09.meadowbank-phishing',
+      contentId: 'pop.meadowbank-phishing-2005-09',
+      cls: 'security',
+      vehicleId: undefined,
+    });
+    render(makeEngine({ popupPresentation: { active, pending: [], phase: 'showing' } }));
+    expect(document.querySelector('.comet-popup')?.textContent).toContain('ACCOUNT VERIFICATION REQUIRED');
+    expect(document.querySelector('.comet-popup__close')).not.toBeNull();
+    expect(document.querySelector('.comet-popup__cta')).toBeNull();
   });
 
   it('renders only the active popup and expires it after 11 seconds', () => {

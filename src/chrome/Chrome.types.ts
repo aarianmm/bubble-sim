@@ -92,6 +92,8 @@ export interface ToolbarProps {
   onMail?: () => void;
   /** Envelope badge — the Mail icon shows a badge on unread (§18.1). */
   unreadCount?: number;
+  /** Transient, presentation-only notice anchored to the Mail icon. */
+  newMailNotice?: string | null;
 }
 
 /* ------------------------------------------------------------------ *

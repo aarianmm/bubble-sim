@@ -66,30 +66,50 @@ describe('Step 24 done-condition — jump to date, correct tier fires', () => {
     expect(engineHandle!.state.dialogs).toHaveLength(0);
   });
 
-  it('Mar 1997 — Meridian scam POP arrives with its companion junk (count 2)', () => {
+  it('Mar 1997 — Meridian scam POP arrives alone', () => {
     mount();
     jump(monthIndex(1997, 3));
-    expect(engineHandle!.state.popups).toHaveLength(2);
+    expect(engineHandle!.state.popups).toHaveLength(1);
     expect(engineHandle!.state.popups.some((p) => p.vehicleId === 'meridian-guaranteed')).toBe(true);
     expect(engineHandle!.popupPresentation.active?.contentId).toBe('pop.meridian-1997-03');
-    expect(engineHandle!.popupPresentation.pending.map((p) => p.contentId)).toEqual([
-      'pop.junk-meridian-companion-1997-03',
-    ]);
+    expect(engineHandle!.popupPresentation.pending).toEqual([]);
     expect(engineHandle!.state.dialogs).toHaveLength(0);
   });
 
-  it('May 1999 — the cap preserves Kingsley and Vertex ahead of companion junk', () => {
+  it('May 1999 — Vertex arrives alone while Kingsley remains Mail', () => {
     mount();
     jump(monthIndex(1999, 5));
-    expect(engineHandle!.state.popups).toHaveLength(3);
+    expect(engineHandle!.state.popups).toHaveLength(1);
     expect(engineHandle!.state.popups.filter((p) => p.vehicleId === 'vertex-communications')).toHaveLength(1);
-    expect(engineHandle!.state.popups.filter((p) => p.vehicleId === 'kingsley-gilt')).toHaveLength(1);
-    expect(engineHandle!.state.popups.filter((p) => p.cls === 'junk')).toHaveLength(1);
+    expect(engineHandle!.state.popups.filter((p) => p.vehicleId === 'kingsley-gilt')).toHaveLength(0);
+    expect(engineHandle!.state.popups.filter((p) => p.cls === 'junk')).toHaveLength(0);
+    expect(engineHandle!.state.inbox.some((m) => m.vehicleId === 'kingsley-gilt')).toBe(true);
     expect(engineHandle!.popupPresentation.active?.contentId).toBe('pop.vertex-1999-05');
-    expect(engineHandle!.popupPresentation.pending.map((p) => p.contentId)).toEqual([
-      'pop.junk-vertex-companion-b-1999-05',
-    ]);
+    expect(engineHandle!.popupPresentation.pending).toEqual([]);
     expect(engineHandle!.state.dialogs).toHaveLength(0);
+  });
+
+  it('late-game educational Mail arrives unread while Meadowbank phishing remains POP-only', () => {
+    mount();
+    for (const [eventId, contentId] of [
+      ['ev.2002-06.investor-bulletin', 'msg.investor-bulletin-2002-06'],
+      ['ev.2005-02.investment-charges', 'msg.investment-charges-2005-02'],
+      ['ev.2006-08.long-term-planning', 'msg.long-term-planning-2006-08'],
+    ] as const) {
+      act(() => engineHandle!.forceEvent(eventId));
+      expect(engineHandle!.state.inbox.find((item) => item.contentId === contentId)).toMatchObject({
+        status: 'unread',
+        vehicleId: undefined,
+      });
+    }
+
+    act(() => engineHandle!.forceEvent('ev.2005-09.meadowbank-phishing'));
+    expect(engineHandle!.state.inbox.some((item) => item.contentId === 'pop.meadowbank-phishing-2005-09')).toBe(false);
+    expect(engineHandle!.state.popups).toHaveLength(1);
+    expect(engineHandle!.popupPresentation.active).toMatchObject({
+      contentId: 'pop.meadowbank-phishing-2005-09',
+      vehicleId: undefined,
+    });
   });
 
   it('reset and date navigation clear stale presentation backlogs', () => {
@@ -99,7 +119,7 @@ describe('Step 24 done-condition — jump to date, correct tier fires', () => {
     jump(monthIndex(1996, 4));
     expect(engineHandle!.popupPresentation).toEqual({ active: null, pending: [], phase: 'showing' });
     act(() => engineHandle!.forceEvent('ev.1999-05.vertex'));
-    expect(engineHandle!.popupPresentation.pending).toHaveLength(1);
+    expect(engineHandle!.popupPresentation.active?.contentId).toBe('pop.vertex-1999-05');
     act(() => engineHandle!.reset());
     expect(engineHandle!.popupPresentation).toEqual({ active: null, pending: [], phase: 'showing' });
   });
@@ -121,17 +141,10 @@ describe('Step 24 done-condition — jump to date, correct tier fires', () => {
     expect(engineHandle!.popupPresentation.phase).toBe('gap');
   });
 
-  it('drops oldest queued junk but never an important offer under backlog pressure', () => {
+  it('preserves important offers arriving while the harmless tutorial popup is active', () => {
     mount();
-    const junkIds = [
-      'ev.1996-02.freestuff',
-      'ev.1996-09.junk',
-      'ev.1997-11.junk',
-      'ev.1998-12.junk',
-      'ev.1999-12.y2k-junk',
-    ];
-    for (const id of junkIds) act(() => engineHandle!.forceEvent(id));
-    expect(engineHandle!.popupPresentation.pending.filter((p) => p.cls === 'junk')).toHaveLength(1);
+    act(() => engineHandle!.forceEvent('ev.1996-02.freestuff'));
+    expect(engineHandle!.popupPresentation.active?.contentId).toBe('pop.freestuff-1996-02');
     act(() => engineHandle!.forceEvent('ev.1998-03.cavendish'));
     act(() => engineHandle!.forceEvent('ev.1999-06.halcyon'));
     const queuedVehicles = engineHandle!.popupPresentation.pending.map((p) => p.vehicleId).filter(Boolean);

@@ -18,6 +18,7 @@ import { expensesFor } from './basket';
 import { monthIndex } from './month';
 import { MONTHLY_PAY } from './types';
 import type { GameState, Holding, RunFlags, RunStats, ScriptEvent, Decision } from './types';
+import { EVENTS_BY_ID } from './scheduler';
 import seriesFile from '../data/series.json';
 import type { MarketSeriesFile } from '../data/schema';
 
@@ -272,6 +273,22 @@ describe('fireScheduledEvents (§7.3.5)', () => {
     expect(next.inbox[0].vehicleId).toBe('northmoor-bond');
   });
 
+  it('keeps the three late-game educational Mail arrivals financially inert', () => {
+    for (const id of [
+      'ev.2002-06.investor-bulletin',
+      'ev.2005-02.investment-charges',
+      'ev.2006-08.long-term-planning',
+    ]) {
+      const event = EVENTS_BY_ID[id];
+      const before = makeState({ month: event.month, cash: 1234, holdings: {}, unlocked: [] });
+      const next = fireScheduledEvents(before, [event], []);
+      expect(next.inbox.at(-1)).toMatchObject({ eventId: id, status: 'unread', vehicleId: undefined });
+      expect(next.cash).toBe(before.cash);
+      expect(next.holdings).toEqual(before.holdings);
+      expect(next.unlocked).toEqual(before.unlocked);
+    }
+  });
+
   it('protects a current offer by evicting lightweight junk first at the popup cap', () => {
     const month = monthIndex(1999, 5);
     const junkBatch: ScriptEvent = {
@@ -280,7 +297,7 @@ describe('fireScheduledEvents (§7.3.5)', () => {
       month,
       channel: 'POP',
       cls: 'junk',
-      contentId: 'pop.junk-1998-12',
+      contentId: 'pop.freestuff-1996-02',
       count: 3,
       blocksTime: false,
     };
@@ -343,6 +360,7 @@ describe('fireScheduledEvents (§7.3.5)', () => {
     expect(next.flags.onScamList).toBe(false);
   });
 
+
   it('credits windfall cash only when the mail is opened, and only once (§8.5)', () => {
     const windfallEvent: ScriptEvent = {
       id: 'ev.test.windfall',
@@ -366,6 +384,7 @@ describe('fireScheduledEvents (§7.3.5)', () => {
     state = fireScheduledEvents(state, [], [open]);
     expect(state.cash).toBe(2000);
   });
+
 
   it('forfeits a windfall that is deleted unopened (§22.1 "Delete all... will also delete a windfall")', () => {
     const windfallEvent: ScriptEvent = {
@@ -473,21 +492,28 @@ describe('fireScheduledEvents (§7.3.5)', () => {
     expect(next.cash).toBe(0);
   });
 
-  it('delivers a Step 31/32 mvpDeferred event as ordinary mail — §26.1 says "deliver it", not "skip it"', () => {
-    const cardEvent: ScriptEvent = {
-      id: 'ev.test.card',
-      date: '1998-05',
-      month: monthIndex(1998, 5),
-      channel: 'MAIL',
-      cls: 'credit',
-      contentId: 'msg.capital-direct-card-1998-05',
-      vehicleId: 'capital-direct-card',
-      mvpDeferred: true,
-      blocksTime: false,
-    };
-    const next = fireScheduledEvents(makeState({ month: cardEvent.month }), [cardEvent], []);
-    expect(next.inbox).toHaveLength(1);
-    expect(next.inbox[0].vehicleId).toBe('capital-direct-card');
+  it('delivers Capital Direct as informational Mail that cannot affect cash or holdings', () => {
+    const cardEvents: ScriptEvent[] = [
+      {
+        id: 'ev.test.card-1', date: '1998-05', month: monthIndex(1998, 5), channel: 'MAIL', cls: 'credit',
+        contentId: 'msg.capital-direct-card-1998-05', expiresDays: 9, mvpDeferred: true, blocksTime: false,
+      },
+      {
+        id: 'ev.test.card-2', date: '2000-10', month: monthIndex(2000, 10), channel: 'MAIL', cls: 'credit',
+        contentId: 'msg.capital-direct-card-2000-10', expiresDays: 2, mvpDeferred: true, blocksTime: false,
+      },
+    ];
+    let state = makeState({ month: cardEvents[0].month, cash: 500 });
+    for (const event of cardEvents) {
+      state = fireScheduledEvents({ ...state, month: event.month }, [event], []);
+      expect(state.inbox.at(-1)?.vehicleId).toBeUndefined();
+      const beforeCash = state.cash;
+      const beforeHoldings = state.holdings;
+      state = fireScheduledEvents(state, [], [{ type: 'open-mail', month: event.month, mailId: event.id }]);
+      expect(state.cash).toBe(beforeCash);
+      expect(state.holdings).toEqual(beforeHoldings);
+      expect(state.unlocked).not.toContain('capital-direct-card');
+    }
   });
 
   it('"accepting" a deferred card never creates a working debt facility — state.debt stays null', () => {

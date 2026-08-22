@@ -20,7 +20,7 @@ import { VEHICLES } from '../sim/vehicles';
 import { OFFER_PAGES } from '../content/offerpages';
 import { useEngine } from './engine';
 import { useRouter } from '../chrome/router';
-import { isPopupPresentationNeutralUrl, MAIL_URL } from '../pages/registry';
+import { HOME_URL, isPopupPresentationNeutralUrl, MAIL_URL } from '../pages/registry';
 import type { PopupItem } from '../sim/types';
 import { useEffect, useRef } from 'react';
 
@@ -46,15 +46,21 @@ function slotOf(popup: PopupItem): number {
 }
 
 function ActiveDialog() {
-  const { state, dispatch } = useEngine();
+  const { state, dispatch, reset } = useEngine();
+  const router = useRouter();
   const dialog = state.dialogs[0];
   if (!dialog) return null;
   return (
     <Dialog
       dialog={dialog}
-      onResolve={(action) =>
-        dispatch({ type: 'resolve-dialog', month: state.month, dialogId: dialog.id, action })
-      }
+      onResolve={(action) => {
+        if (action === 'restart') {
+          reset();
+          router.resetTo(HOME_URL);
+          return;
+        }
+        dispatch({ type: 'resolve-dialog', month: state.month, dialogId: dialog.id, action });
+      }}
     />
   );
 }
@@ -120,7 +126,7 @@ function ActivePopups() {
         popup={{ ...popup, x, y }}
         heading={msg?.subject}
         body={msg?.body ?? []}
-        loud={popup.cls === 'scam' || popup.cls === 'junk'}
+        loud={popup.cls === 'scam' || popup.cls === 'junk' || popup.cls === 'security'}
         cta={cta}
         onClose={closePresentedPopup}
         onCtaClick={(_item, clickedCta) => {

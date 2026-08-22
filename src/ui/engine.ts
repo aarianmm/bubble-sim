@@ -38,6 +38,9 @@ export interface Engine {
   /** Effective multiplier on MS_PER_MONTH. 0 while paused. */
   timeRate: number;
   popupPresentation: PopupPresentationState;
+  /** Changes when reset/presenter navigation rebuilds state, allowing
+   * presentation hooks to suppress historical arrival notices. */
+  mailNoticeResetKey?: number;
 
   dispatch(decision: Decision): void;
   setPaused(paused: boolean): void;

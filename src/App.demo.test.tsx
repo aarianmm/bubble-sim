@@ -158,6 +158,12 @@ describe('§25.5 — the demo path, beat by beat, driven through the real <App/>
     expect(container!.querySelector('.comet-titlebar__title')?.textContent).toBe('BUBBLE — Your account');
   });
 
+  it('presenter date jumps do not replay historical New Mail banners', () => {
+    mountApp();
+    jumpToMonth(APR_1996);
+    expect(document.body.querySelector('.comet-toolbar__mail-notice')).toBeNull();
+  });
+
   it('title bar and address bar stay in sync across a real navigation, and Back un-greys then re-greys (§19.3)', () => {
     mountApp();
     const sidebarInbox = byText<HTMLButtonElement>(container!, '.comet-sidebar__item', 'INBOX');
@@ -218,24 +224,15 @@ describe('§25.5 — the demo path, beat by beat, driven through the real <App/>
     expect(container!.querySelector('.money-confirm')).toBeNull();
   });
 
-  it('Feb/Mar 1997 — the windfall opens, and the queued Meridian batch is cleanly declined', async () => {
+  it('Feb/Mar 1997 — the windfall opens, and Meridian is cleanly declined', () => {
     mountApp();
     jumpToMonth(MAR_1997);
 
-    // The authored batch is one Meridian offer plus one unrelated junk ad,
-    // presented sequentially with a short gap rather than overlapping.
+    // Meridian is the only authored popup in this month.
     expect(popups()).toHaveLength(1);
     expect(popups()[0].textContent).toMatch(/30%|GUARANTEED/);
     click(popups()[0].querySelector<HTMLButtonElement>('.comet-popup__close'));
     expect(popups()).toHaveLength(0);
-    await act(async () => {
-      await new Promise((resolve) => window.setTimeout(resolve, 1800));
-    });
-    expect(popups()).toHaveLength(1);
-    expect(popups()[0].textContent).toContain('CHEAPER CALLS');
-
-    // Decline: close the companion too, free and safe (§10 rule 2).
-    click(popups()[0].querySelector<HTMLButtonElement>('.comet-popup__close'));
     expect(popups()).toHaveLength(0);
 
     // The windfall itself is a MAIL item, not a popup — open it from /mail.
@@ -309,12 +306,12 @@ describe('§25.5 — the demo path, beat by beat, driven through the real <App/>
     expect(container!.textContent).not.toMatch(/Redirecting/);
   });
 
-  it("Jan 2000 — the year-turn dialog carries the exact line (\"pay covers your life exactly\")", () => {
+  it('Jan 2000 — the year-turn dialog clearly explains the break-even squeeze', () => {
     mountApp();
     jumpToMonth(JAN_2000);
     const dialog = activeDialog();
     expect(dialog).toBeTruthy();
-    expect(dialog!.textContent).toContain('This year, your pay covers your life exactly. From here it doesn’t.');
+    expect(dialog!.textContent).toContain('Your monthly living costs have risen to match your £760 pay.');
     resolveDialog('Go on');
     expect(activeDialog()).toBeNull();
   });
@@ -334,7 +331,7 @@ describe('§25.5 — the demo path, beat by beat, driven through the real <App/>
     // body copy and the £900 figure, not the word itself.
     const second = activeDialog();
     expect(second).toBeTruthy();
-    expect(second!.textContent).toMatch(/replacing today|£900/);
+    expect(second!.textContent).toMatch(/cannot be repaired|£900/);
     const labels = dialogButtons().map((b) => b.textContent?.trim());
     expect(labels).toEqual(['Pay from cash', 'Sell to cover']);
 
@@ -377,6 +374,31 @@ describe('§25.5 — the demo path, beat by beat, driven through the real <App/>
     expect(dialog!.textContent).toContain('£0');
     resolveDialog('Go on');
     expect(activeDialog()).toBeNull();
+  });
+
+  it('Dec 2006 — the blocking dialog Run it again action resets all presentation and returns Home', () => {
+    mountApp();
+
+    // Seed both inbox and popup presentation state before forcing the real
+    // authored win dialog, so replay proves it clears more than the date.
+    const input = document.body.querySelector<HTMLInputElement>('[aria-label="Event id"]')!;
+    setControlledValue(input, 'ev.1996-04.northmoor-bond', 'input');
+    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', 'Force'));
+    setControlledValue(input, 'ev.1996-02.freestuff', 'input');
+    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', 'Force'));
+    expect(popups()).toHaveLength(1);
+
+    setControlledValue(input, 'ev.2006-12.win', 'input');
+    click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', 'Force'));
+    expect(activeDialog()?.textContent).toContain('Ten years, real inflation');
+
+    resolveDialog('Run it again');
+
+    expect(activeDialog()).toBeNull();
+    expect(popups()).toHaveLength(0);
+    expect(container!.querySelector('.comet-nav__date')?.textContent).toContain('JANUARY 1996');
+    expect(container!.querySelector('.comet-sidebar__count')?.textContent).toBe('(0)');
+    expect(container!.querySelector('.comet-addressbar__url')?.textContent).toBe('http://www.bubble.net/home');
   });
 
   it('Dec 2006 — the death card renders with a genuine (non-zero) tracker fee line, and [ Run it again ] resets to Jan 1996', () => {
@@ -448,7 +470,7 @@ function settleDialogsAndCheckIfDead(): boolean {
 describe('§25.5 fallback sweep — mount every page at the dates named in the brief, confirm nothing throws', () => {
   const DATES: { label: string; month: number }[] = [
     { label: 'Jan 1996 — empty everything', month: 0 },
-    { label: 'May 1999 — three concurrent popups', month: 40 },
+    { label: 'May 1999 — Vertex popup', month: 40 },
     { label: 'Mar 2000 — the crash and the boiler, same month', month: MAR_2000 },
   ];
 

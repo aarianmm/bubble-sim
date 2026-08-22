@@ -443,6 +443,12 @@ Six scams, authored, named, dated. That is the complete list — there is no sev
 
 The shape of the list is the history: two cheap ones early, the mania pair in 1999, the recovery-room scam right after the crash, and the phishing-flavoured one in 2003 as the web professionalises. Post-crash the scams change character rather than disappearing — that is real, it is cruel, and it belongs in the game.
 
+The September 2005 Meadowbank impersonation is a separate, non-actionable
+security lesson rather than a seventh fundable scam: it has no vehicle, fact
+sheet, cash effect or credential mechanic. Its X-only browser presentation
+teaches that a familiar bank name and threatened account restriction do not
+authenticate a request for personal information.
+
 ## 12. Portfolio & allocation
 
 ### 12.1 The model
@@ -507,51 +513,51 @@ Shocks are the difficulty engine, because the market series is fixed by history 
 | Jan 1996 | — | Run begins. £760/mo, £645 out, £0 cash | — | |
 | Feb 1996 | POP | FREEST0FF.NET — free ringtones | Junk | Teaches that popups exist and are safely closeable |
 | **Apr 1996** | MAIL | **Northmoor Building Society — 5.2% savings bond** | **Legit** | **The discoverability floor (§16).** Unmistakably safe, and the fact sheet is the only way to see the rate. Hideous website (§21 rule 2) |
-| Sep 1996 | POP | Junk | Junk | |
 | Dec 1996 | MAIL | Northmoor annual statement | Flavour | Shows interest earned: £31. Against £28/yr of rent inflation. The joke lands silently |
 | **Feb 1997** | MAIL | **Windfall #1 — £2,000**, matured child savings | Windfall | |
-| **Mar 1997** | POP ×2 | **Meridian Capital Guaranteed Growth** + junk | **Scam 1** | The scam spike follows the windfall by three weeks. Loud, cheap, obvious |
+| **Mar 1997** | POP | **Meridian Capital Guaranteed Growth** | **Scam 1** | The scam spike follows the windfall by three weeks. Loud, cheap, obvious |
 | May 1997 | MAIL | Brightwell Ltd — workplace pension opt-in | Life admin | Teaches allocation diegetically |
 | **Jul 1997** | MAIL | **Fenwick Index Trust — UK All-Share tracker, 0.4%** | **Legit — the correct answer** | Dull page, dull copy, correct |
 | **Sep 1997** | DLG | **Shock — £600** (deposit top-up + phone bill) | Shock | |
-| Nov 1997 | POP | Junk | Junk | |
 | Feb 1998 | MAIL | Dave — "mate you have to see this" | Social | FOMO. Links to the tech fund |
 | **Mar 1998** | POP | **Cavendish Technology Opportunities** | **Scam 2** | The §22.3 example page |
-| May 1998 | MAIL | Capital Direct Gold Card — £2,000 limit | Credit | First card offer |
-| **Aug 1998** | DLG | **Shock — £1,100** (laptop / car) | Shock | |
+| May 1998 | MAIL | Capital Direct Gold Card — introductory credit information | Credit | Informational; no application link in the MVP |
+| **Aug 1998** | DLG | **Shock — £500** (car repair) | Shock | |
 | Oct 1998 | MAIL | Ashcombe Managed Portfolio — 3% + 20% | Mediocre | Legal, legitimate, a mistake |
-| Dec 1998 | POP | Junk | Junk | |
 | Jan 1999 | MAIL | Fenwick World — global tracker, 0.5% | Legit | |
-| **May 1999** | POP ×3 | **Vertex Communications** + 2 junk | **Scam 4 — the pump** | Mania peak. Three popups at once, the cap |
+| Mar 1999 | MAIL | Kingsley Gilt Income Fund | Legit | Crash dampener; sober investor correspondence |
+| **May 1999** | POP | **Vertex Communications** | **Scam 4 — the pump** | Mania peak |
 | **Jun 1999** | POP | **Halcyon Reserve** | **Scam 3 — THE PONZI** | Arrives showing 14 months of flawless 4%/mo. Best-looking site in the game |
 | Jul 1999 | MAIL | Dave — "I'm up 300%" | Social | |
 | Sep 1999 | MAIL | Quicksilver.com — dot-com single stock | Concentrated | Real vehicle, catastrophic timing |
 | **Nov 1999** | DLG | **JOB LOSS — 3 months, no income** | Shock | The big one |
-| Dec 1999 | POP | Y2K panic junk | Junk | |
-| **Jan 2000** | DLG | **Year turn — BREAK-EVEN** | Year turn | *"This year, your pay covers your life exactly. From here it doesn't."* The thesis, as a beat |
+| **Jan 2000** | DLG | **Year turn — BREAK-EVEN** | Year turn | Living costs now match £760 pay; from here costs rise faster |
 | Feb 2000 | MAIL | **Windfall #2 — £1,800** redundancy; new job, same £760 | Windfall | Cash lands at maximum desperation |
 | **Mar 2000** | DLG | **THE CRASH** | Market | |
 | **Mar 2000** | DLG | **Shock — £900** (boiler) | Shock | **The cash-only player dies here.** §8.4 |
-| Jun 2000 | POP | "Buy the dip" junk | Junk | |
-| Oct 2000 | MAIL | Capital Direct — second card offer | Credit | Post-shock. Most tempting, most dangerous |
+| Apr 2000 | MAIL | **Restitution Partners — "recover your losses"** | **Scam 5** | Aimed at whoever just lost money. By mail, so mail cannot be trusted either |
+| Jun 2000 | MAIL | MarketWatch — "Buy the dip" | Junk/market context | Financial newsletter rhetoric after the crash |
+| Oct 2000 | MAIL | Capital Direct — introductory credit revisited | Credit | Post-shock informational warning; no application link in the MVP |
 | **Nov 2000** | DLG | **HALCYON RESERVE SUSPENDED — value £0** | Scam payload | 17 months of perfect returns, then nothing |
-| **Apr 2001** | MAIL | **Restitution Partners — "recover your losses"** | **Scam 5** | Aimed at whoever just lost money. By mail, so mail can't be trusted either |
+| Mar 2001 | MAIL | Granville plc investor relations | Legit | Concentrated blue-chip share offer |
 | **Sep 2001** | DLG | **Market event + Shock £900, in the trough** | Shock | **The forced-sale moment.** Designed emotional peak of the run |
 | Dec 2001 | DLG | Year turn | Year turn | |
 | **Jan 2002** | DLG | **"Your computer has been upgraded."** | Era switch | **Era A → Era B (§18.2).** No further explanation |
-| Mar 2002 | POP | Recovery-room junk | Junk | Popup blocker now active — status bar reports blocks |
+| Jun 2002 | MAIL | Fenwick Investor Bulletin — post-crash uncertainty and diversification | Flavour | Educational and state-independent; no offer or CTA |
 | Oct 2002 | DLG | Shock — £500 | Shock | |
 | Feb 2003 | MAIL | **Windfall #3 — £2,500** legacy | Windfall | |
 | **Apr 2003** | POP | **"SECURITY ALERT — your savings are at risk"** | **Scam 6 — fake dialog** | The hardest one. §20.5 |
 | Sep 2003 | MAIL | Marlow Corporate Bond Fund | Legit | |
 | **Mar 2004** | DLG | **Shock — £1,200** (rent spike, moving costs) | Shock | Most surviving players die here |
-| Aug 2004 | MAIL | Pension top-up prompt | Life admin | |
+| Aug 2004 | MAIL | Pension matching reminder | Life admin | Informational; no Brightwell-specific link after redundancy |
+| Feb 2005 | MAIL | Marlow Investor Bulletin — the compounding effect of investment charges | Flavour | Educational and state-independent; no offer or CTA |
 | May 2005 | DLG | Shock — £700 | Shock | |
-| Nov 2005 | POP | Late junk | Junk | |
+| Sep 2005 | POP | Meadowbank Online Banking — account-verification phishing | Security | Bank impersonation and threatened account restriction; X-only, with no credential mechanics |
 | Jun 2006 | DLG | Shock — £600 | Shock | |
+| Aug 2006 | MAIL | Personal Finance Review — keeping long-term plans on track | Flavour | Late-game reflection on regular saving, pensions and diversification |
 | **Dec 2006** | DLG | **THE DECADE ENDS — you survived** | Win | LEGENDARY card |
 
-**Totals:** 17 offers (9 mail, 8 popup) · 6 scams · 9 shocks · 3 windfalls · 8 junk · 2 credit offers.
+**Implemented totals:** 47 events · 23 Mail events · 8 authored popup windows · 17 actionable offers (11 mail, 6 popup; life-admin and educational reminders excluded) · 6 fundable scams plus one non-actionable phishing lesson · 9 shocks · 3 windfalls · 2 junk · 2 credit events.
 
 ### 14.3 Rules the script must satisfy
 
@@ -1152,7 +1158,7 @@ perfect play         2005-02    KNOWN GAP
 | 1–2 | Scaffold, `Math.random()` ban, type contract | Ban proven: a probe file containing `Math.random()` fails lint |
 | 3 | Market table generator → `series.json` | 132 rows × 22 columns. NASDAQ 5.03× to Mar 2000, then −78% to Oct 2002. Gilts gain through the crash while the tracker loses. Halcyon has no down month, then 0 in Nov 2000 |
 | 4 | Expense basket | Reproduces §8.3 to within £1 every year; **year-2000 surplus is −£0.45** — break-even, as designed. The blended rate is an output of the basket, never an input |
-| 5 | The script | **49 events.** §14.2's printed table has 46 rows against a headline of "42" — see *Deviations* below |
+| 5 | The script | **47 events.** The implemented delivery mix, popup-density reduction and late-game pacing additions are documented under *Deviations* below |
 | 6 | Fact sheets | All 17 vehicles, ten fields each, `— none —` never blank. Every scam carries ≥2 red flags (tested) |
 | 7–8 | Month tick + headless runner | §7.3's six sub-steps in exact order; full decade runs in <50ms |
 | 9 | **Verification gate** | Six scripted strategies asserting exact death dates. In CI |
@@ -1167,7 +1173,7 @@ perfect play         2005-02    KNOWN GAP
 | 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate) |
 | 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups draggable, capped at 3, positioned by arithmetic on the month index |
 | 23 | `/money` | Sliders always total 100% under proportional redistribution with per-row locks; `[Rebalance Now]` itemises every buy, sell, realised P&L and exit fee before executing |
-| 24 | **Script wired to the UI** | All 49 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
+| 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
 | 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending |
 | 26 | Bands + cause-of-death | `bandFor(status, deathMonth)` takes **no wealth parameter**, so §15's anti-gambling guardrail is structural. Five of six §22.6 lines proven reachable by real runs |
 | 27 | Death card | Full-page, chrome retained, **every toolbar button greyed except Home**. Inline-SVG decade graph, player line vs market. Missed red flags quoted from the fact sheet the player could have read (§11.2 rule 5) |
@@ -1259,21 +1265,25 @@ mobile.
 
 ## Deviations from this document, and why
 
-1. **The script carries 49 events, not 42.** §14.2's printed table contains 46 rows
+1. **The script carries 47 events, not 42.** §14.2's printed table contains 46 rows
    against its own headline of "42 authored events" — the headline does not
    reconcile with the table beneath it. The table was treated as authoritative
    (per §14.2: "if an event is not in this table, it does not happen"), plus the
-   three additions in point 2.
-2. **Three legitimate popup offers were added.** §14.2's headline claims 17 offers
+   three vehicle additions in point 2, less six expendable standalone junk events.
+   Three additional companion junk windows were removed without changing their
+   parent Meridian and Vertex events. A subsequent pacing pass added three inert,
+   financially educational Mail items and one non-actionable bank-phishing popup.
+   The eight current POP events each produce exactly one window.
+2. **Three legitimate offers were added; one remains a popup.** §14.2's headline claims 17 offers
    with an 8-popup split, but its table lists only 5 popup offers and **all 5 are
    scams**. That directly contradicts §10 rule 1 — "a real tracker fund advertises
    by popup too. Skew, don't determine" — and would teach players that popups are
    always scams, which is wrong in life and fatal to §11.2's fairness contract.
    The three §9.1 vehicles with no delivery anywhere were used: the high-fee tech
    fund (loud but entirely legitimate — §21's central lesson made concrete), the
-   blue-chip single stock, and the gilt fund, placed before the crash so it can act
-   as the dampener §9.1 designs it to be. The popup channel is now 5 scams of 8,
-   matching §10's own "5 of 8" ratio, with a permanent regression test.
+   blue-chip single stock, and the gilt fund. Technova remains the non-scam popup;
+   the sober Granville and Kingsley solicitations arrive through Mail. The popup
+   channel therefore still cannot be used as a reliable scam classifier.
 3. **Restitution Partners moved from Apr 2001 to Apr 2000.** §14.3 rule 2 requires
    every windfall to be followed by a scam within 90 days and flags the Feb 2000
    windfall as "too slow", explicitly authorising a scam being moved into mid-2000.
@@ -1394,7 +1404,7 @@ The operator's script — the known-good playthrough, rehearsed, ~8 minutes with
 | Jul 1997 | Accept the tracker, move to 70% tracker / 30% cash | The correct play, made to look boring on purpose |
 | Sep 1997 | Take the £600 shock from cash | Shocks, and why cash matters |
 | Jun 1999 | **Open Halcyon Reserve. Show the beautiful site. Show the fact sheet. Decline.** | The whole thesis of §21 in thirty seconds — this is the money shot of the demo |
-| Jan 2000 | Let the year-turn dialog play | *"This year your pay covers your life exactly."* The single best line to have on screen while talking |
+| Jan 2000 | Let the year-turn dialog play | Living costs have caught up with pay and will now rise faster |
 | Mar 2000 | Let the crash land, then the boiler. Cover it by selling | The forced sale, at the bottom |
 | Nov 2000 | Halcyon collapses — **you dodged it** | Payoff for the 1999 decision. Land this and the judges have understood the game |
 | Fast-forward | Jump to Dec 2006 | |

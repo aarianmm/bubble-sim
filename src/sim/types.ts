@@ -129,6 +129,7 @@ export type EventClass =
   | 'credit'
   | 'social'
   | 'flavour'
+  | 'security'
   | 'shock'
   | 'job-loss'
   | 'market'

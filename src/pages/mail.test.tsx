@@ -312,6 +312,28 @@ describe('actions', () => {
     expect(link.getAttribute('href')).toBe('http://www.fenwickfunds.co.uk/index-trust');
   });
 
+  it('does not expose an offer CTA for informational Capital Direct Mail', () => {
+    const dispatch = vi.fn();
+    const state = makeState({
+      inbox: [makeMail({
+        id: 'capital',
+        from: 'Capital Direct',
+        subject: '0% on purchases for 6 months',
+        contentId: 'msg.capital-direct-card-1998-05',
+        cls: 'credit',
+        vehicleId: undefined,
+      })],
+    });
+    mount(state, dispatch);
+    const row = container!.querySelector('[data-testid="mail-row-capital"]') as HTMLTableRowElement;
+    act(() => row.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    const openBtn = Array.from(container!.querySelectorAll('button')).find((b) => b.textContent?.includes('Open'))!;
+    act(() => openBtn.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+
+    expect(container!.textContent).toContain('29.8% APR representative');
+    expect(container!.querySelector('.mail-message__offer-link')).toBeNull();
+  });
+
   it('dispatches delete-mail for the selected row', () => {
     const dispatch = vi.fn();
     const state = makeState({ inbox: [makeMail({ id: 'm1' })] });

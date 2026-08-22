@@ -33,38 +33,38 @@ export const DIALOGS: Record<string, DialogCopy> = {
 
   'dlg.shock-1997-09': {
     title: 'Deposit top-up and a phone bill',
-    body: 'Your landlord wants another £400 down. BT wants the rest today.',
+    body: 'Your landlord has demanded a £400 deposit top-up, and an overdue £200 phone bill is due today. Total cost: £600.',
     buttons: PAY_OR_SELL,
   },
 
   'dlg.shock-1998-08': {
     title: 'The car failed its MOT',
-    body: 'A new one isn’t in the budget. The repair is £500, due now.',
+    body: 'Your car has failed its MOT and needs £500 of repairs before you can keep driving. The bill is due now.',
     buttons: PAY_OR_SELL,
   },
 
   'dlg.job-loss-1999-11': {
     title: 'Redundant',
-    body: 'Brightwell Ltd is restructuring. Your last paycheque was October’s.',
+    body: 'Brightwell Ltd has made you redundant. You will receive no salary for the next three months.',
     buttons: ACKNOWLEDGE('I see'),
   },
 
   // §8.3 — the thesis of the game, delivered as a game event. Verbatim.
   'dlg.year-turn-2000-01': {
     title: 'January 2000',
-    body: 'This year, your pay covers your life exactly. From here it doesn’t.',
+    body: 'Your monthly living costs have risen to match your £760 pay. From now on, costs will rise faster than your income.',
     buttons: ACKNOWLEDGE(),
   },
 
   'dlg.crash-2000-03': {
     title: 'The market has fallen sharply',
-    body: 'The NASDAQ fell 9% overnight. Every fund on your screen is red.',
+    body: 'The NASDAQ has fallen 9% overnight, and market-linked investments have dropped sharply. Any holdings exposed to the crash are now worth less.',
     buttons: ACKNOWLEDGE(),
   },
 
   'dlg.shock-2000-03-boiler': {
     title: 'The boiler has gone',
-    body: 'It needs replacing today, not repairing. £900.',
+    body: 'A heating engineer says your boiler cannot be repaired and must be replaced immediately. The replacement costs £900, due now.',
     buttons: PAY_OR_SELL,
   },
 
@@ -76,13 +76,13 @@ export const DIALOGS: Record<string, DialogCopy> = {
 
   'dlg.shock-2001-09-trough': {
     title: 'Another bill, at the worst possible time',
-    body: 'The market is still down 40% from the peak. This one is £900, due now.',
+    body: 'An unexpected essential expense is due while the market is still down 40% from its peak. You must pay £900 now.',
     buttons: PAY_OR_SELL,
   },
 
   'dlg.year-turn-2001-12': {
     title: 'December 2001',
-    body: 'Another year, another squeeze. Rent outpaced your pay again.',
+    body: 'Rent has risen faster than your pay for another year. Your monthly budget is tighter again.',
     buttons: ACKNOWLEDGE(),
   },
 
@@ -95,25 +95,25 @@ export const DIALOGS: Record<string, DialogCopy> = {
 
   'dlg.shock-2002-10': {
     title: 'The washing machine has died',
-    body: 'Not covered, not optional. £500.',
+    body: 'Your washing machine has broken beyond economical repair. Replacing it costs £500, due now.',
     buttons: PAY_OR_SELL,
   },
 
   'dlg.shock-2004-03': {
     title: 'Moving day',
-    body: 'Rent is up again and the deposit is due this month. £1,200.',
+    body: 'Your rent has increased and a larger deposit is required for the move. You must pay £1,200 this month.',
     buttons: PAY_OR_SELL,
   },
 
   'dlg.shock-2005-05': {
     title: 'A dental bill',
-    body: 'Not covered, not optional, not going away. £700.',
+    body: 'You need urgent dental treatment that is not covered. The bill is £700, due now.',
     buttons: PAY_OR_SELL,
   },
 
   'dlg.shock-2006-06': {
     title: 'One more, right at the end',
-    body: '£600. Same as it ever was.',
+    body: 'An unexpected essential expense is due immediately. You must pay £600 now.',
     buttons: PAY_OR_SELL,
   },
 

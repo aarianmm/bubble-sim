@@ -221,6 +221,7 @@ function perfectPlayDecisions(): Decision[] {
 
 export function EngineProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(createInitialState);
+  const [mailNoticeResetKey, setMailNoticeResetKey] = useState(0);
   const [paused, setPausedState] = useState(false);
   const [rateOverride, setRateOverride] = useState<number>(RATE_NORMAL);
   const [forcedSale, setForcedSale] = useState<PendingForcedSale | null>(null);
@@ -455,6 +456,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
    * ---------------------------------------------------------------- */
   const landOnMonth = useCallback(
     (month: MonthIndex, extraByMonth: Map<MonthIndex, Decision[]>) => {
+      setMailNoticeResetKey((key) => key + 1);
       clearPopupPresentation();
       let s = createInitialState();
       for (let m = 0; m < month; m++) {
@@ -520,6 +522,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     (preset: PresetName) => {
       switch (preset) {
         case 'start':
+          setMailNoticeResetKey((key) => key + 1);
           clearPopupPresentation();
           pendingRef.current = null;
           forcedSaleTrialRef.current = null;
@@ -685,6 +688,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       paused,
       timeRate,
       popupPresentation,
+      mailNoticeResetKey,
       dispatch,
       setPaused,
       setTimeRate,
@@ -698,7 +702,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       showDeathCard,
       reset,
     }),
-    [state, paused, timeRate, popupPresentation, dispatch, setPaused, setTimeRate, closePresentedPopup, filePresentedPopup, deferPresentedPopup, finishPopupGap, jumpToMonth, forceEvent, loadPreset, showDeathCard, reset],
+    [state, paused, timeRate, popupPresentation, mailNoticeResetKey, dispatch, setPaused, setTimeRate, closePresentedPopup, filePresentedPopup, deferPresentedPopup, finishPopupGap, jumpToMonth, forceEvent, loadPreset, showDeathCard, reset],
   );
 
   return (
