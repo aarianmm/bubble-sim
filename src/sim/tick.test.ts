@@ -297,7 +297,7 @@ describe('fireScheduledEvents (§7.3.5)', () => {
       month,
       channel: 'POP',
       cls: 'junk',
-      contentId: 'pop.freestuff-1996-02',
+      contentId: 'pop.buy-now-pay-later-1996-02',
       count: 3,
       blocksTime: false,
     };

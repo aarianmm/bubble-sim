@@ -72,7 +72,7 @@ describe('the timeline (§14.2)', () => {
     });
   });
 
-  it('removes the expendable ChainMail and late FREEST0FF events', () => {
+  it('removes the expendable ChainMail and late junk events', () => {
     expect(TIMELINE.some((e) => e.id === 'ev.1997-11.junk')).toBe(false);
     expect(TIMELINE.some((e) => e.id === 'ev.2005-11.late-junk')).toBe(false);
   });
@@ -80,7 +80,7 @@ describe('the timeline (§14.2)', () => {
   it('authors exactly the eight retained single-window popups', () => {
     const popups = TIMELINE.filter((e) => e.channel === 'POP');
     expect(popups.map((e) => e.id)).toEqual([
-      'ev.1996-02.freestuff',
+      'ev.1996-02.buy-now-pay-later',
       'ev.1997-03.meridian',
       'ev.1998-02.technova',
       'ev.1998-03.cavendish',
@@ -91,6 +91,20 @@ describe('the timeline (§14.2)', () => {
     ]);
     expect(popups.every((e) => (e.count ?? 1) === 1)).toBe(true);
     expect(popups.every((e) => (e.popupCompanionContentIds?.length ?? 0) === 0)).toBe(true);
+  });
+
+  it('keeps the February 1996 consumer-credit advert lightweight and non-actionable', () => {
+    const event = TIMELINE.find((e) => e.id === 'ev.1996-02.buy-now-pay-later');
+    expect(event).toMatchObject({
+      date: '1996-02',
+      channel: 'POP',
+      cls: 'junk',
+      contentId: 'pop.buy-now-pay-later-1996-02',
+      count: 1,
+      expiresDays: 45,
+      blocksTime: false,
+    });
+    expect(event?.vehicleId).toBeUndefined();
   });
 
   it('adds three inert educational Mail events and one non-actionable phishing popup on quiet dates', () => {

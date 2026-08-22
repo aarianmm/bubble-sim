@@ -57,7 +57,7 @@ function samplePopup(slot: number, month: number): PopupItem {
   return {
     id: `demo-popup-${slot}`,
     eventId: 'demo',
-    title: 'FREEST0FF.NET',
+    title: 'EasyPay Credit',
     contentId: 'pop.demo',
     cls: 'junk',
     openedMonth: month,
@@ -99,10 +99,13 @@ export function NotificationDemo() {
         <Popup
           key={slot}
           popup={samplePopup(slot, state.month)}
-          heading="★ ★  F R E E   S T U F F  ★ ★"
-          marquee="PLACES CLOSE FRIDAY — CLICK NOW — PLACES CLOSE FRIDAY"
+          heading="0% INTEREST — BUY NOW, PAY LATER"
+          marquee="NOTHING TO PAY FOR 3 MONTHS"
           loud
-          body={['You may already have won.', 'Click below to claim your free ringtones.']}
+          body={[
+            'Spread the cost today with nothing to pay for the first 3 months.',
+            'Standard interest applies after the introductory period.',
+          ]}
           onClose={(id) =>
             setPopupSlots((slots) => slots.filter((s) => `demo-popup-${s}` !== id))
           }

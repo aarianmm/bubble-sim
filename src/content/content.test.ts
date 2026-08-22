@@ -219,7 +219,7 @@ describe('state-independent storyline copy', () => {
 
 describe('lightweight junk popup copy', () => {
   const junkContentIds = [
-    'pop.freestuff-1996-02',
+    'pop.buy-now-pay-later-1996-02',
   ];
 
   it('does not instruct the player to use a nonexistent CTA', () => {
@@ -227,6 +227,17 @@ describe('lightweight junk popup copy', () => {
       const copy = POPUP_MESSAGES[id].body.join(' ');
       expect(copy, id).not.toMatch(/\b(click|sign up|order|join|claim|register|forward this)\b/i);
     }
+  });
+
+  it('uses the February 1996 popup to explain introductory consumer credit', () => {
+    expect(POPUP_MESSAGES['pop.buy-now-pay-later-1996-02']).toEqual({
+      from: 'EasyPay Credit',
+      subject: '0% INTEREST — BUY NOW, PAY LATER',
+      body: [
+        'Spread the cost today with nothing to pay for the first 3 months.',
+        'Standard interest applies after the introductory period.',
+      ],
+    });
   });
 });
 

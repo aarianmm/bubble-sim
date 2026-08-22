@@ -384,7 +384,7 @@ describe('§25.5 — the demo path, beat by beat, driven through the real <App/>
     const input = document.body.querySelector<HTMLInputElement>('[aria-label="Event id"]')!;
     setControlledValue(input, 'ev.1996-04.northmoor-bond', 'input');
     click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', 'Force'));
-    setControlledValue(input, 'ev.1996-02.freestuff', 'input');
+    setControlledValue(input, 'ev.1996-02.buy-now-pay-later', 'input');
     click(byText<HTMLButtonElement>(document.body, 'button.bevel-out', 'Force'));
     expect(popups()).toHaveLength(1);
 

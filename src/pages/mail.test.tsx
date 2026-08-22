@@ -194,7 +194,7 @@ describe('row class-indistinguishability (§10.3, §22.2)', () => {
     const state = makeState({
       inbox: [
         makeMail({ id: 'a', cls: 'scam', from: 'Cavendish Asset Mgmt', subject: 'Opportunity' }),
-        makeMail({ id: 'b', cls: 'junk', from: 'FREEST0FF.NET', subject: 'FREE RINGTONES 4 U' }),
+        makeMail({ id: 'b', cls: 'junk', from: 'Prize Post', subject: 'You may already have won' }),
         makeMail({ id: 'c', cls: 'legit', from: 'Northmoor Building Society', subject: 'Your statement' }),
       ],
     });

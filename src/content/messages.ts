@@ -236,10 +236,13 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
  * ------------------------------------------------------------------ */
 
 export const POPUP_MESSAGES: Record<string, MessageBody> = {
-  'pop.freestuff-1996-02': {
-    from: 'FREEST0FF.NET',
-    subject: 'FREE RINGTONES 4 U!!!',
-    body: ['Get 10 FREE ringtones sent straight to your phone!', 'No catch. 100% free!!!'],
+  'pop.buy-now-pay-later-1996-02': {
+    from: 'EasyPay Credit',
+    subject: '0% INTEREST — BUY NOW, PAY LATER',
+    body: [
+      'Spread the cost today with nothing to pay for the first 3 months.',
+      'Standard interest applies after the introductory period.',
+    ],
   },
 
   'pop.meridian-1997-03': {

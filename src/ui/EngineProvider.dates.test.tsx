@@ -132,7 +132,7 @@ describe('Step 24 done-condition — jump to date, correct tier fires', () => {
     await act(async () => {
       await new Promise((resolve) => window.setTimeout(resolve, 350));
     });
-    expect(engineHandle!.popupPresentation.pending.some((p) => p.contentId === 'pop.freestuff-1996-02')).toBe(true);
+    expect(engineHandle!.popupPresentation.pending.some((p) => p.contentId === 'pop.buy-now-pay-later-1996-02')).toBe(true);
     expect(engineHandle!.state.popups.some((p) => p.id === snapshot.id)).toBe(false);
     expect(engineHandle!.popupPresentation.active?.id).toBe(snapshot.id);
     act(() => engineHandle!.filePresentedPopup(snapshot));
@@ -141,10 +141,10 @@ describe('Step 24 done-condition — jump to date, correct tier fires', () => {
     expect(engineHandle!.popupPresentation.phase).toBe('gap');
   });
 
-  it('preserves important offers arriving while the harmless tutorial popup is active', () => {
+  it('preserves important offers arriving while the low-stakes credit advert is active', () => {
     mount();
-    act(() => engineHandle!.forceEvent('ev.1996-02.freestuff'));
-    expect(engineHandle!.popupPresentation.active?.contentId).toBe('pop.freestuff-1996-02');
+    act(() => engineHandle!.forceEvent('ev.1996-02.buy-now-pay-later'));
+    expect(engineHandle!.popupPresentation.active?.contentId).toBe('pop.buy-now-pay-later-1996-02');
     act(() => engineHandle!.forceEvent('ev.1998-03.cavendish'));
     act(() => engineHandle!.forceEvent('ev.1999-06.halcyon'));
     const queuedVehicles = engineHandle!.popupPresentation.pending.map((p) => p.vehicleId).filter(Boolean);

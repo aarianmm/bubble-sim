@@ -65,7 +65,7 @@ describe('materializeDialog', () => {
 
 describe('materializePopups (§20.2)', () => {
   it('opens exactly one item for a count-1 event, id === event.id', () => {
-    const event = EVENTS_BY_ID['ev.1996-02.freestuff'];
+    const event = EVENTS_BY_ID['ev.1996-02.buy-now-pay-later'];
     const popups = materializePopups(event, monthIndex(1996, 2));
     expect(popups).toHaveLength(1);
     expect(popups[0].id).toBe(event.id);

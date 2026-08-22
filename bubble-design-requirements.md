@@ -332,7 +332,7 @@ Those counts are the authored manifest, not a probability. The ratio is the *rea
 
 | Class | Frequency | Channel | Effect |
 |---|---|---|---|
-| **Junk** | High | Popup mostly | Pure noise. Ringtones, chain mail, "you may already have won". Free to dismiss; accepting is harmless but attracts more junk. |
+| **Junk** | High | Popup mostly | Low-stakes adverts, chain mail and "you may already have won" promotions. Free to dismiss; accepting is harmless but attracts more junk. |
 | **Legit offer** | Medium | Both | Unlocks a real vehicle. Fact sheet is clean. |
 | **Mediocre offer** | Medium | Both | Unlocks a real but bad vehicle. High fees or narrow holdings, plainly stated. Legal, legitimate, a mistake. |
 | **Scam offer** | Rising 1998–2000 | Popup-weighted | Unlocks a fatal vehicle. Fact sheet carries ≥2 red flags. §11 |
@@ -511,7 +511,7 @@ Shocks are the difficulty engine, because the market series is fixed by history 
 | Date | Ch | Event | Class | Notes |
 |---|---|---|---|---|
 | Jan 1996 | — | Run begins. £760/mo, £645 out, £0 cash | — | |
-| Feb 1996 | POP | FREEST0FF.NET — free ringtones | Junk | Teaches that popups exist and are safely closeable |
+| Feb 1996 | POP | EasyPay Credit — 0% buy now, pay later | Junk | Introduces popup dismissal and the cost after an introductory borrowing period |
 | **Apr 1996** | MAIL | **Northmoor Building Society — 5.2% savings bond** | **Legit** | **The discoverability floor (§16).** Unmistakably safe, and the fact sheet is the only way to see the rate. Hideous website (§21 rule 2) |
 | Dec 1996 | MAIL | Northmoor annual statement | Flavour | Shows interest earned: £31. Against £28/yr of rent inflation. The joke lands silently |
 | **Feb 1997** | MAIL | **Windfall #1 — £2,000**, matured child savings | Windfall | |
@@ -935,7 +935,7 @@ Webmail of the era. Message list, no preview pane in Era A; preview pane appears
 │   ├────┼──────────────────────────┼─────────────────────┼───────────┤ │
 │   │ ●  │ Cavendish Asset Mgmt     │ A once-in-a-gener…  │    2d     │ │
 │   │ ●  │ Payroll @ Brightwell Ltd │ Your workplace pen… │    —      │ │
-│   │ ●  │ FREEST0FF.NET            │ FREE RINGTONES 4 U  │    —      │ │
+│   │ ●  │ Prize Post               │ You may have won    │    —      │ │
 │   │    │ Dave                     │ mate you have to s… │    9d     │ │
 │   │    │ Northmoor Building Soc.  │ Your annual statem… │    —      │ │
 │   └────┴──────────────────────────┴─────────────────────┴───────────┘ │
