@@ -112,6 +112,7 @@ function makeEngine(state: GameState, dispatch: (d: Decision) => void = vi.fn())
     timeRate: RATE_NORMAL,
     dispatch,
     setPaused: vi.fn(),
+    setEvolutionPaused: vi.fn(),
     setTimeRate: vi.fn(),
     jumpToMonth: vi.fn(),
     forceEvent: vi.fn(),
