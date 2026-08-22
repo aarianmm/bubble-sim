@@ -11,7 +11,7 @@
  */
 
 import { createContext, useContext } from 'react';
-import type { Band, Decision, DeathCauseId, EventId, GameState } from '../sim/types';
+import type { Band, Decision, DeathCauseId, EventId, GameState, PopupItem } from '../sim/types';
 import type { MonthIndex } from '../sim/month';
 
 /** §7.4 — one simulated month is 1.2 real seconds at 1x. */
@@ -25,17 +25,31 @@ export const RATE_INBOX = 0.4;
 /** §25.4 presenter tool — 20x is for skipping quiet years live. */
 export const RATE_PRESENTER = 20;
 
+export interface PopupPresentationState {
+  active: PopupItem | null;
+  pending: PopupItem[];
+  phase: 'showing' | 'gap';
+}
+
 export interface Engine {
   state: GameState;
   /** True while a blocking dialog is open, or the player pressed pause (§20.1). */
   paused: boolean;
   /** Effective multiplier on MS_PER_MONTH. 0 while paused. */
   timeRate: number;
+  popupPresentation: PopupPresentationState;
+  /** Changes when reset/presenter navigation rebuilds state, allowing
+   * presentation hooks to suppress historical arrival notices. */
+  mailNoticeResetKey?: number;
 
   dispatch(decision: Decision): void;
   setPaused(paused: boolean): void;
   /** Hold-to-fast-forward sets RATE_FAST on press and RATE_NORMAL on release. */
   setTimeRate(rate: number): void;
+  closePresentedPopup(popupId: string): void;
+  filePresentedPopup(popup: PopupItem): void;
+  deferPresentedPopup(popupId: string): void;
+  finishPopupGap(): void;
 
   /* --- §25.4 presenter tools, behind ?dev=1 --- */
   jumpToMonth(month: MonthIndex): void;

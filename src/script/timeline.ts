@@ -24,16 +24,20 @@
  *
  * RESOLVED: three named popup offers have been added, using the three §9.1
  * vehicles that otherwise had no delivery anywhere in the timeline —
- * `technova-growth` (LOUD, 1998-02, paired with Dave's FOMO email, which now
- * links here instead of to Cavendish — §21's central lesson: loud does not
- * mean scam), `kingsley-gilt` (1999-03, well ahead of the 1999 mania peak so
- * it can do its §9.1 job as the crash dampener) and `granville-plc`
- * (2001-03, in the quiet stretch after the Halcyon collapse). This raises
- * total events to 49 and popup offers from 5 to 8 (17 offers total, 9 mail +
- * 8 popup — matching §14.2's own headline split exactly, even though the
- * event-count headline still doesn't reconcile). See each event's `notes`
- * field, below, and `src/content/messages.ts` / `offerpages.ts` for their
- * copy and site style.
+ * `technova-growth` (LOUD, 1998-02, paired with Dave's FOMO email),
+ * `kingsley-gilt` (1999-03, well ahead of the 1999 mania peak) and
+ * `granville-plc` (2001-03, after the Halcyon collapse). Technova remains
+ * the legitimate popup that proves loud does not mean scam; the sober
+ * Kingsley and Granville solicitations now arrive by Mail, where their
+ * investor-facing tone belongs. Two expendable standalone junk events were
+ * removed. A later popup-density pass removed four more standalone junk
+ * events and the three junk companions attached to Meridian and Vertex,
+ * leaving 43 authored events and 17 offers (11 mail, 6 popup). A late-game
+ * pacing pass then added three inert financial-education Mail items and one
+ * non-actionable bank-impersonation popup. The resulting 47-event timeline
+ * has eight authored POP events, each producing exactly one window.
+ * The Aug 2004 life-admin reminder is informational because the player no
+ * longer works for Brightwell; life-admin is not included in offer totals.
  *
  * §14.3 rule 2 (every windfall followed by a scam within 90 days) is
  * satisfied WITHOUT adding a scam: Restitution Partners is moved from
@@ -61,16 +65,16 @@ export const TIMELINE: ScriptEvent[] = [
     notes: 'Run begins. £760/mo, £645 out, £0 cash (§8.1).',
   },
   {
-    id: 'ev.1996-02.freestuff',
+    id: 'ev.1996-02.buy-now-pay-later',
     date: '1996-02',
     month: monthIndex(1996, 2),
     channel: 'POP',
     cls: 'junk',
-    contentId: 'pop.freestuff-1996-02',
+    contentId: 'pop.buy-now-pay-later-1996-02',
     count: 1,
     expiresDays: 45,
     blocksTime: false,
-    notes: 'Teaches that popups exist and are safely closeable.',
+    notes: 'Low-stakes consumer-credit advert: introductory borrowing offers can become expensive after the promotional period.',
   },
   {
     id: 'ev.1996-04.northmoor-bond',
@@ -86,17 +90,6 @@ export const TIMELINE: ScriptEvent[] = [
     notes: 'The discoverability floor (§16). Rate is on the fact sheet only. Hideous site (§21 rule 2).',
   },
   {
-    id: 'ev.1996-09.junk',
-    date: '1996-09',
-    month: monthIndex(1996, 9),
-    channel: 'POP',
-    cls: 'junk',
-    contentId: 'pop.junk-1996-09',
-    count: 1,
-    expiresDays: 45,
-    blocksTime: false,
-  },
-  {
     id: 'ev.1996-12.northmoor-annual-statement',
     date: '1996-12',
     month: monthIndex(1996, 12),
@@ -106,7 +99,7 @@ export const TIMELINE: ScriptEvent[] = [
     vehicleId: 'northmoor-bond',
     expiresDays: null,
     blocksTime: false,
-    notes: 'Shows interest earned: £31, against £28/yr of rent inflation. The joke lands silently.',
+    notes: 'Illustrates £31 interest on £600, against £28/yr of rent inflation. The joke lands silently without assuming the player invested.',
   },
   {
     id: 'ev.1997-02.windfall-1',
@@ -128,10 +121,10 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'scam',
     contentId: 'pop.meridian-1997-03',
     vehicleId: 'meridian-guaranteed',
-    count: 2,
+    count: 1,
     expiresDays: 45,
     blocksTime: false,
-    notes: 'Scam 1. Arrives with a companion junk popup (count 2). Loud, cheap, obvious — three weeks after windfall #1.',
+    notes: 'Scam 1. Loud, cheap, obvious — three weeks after windfall #1.',
   },
   {
     id: 'ev.1997-05.brightwell-pension',
@@ -141,7 +134,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'life-admin',
     contentId: 'msg.brightwell-pension',
     vehicleId: 'brightwell-pension',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
     notes: 'Teaches allocation diegetically.',
   },
@@ -153,7 +146,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'legit',
     contentId: 'msg.fenwick-index',
     vehicleId: 'fenwick-index',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
     notes: 'The correct answer. Dull page, dull copy, correct.',
   },
@@ -167,17 +160,6 @@ export const TIMELINE: ScriptEvent[] = [
     amount: 600,
     blocksTime: true,
     notes: 'Deposit top-up + phone bill.',
-  },
-  {
-    id: 'ev.1997-11.junk',
-    date: '1997-11',
-    month: monthIndex(1997, 11),
-    channel: 'POP',
-    cls: 'junk',
-    contentId: 'pop.junk-1997-11',
-    count: 1,
-    expiresDays: 45,
-    blocksTime: false,
   },
   {
     id: 'ev.1998-02.dave-fomo',
@@ -229,11 +211,10 @@ export const TIMELINE: ScriptEvent[] = [
     channel: 'MAIL',
     cls: 'credit',
     contentId: 'msg.capital-direct-card-1998-05',
-    vehicleId: 'capital-direct-card',
     expiresDays: 9,
     blocksTime: false,
     mvpDeferred: true,
-    notes: 'First card offer (§13). Step 31, beyond the MVP boundary (§26.1).',
+    notes: 'Informational credit marketing (§13); usable credit remains beyond the MVP boundary (§26.1).',
   },
   {
     id: 'ev.1998-08.shock',
@@ -265,20 +246,9 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'mediocre',
     contentId: 'msg.ashcombe-managed',
     vehicleId: 'ashcombe-managed',
-    expiresDays: 9,
-    blocksTime: false,
-    notes: 'Legal, legitimate, a mistake.',
-  },
-  {
-    id: 'ev.1998-12.junk',
-    date: '1998-12',
-    month: monthIndex(1998, 12),
-    channel: 'POP',
-    cls: 'junk',
-    contentId: 'pop.junk-1998-12',
-    count: 1,
     expiresDays: 45,
     blocksTime: false,
+    notes: 'Legal, legitimate, a mistake.',
   },
   {
     id: 'ev.1999-01.fenwick-world',
@@ -288,25 +258,21 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'legit',
     contentId: 'msg.fenwick-world',
     vehicleId: 'fenwick-world',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
   },
   {
     id: 'ev.1999-03.kingsley-gilt',
     date: '1999-03',
     month: monthIndex(1999, 3),
-    channel: 'POP',
+    channel: 'MAIL',
     cls: 'legit',
     contentId: 'pop.kingsley-gilt-1999-03',
     vehicleId: 'kingsley-gilt',
     count: 1,
     expiresDays: 45,
     blocksTime: false,
-    // §10 rule 1 fix, and §9.1's crash dampener: has to arrive well before
-    // Mar 2000 to do its job. Placed two months ahead of the May 1999 mania
-    // peak on purpose — a boring gilt fund advertising by popup right before
-    // the mania and getting ignored is exactly the right shape.
-    notes: 'Legit popup offer, added for §10 rule 1. Arrives well ahead of the crash so it can plausibly be held through it.',
+    notes: 'Legit Mail offer. Arrives well ahead of the crash so it can plausibly be held through it.',
   },
   {
     id: 'ev.1999-05.vertex',
@@ -316,10 +282,10 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'scam',
     contentId: 'pop.vertex-1999-05',
     vehicleId: 'vertex-communications',
-    count: 3,
+    count: 1,
     expiresDays: 45,
     blocksTime: false,
-    notes: 'Scam 4 — the pump. Mania peak: three popups at once, the §20.2 cap.',
+    notes: 'Scam 4 — the pump. Mania peak.',
   },
   {
     id: 'ev.1999-06.halcyon',
@@ -368,17 +334,6 @@ export const TIMELINE: ScriptEvent[] = [
     notes: 'The big one. Redundancy payout arrives separately as windfall #2 (Feb 2000).',
   },
   {
-    id: 'ev.1999-12.y2k-junk',
-    date: '1999-12',
-    month: monthIndex(1999, 12),
-    channel: 'POP',
-    cls: 'junk',
-    contentId: 'pop.y2k-1999-12',
-    count: 1,
-    expiresDays: 45,
-    blocksTime: false,
-  },
-  {
     id: 'ev.2000-01.year-turn',
     date: '2000-01',
     month: monthIndex(2000, 1),
@@ -386,7 +341,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'year-turn',
     contentId: 'dlg.year-turn-2000-01',
     blocksTime: true,
-    notes: 'BREAK-EVEN. "This year, your pay covers your life exactly. From here it doesn\'t." The thesis, as a beat (§8.3).',
+    notes: 'BREAK-EVEN. Living costs now match £760 pay; from here costs rise faster. The thesis, as a beat (§8.3).',
   },
   {
     id: 'ev.2000-02.windfall-2',
@@ -450,7 +405,7 @@ export const TIMELINE: ScriptEvent[] = [
     id: 'ev.2000-06.buy-the-dip',
     date: '2000-06',
     month: monthIndex(2000, 6),
-    channel: 'POP',
+    channel: 'MAIL',
     cls: 'junk',
     contentId: 'pop.buy-the-dip-2000-06',
     count: 1,
@@ -464,11 +419,10 @@ export const TIMELINE: ScriptEvent[] = [
     channel: 'MAIL',
     cls: 'credit',
     contentId: 'msg.capital-direct-card-2000-10',
-    vehicleId: 'capital-direct-card',
     expiresDays: 2,
     blocksTime: false,
     mvpDeferred: true,
-    notes: 'Post-shock. Most tempting, most dangerous. Step 31, beyond the MVP boundary (§26.1).',
+    notes: 'Post-shock informational credit marketing; tempting under pressure, but not actionable in the MVP.',
   },
   {
     id: 'ev.2000-11.halcyon-suspended',
@@ -485,18 +439,16 @@ export const TIMELINE: ScriptEvent[] = [
     id: 'ev.2001-03.granville',
     date: '2001-03',
     month: monthIndex(2001, 3),
-    channel: 'POP',
+    channel: 'MAIL',
     cls: 'legit',
     contentId: 'pop.granville-2001-03',
     vehicleId: 'granville-plc',
     count: 1,
     expiresDays: 45,
     blocksTime: false,
-    // §10 rule 1 fix. Lands in the ten-month lull between the Halcyon
-    // collapse and the Sep 2001 trough shock — plenty of quiet on both
-    // sides (§14.3 rule 5) — and the post-crash rotation into boring
-    // blue-chip stocks is exactly the right period beat here.
-    notes: 'Legit popup offer, added for §10 rule 1.',
+    // Lands in the ten-month lull between the Halcyon collapse and the Sep
+    // 2001 trough shock. Investor-relations correspondence belongs in Mail.
+    notes: 'Legit Mail offer in the post-crash rotation into boring blue-chip stocks.',
   },
   {
     id: 'ev.2001-09.shock-trough',
@@ -529,16 +481,15 @@ export const TIMELINE: ScriptEvent[] = [
     notes: 'Era A -> Era B (§18.2). No further explanation.',
   },
   {
-    id: 'ev.2002-03.recovery-room',
-    date: '2002-03',
-    month: monthIndex(2002, 3),
-    channel: 'POP',
-    cls: 'junk',
-    contentId: 'pop.recovery-room-2002-03',
-    count: 1,
+    id: 'ev.2002-06.investor-bulletin',
+    date: '2002-06',
+    month: monthIndex(2002, 6),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.investor-bulletin-2002-06',
     expiresDays: 45,
     blocksTime: false,
-    notes: 'Popup blocker now active — status bar reports blocks.',
+    notes: 'State-independent post-crash lesson on uncertainty and diversification.',
   },
   {
     id: 'ev.2002-10.shock',
@@ -584,7 +535,7 @@ export const TIMELINE: ScriptEvent[] = [
     cls: 'legit',
     contentId: 'msg.marlow-corporate-bond',
     vehicleId: 'marlow-corporate-bond',
-    expiresDays: 9,
+    expiresDays: 45,
     blocksTime: false,
   },
   {
@@ -605,9 +556,20 @@ export const TIMELINE: ScriptEvent[] = [
     channel: 'MAIL',
     cls: 'life-admin',
     contentId: 'msg.pension-top-up-2004-08',
-    vehicleId: 'brightwell-pension',
     expiresDays: 9,
     blocksTime: false,
+    notes: 'Informational reminder only; does not route a former Brightwell employee back to the 1997 scheme.',
+  },
+  {
+    id: 'ev.2005-02.investment-charges',
+    date: '2005-02',
+    month: monthIndex(2005, 2),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.investment-charges-2005-02',
+    expiresDays: 45,
+    blocksTime: false,
+    notes: 'State-independent reminder that recurring investment charges compound over time.',
   },
   {
     id: 'ev.2005-05.shock',
@@ -620,15 +582,16 @@ export const TIMELINE: ScriptEvent[] = [
     blocksTime: true,
   },
   {
-    id: 'ev.2005-11.late-junk',
-    date: '2005-11',
-    month: monthIndex(2005, 11),
+    id: 'ev.2005-09.meadowbank-phishing',
+    date: '2005-09',
+    month: monthIndex(2005, 9),
     channel: 'POP',
-    cls: 'junk',
-    contentId: 'pop.late-junk-2005-11',
+    cls: 'security',
+    contentId: 'pop.meadowbank-phishing-2005-09',
     count: 1,
     expiresDays: 45,
     blocksTime: false,
+    notes: 'Non-actionable bank-impersonation phishing lesson; X-only because credential mechanics are outside the MVP.',
   },
   {
     id: 'ev.2006-06.shock',
@@ -639,6 +602,17 @@ export const TIMELINE: ScriptEvent[] = [
     contentId: 'dlg.shock-2006-06',
     amount: 600,
     blocksTime: true,
+  },
+  {
+    id: 'ev.2006-08.long-term-planning',
+    date: '2006-08',
+    month: monthIndex(2006, 8),
+    channel: 'MAIL',
+    cls: 'flavour',
+    contentId: 'msg.long-term-planning-2006-08',
+    expiresDays: 45,
+    blocksTime: false,
+    notes: 'State-independent late-game reflection on regular saving, pensions and diversification.',
   },
   {
     id: 'ev.2006-12.win',

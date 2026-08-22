@@ -16,7 +16,7 @@ export const SIMULATED_DISCLAIMER =
   'Simulated. Historical data is real; every company and fund in this game is invented. This is not financial advice.';
 
 /* ------------------------------------------------------------------ *
- * Mail (§22.2) — 17 messages
+ * Mail (§22.2) — 23 messages
  * ------------------------------------------------------------------ */
 
 export const MAIL_MESSAGES: Record<string, MessageBody> = {
@@ -34,10 +34,11 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
 
   'msg.northmoor-annual-statement': {
     from: 'Northmoor Building Society',
-    subject: 'Your annual statement',
+    subject: 'Your annual bond illustration',
     body: [
       'Dear Member,',
-      'Your account earned £31.00 in interest this year. A full statement is enclosed for your records.',
+      'Our 5.2% fixed-rate bond paid about £31 this year on a £600 balance. Over the same year, typical rent on your room rose by about £28.',
+      'These illustrative figures are enclosed for your records.',
       'Yours faithfully,\nNorthmoor Building Society',
     ],
   },
@@ -47,7 +48,7 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     subject: 'Your child savings account has matured',
     body: [
       'Your Meadowbank Savings account, opened on your behalf in 1985, matured this month.',
-      'Balance: £2,000.00, now transferred to your current account.',
+      'Your matured balance of £2,000.00 is ready for release. The funds will be credited to your current account when this maturity notice is acknowledged.',
     ],
   },
 
@@ -57,7 +58,7 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     body: [
       'Brightwell Ltd operates a workplace pension scheme, administered by Kingsley Asset Management.',
       'Opt in and the company matches your contribution, pound for pound, up to 4% of salary. That match is money you will not see any other way — opting out forfeits it, not just your own contribution.',
-      'You can change your contribution or opt out again at any time.',
+      'If you opt in, you can choose how much of your monthly saving is allocated to the pension fund.',
     ],
   },
 
@@ -83,10 +84,10 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
 
   'msg.capital-direct-card-1998-05': {
     from: 'Capital Direct',
-    subject: "You're pre-approved",
+    subject: '0% on purchases for 6 months',
     body: [
-      "You're pre-approved for a Capital Direct Gold Card. £2,000 credit limit.",
-      '0% on purchases for 6 months, then 29.8% APR representative. No annual fee.',
+      'THE CAPITAL DIRECT GOLD CARD: advertised £2,000 credit limit, with 0% on purchases for the first 6 months.',
+      'After the introductory period, 29.8% APR representative applies. No annual fee. The headline rate is temporary; any remaining balance would then be charged at the higher rate.',
     ],
   },
 
@@ -107,12 +108,18 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
+  'pop.kingsley-gilt-1999-03': {
+    from: 'Kingsley Asset Management',
+    subject: 'Not every fund needs to be exciting',
+    body: ['UK government gilts, various maturities. 0.75% annual fee.', 'Steady income. Low drama.'],
+  },
+
   'msg.dave-up-300-1999-07': {
     from: 'Dave',
-    subject: "I'm up 300%",
+    subject: "it's up again",
     body: [
       'mate',
-      "i put my isa into halcyon reserve back in june, i'm up over 300% since. you need to get in mate seriously, before it's too late",
+      "i put my isa into halcyon reserve last month and it's up again already. they reckon they've never had a down month. you need to look at this mate, seriously",
       'dave',
     ],
   },
@@ -130,26 +137,50 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     from: 'Brightwell Ltd HR',
     subject: 'Your redundancy payment',
     body: [
-      'Following last month’s restructuring notice, your redundancy payment has been processed.',
-      'Amount: £1,800.00. We wish you well.',
+      'Following the restructuring announced in November, your redundancy payment is ready for release.',
+      'Amount: £1,800.00. The funds will be credited to your current account when this payment notice is acknowledged. We wish you well.',
     ],
   },
 
   'msg.capital-direct-card-2000-10': {
     from: 'Capital Direct',
-    subject: 'A second chance to apply',
+    subject: 'The Gold Card offer, revisited',
     body: [
-      'Your Capital Direct Gold Card offer is still available. £2,000 limit, 0% for 6 months.',
-      'Applications take two minutes.',
+      'THE CAPITAL DIRECT GOLD CARD is being advertised again: £2,000 credit limit and 0% on purchases for 6 months.',
+      'After the introductory period, 29.8% APR representative applies. Offers like this can look especially attractive when money is tight; the higher rate still follows.',
     ],
   },
 
   'msg.restitution-partners': {
     from: 'Restitution Partners',
-    subject: 'Lost money in a failed fund? We can help.',
+    subject: 'Recent investment losses? We can help.',
     body: [
-      'If you held units in a fund that has ceased trading, our specialists may be able to recover some or all of your losses.',
+      'If your investments fell in the recent market crash, our specialists may be able to recover losses and protect what remains.',
       'A £150 administration fee applies on application.',
+    ],
+  },
+
+  'pop.buy-the-dip-2000-06': {
+    from: 'MarketWatch Alerts',
+    subject: 'BUY THE DIP — this is the bottom',
+    body: ['Every crash is a buying opportunity. Analysts agree: this is the bottom.', "Don't miss the rebound."],
+  },
+
+  'pop.granville-2001-03': {
+    from: 'Granville plc Investor Relations',
+    subject: 'Own a piece of the FTSE 100',
+    body: [
+      'Granville plc is a FTSE-listed manufacturer with a 15-year dividend record.',
+      'Shares are available through your usual broker.',
+    ],
+  },
+
+  'msg.investor-bulletin-2002-06': {
+    from: 'Fenwick Investor Bulletin',
+    subject: 'After the market fall: what now?',
+    body: [
+      'Share prices have been falling for more than two years. Recent losses cannot tell anyone whether the low point has arrived, or how soon a recovery may follow.',
+      'Holding a spread of investments can reduce the damage caused by relying on one company, sector or market. Diversification manages uncertainty; it does not predict the bottom.',
     ],
   },
 
@@ -157,8 +188,8 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
     from: 'Hepworth & Grey, Solicitors',
     subject: 'Estate settlement — your legacy',
     body: [
-      'Following the settlement of the estate, a legacy has been transferred to your account.',
-      'Amount: £2,500.00. Our condolences.',
+      'Following the settlement of the estate, a legacy of £2,500.00 is ready for release to you.',
+      'The funds will be credited to your current account when this settlement notice is acknowledged. Our condolences.',
     ],
   },
 
@@ -172,30 +203,46 @@ export const MAIL_MESSAGES: Record<string, MessageBody> = {
   },
 
   'msg.pension-top-up-2004-08': {
-    from: 'Payroll @ Brightwell Ltd',
-    subject: 'Increase your pension contribution?',
+    from: 'Kingsley Pension Services',
+    subject: 'A reminder about workplace pensions',
     body: [
-      "You're currently contributing the scheme minimum to your workplace pension.",
-      'Increasing your contribution increases the company match. No action needed if you would rather not.',
+      'If your current employer offers a workplace pension, check whether it also offers matching contributions.',
+      'Increasing an eligible contribution may increase the employer match. Your payroll team can confirm the terms available to you.',
     ],
   },
+
+  'msg.investment-charges-2005-02': {
+    from: 'Marlow Investor Bulletin',
+    subject: 'The cost you do not see',
+    body: [
+      'An annual investment charge that looks small is deducted year after year, reducing the amount left to benefit from future growth.',
+      'When comparing investments, consider ongoing charges alongside headline performance. A higher fee has to be earned back before it adds value.',
+    ],
+  },
+
+  'msg.long-term-planning-2006-08': {
+    from: 'Personal Finance Review',
+    subject: 'Keeping long-term plans on track',
+    body: [
+      'Long-term saving works best when it is reviewed occasionally rather than abandoned after one difficult year or left unchanged forever.',
+      'Whatever arrangements are available to you, consider regular saving, pension contributions and a diversified mix suited to the time remaining before you expect to need the money.',
+    ],
+  },
+
 };
 
 /* ------------------------------------------------------------------ *
- * Popups (§20.2) — 14 messages
+ * Popups (§20.2) — 8 authored messages
  * ------------------------------------------------------------------ */
 
 export const POPUP_MESSAGES: Record<string, MessageBody> = {
-  'pop.freestuff-1996-02': {
-    from: 'FREEST0FF.NET',
-    subject: 'FREE RINGTONES 4 U!!!',
-    body: ['Get 10 FREE ringtones sent straight to your phone!', 'Click below. No catch. 100% free!!!'],
-  },
-
-  'pop.junk-1996-09': {
-    from: 'PrizeAlert',
-    subject: 'YOU MAY ALREADY HAVE WON!',
-    body: ["Congratulations! You've been selected to claim a FREE prize.", 'Click to find out what you have won!'],
+  'pop.buy-now-pay-later-1996-02': {
+    from: 'EasyPay Credit',
+    subject: '0% INTEREST — BUY NOW, PAY LATER',
+    body: [
+      'Spread the cost today with nothing to pay for the first 3 months.',
+      'Standard interest applies after the introductory period.',
+    ],
   },
 
   'pop.meridian-1997-03': {
@@ -204,15 +251,6 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     body: [
       'Guaranteed 30% p.a. returns. No downside.',
       'Limited places for new investors this month. Click to invest.',
-    ],
-  },
-
-  'pop.junk-1997-11': {
-    from: 'ChainMail',
-    subject: 'FWD: read this or 7 years bad luck',
-    body: [
-      'Forward this message to 10 friends within 24 hours or you will have bad luck for 7 years.',
-      'This is NOT a joke.',
     ],
   },
 
@@ -238,23 +276,6 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
-  'pop.junk-1998-12': {
-    from: 'Millennium Solutions',
-    subject: 'Is YOUR PC ready for the Year 2000?',
-    body: [
-      'The Millennium Bug could wipe your hard drive on 1 January.',
-      'Order our Y2K Protection Kit today — only £19.99.',
-    ],
-  },
-
-  // §10 rule 1 — dull, correct, and ignored: exactly the shape a gilt fund
-  // ad should have two months ahead of the 1999 mania peak.
-  'pop.kingsley-gilt-1999-03': {
-    from: 'Kingsley Asset Management',
-    subject: 'Not every fund needs to be exciting',
-    body: ['UK government gilts, various maturities. 0.75% annual fee.', 'Steady income. Low drama.'],
-  },
-
   'pop.vertex-1999-05': {
     from: 'Vertex Communications',
     subject: 'UP 200% AND CLIMBING',
@@ -270,35 +291,6 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     ],
   },
 
-  'pop.y2k-1999-12': {
-    from: 'Millennium Solutions',
-    subject: '48 HOURS UNTIL THE MILLENNIUM BUG',
-    body: ['The clocks roll over in 48 hours.', 'Is your money safe? Click here to find out.'],
-  },
-
-  'pop.buy-the-dip-2000-06': {
-    from: 'MarketWatch Alerts',
-    subject: 'BUY THE DIP — this is the bottom',
-    body: ['Every crash is a buying opportunity. Analysts agree: this is the bottom.', "Don't miss the rebound."],
-  },
-
-  // §10 rule 1 — legit, undiversified, plain. Lands in the quiet stretch
-  // between the Halcyon collapse and the Sep 2001 trough shock.
-  'pop.granville-2001-03': {
-    from: 'Granville plc Investor Relations',
-    subject: 'Own a piece of the FTSE 100',
-    body: [
-      'Granville plc is a FTSE-listed manufacturer with a 15-year dividend record.',
-      'Shares are available through your usual broker.',
-    ],
-  },
-
-  'pop.recovery-room-2002-03': {
-    from: 'Global Asset Recovery',
-    subject: 'Recover funds lost in failed investments',
-    body: ['Our specialists have recovered over £2m for investors this year alone.', 'No recovery, no fee.'],
-  },
-
   // §20.5 — the one exception. Imitates system chrome; content mirrors the mock-up.
   'pop.security-alert-2003-04': {
     from: 'Comet Navigator',
@@ -306,9 +298,13 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
     body: ['SECURITY ALERT: Your savings are at risk.', 'Immediate action required.'],
   },
 
-  'pop.late-junk-2005-11': {
-    from: 'FREEST0FF.NET',
-    subject: 'Remember us? Still free.',
-    body: ["It's been a while. Ringtones are still free.", 'Click here.'],
+  'pop.meadowbank-phishing-2005-09': {
+    from: 'Meadowbank Online Banking',
+    subject: 'ACCOUNT VERIFICATION REQUIRED',
+    body: [
+      'We were unable to verify your online banking details.',
+      'Access to your account may be restricted unless your account information is verified within 24 hours.',
+    ],
   },
+
 };

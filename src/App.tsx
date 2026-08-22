@@ -56,7 +56,7 @@ function urlForSection(section: NavSection): string {
 function AppShell() {
   const engine = useEngine();
   const router = useRouter();
-  const { count: unreadCount, flashing: unreadFlashing, statusLine } = useUnreadNotice();
+  const { count: unreadCount, flashing: unreadFlashing, statusLine, bannerText } = useUnreadNotice();
 
   const [presenterUnlocked, setPresenterUnlocked] = useState(isDevRoute);
   const [presenterOpen, setPresenterOpen] = useState(isDevRoute);
@@ -132,6 +132,7 @@ function AppShell() {
           onHome: () => router.navigate(HOME_URL),
           onMail: onDeathCard ? noop : () => router.navigate(MAIL_URL),
           unreadCount,
+          newMailNotice: bannerText,
         }}
         addressBar={{
           url: router.url,

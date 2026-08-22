@@ -20,26 +20,30 @@ import { FACT_SHEETS } from '../content/factsheets';
  * never determine it... skew, don't determine") and, in spirit, §11.2's
  * fairness contract — the fact sheet stops being a real judgement call once
  * the channel alone gives the answer away. Resolved by adding three named
- * popup offers for the three §9.1 vehicles that otherwise had no delivery
- * anywhere in the timeline: technova-growth (loud, legit-but-mediocre),
- * kingsley-gilt (plain, the crash dampener, arriving well before Mar 2000)
- * and granville-plc (plain, legit, concentrated). Event count is now 49;
- * popup offers 5 -> 8; total offers 14 -> 17 (9 mail, 8 popup) — matching
- * §14.2's own 9/8 split exactly, even though the 42-events headline still
- * doesn't reconcile (documented, not silently forced).
+ * offers for the three §9.1 vehicles that otherwise had no delivery. The
+ * loud Technova offer remains a popup so channel alone never reveals a scam;
+ * the sober Kingsley and Granville solicitations now arrive by Mail. Two
+ * expendable junk events were removed. A later popup-density pass removed
+ * four more standalone junk events and the three companion windows from
+ * Meridian and Vertex. The Aug 2004 life-admin reminder is
+ * informational rather than linking a former employee back to Brightwell;
+ * life-admin is not part of the offer totals. The late-game pacing pass adds
+ * three inert educational Mail items and one non-actionable security popup.
+ * The result is 47 events and 17 offers (11 mail, 6 popup), with eight
+ * authored POP events/windows.
  */
 describe('the timeline (§14.2)', () => {
-  it('matches the reconciled §14.2 table plus the three §10 rule 1 popup offers', () => {
+  it('matches the reconciled authored timeline after the delivery-channel cleanup', () => {
     const stats = timelineStats();
-    expect(stats.totalEvents).toBe(49);
+    expect(stats.totalEvents).toBe(47);
     expect(stats.offers).toBe(17);
-    expect(stats.mailOffers).toBe(9);
-    expect(stats.popupOffers).toBe(8);
+    expect(stats.mailOffers).toBe(11);
+    expect(stats.popupOffers).toBe(6);
     expect(stats.distinctScams).toBe(6); // §11.5: six scams, no seventh
     expect(stats.scamEvents).toBe(6);
     expect(stats.shocks).toBe(9); // §14.2: 8 "shock" + 1 "job-loss"
     expect(stats.windfalls).toBe(3);
-    expect(stats.junk).toBe(8);
+    expect(stats.junk).toBe(2);
     expect(stats.credit).toBe(2);
   });
 
@@ -53,9 +57,124 @@ describe('the timeline (§14.2)', () => {
     const nonScamPopupOffers = popupOffers.filter((e) => e.cls !== 'scam');
     expect(popupOffers.length).toBeGreaterThan(0);
     expect(nonScamPopupOffers.length).toBeGreaterThanOrEqual(1);
-    expect(nonScamPopupOffers.map((e) => e.vehicleId).sort()).toEqual(
-      ['granville-plc', 'kingsley-gilt', 'technova-growth'].sort(),
-    );
+    expect(nonScamPopupOffers.map((e) => e.vehicleId)).toEqual(['technova-growth']);
+  });
+
+  it('delivers Kingsley, MarketWatch and Granville through Mail on their original dates', () => {
+    expect(TIMELINE.find((e) => e.id === 'ev.1999-03.kingsley-gilt')).toMatchObject({
+      date: '1999-03', channel: 'MAIL', vehicleId: 'kingsley-gilt', expiresDays: 45,
+    });
+    expect(TIMELINE.find((e) => e.id === 'ev.2000-06.buy-the-dip')).toMatchObject({
+      date: '2000-06', channel: 'MAIL', contentId: 'pop.buy-the-dip-2000-06', expiresDays: 45,
+    });
+    expect(TIMELINE.find((e) => e.id === 'ev.2001-03.granville')).toMatchObject({
+      date: '2001-03', channel: 'MAIL', vehicleId: 'granville-plc', expiresDays: 45,
+    });
+  });
+
+  it('removes the expendable ChainMail and late junk events', () => {
+    expect(TIMELINE.some((e) => e.id === 'ev.1997-11.junk')).toBe(false);
+    expect(TIMELINE.some((e) => e.id === 'ev.2005-11.late-junk')).toBe(false);
+  });
+
+  it('authors exactly the eight retained single-window popups', () => {
+    const popups = TIMELINE.filter((e) => e.channel === 'POP');
+    expect(popups.map((e) => e.id)).toEqual([
+      'ev.1996-02.buy-now-pay-later',
+      'ev.1997-03.meridian',
+      'ev.1998-02.technova',
+      'ev.1998-03.cavendish',
+      'ev.1999-05.vertex',
+      'ev.1999-06.halcyon',
+      'ev.2003-04.security-alert',
+      'ev.2005-09.meadowbank-phishing',
+    ]);
+    expect(popups.every((e) => (e.count ?? 1) === 1)).toBe(true);
+    expect(popups.every((e) => (e.popupCompanionContentIds?.length ?? 0) === 0)).toBe(true);
+  });
+
+  it('keeps the February 1996 consumer-credit advert lightweight and non-actionable', () => {
+    const event = TIMELINE.find((e) => e.id === 'ev.1996-02.buy-now-pay-later');
+    expect(event).toMatchObject({
+      date: '1996-02',
+      channel: 'POP',
+      cls: 'junk',
+      contentId: 'pop.buy-now-pay-later-1996-02',
+      count: 1,
+      expiresDays: 45,
+      blocksTime: false,
+    });
+    expect(event?.vehicleId).toBeUndefined();
+  });
+
+  it('adds three inert educational Mail events and one non-actionable phishing popup on quiet dates', () => {
+    const expectedMail = [
+      ['ev.2002-06.investor-bulletin', '2002-06', 'msg.investor-bulletin-2002-06'],
+      ['ev.2005-02.investment-charges', '2005-02', 'msg.investment-charges-2005-02'],
+      ['ev.2006-08.long-term-planning', '2006-08', 'msg.long-term-planning-2006-08'],
+    ];
+    for (const [id, date, contentId] of expectedMail) {
+      expect(TIMELINE.find((e) => e.id === id)).toMatchObject({
+        date,
+        channel: 'MAIL',
+        cls: 'flavour',
+        contentId,
+        expiresDays: 45,
+        blocksTime: false,
+      });
+      expect(TIMELINE.find((e) => e.id === id)?.vehicleId).toBeUndefined();
+    }
+    expect(TIMELINE.find((e) => e.id === 'ev.2005-09.meadowbank-phishing')).toMatchObject({
+      date: '2005-09',
+      channel: 'POP',
+      cls: 'security',
+      contentId: 'pop.meadowbank-phishing-2005-09',
+      count: 1,
+      expiresDays: 45,
+      blocksTime: false,
+    });
+    expect(TIMELINE.find((e) => e.id === 'ev.2005-09.meadowbank-phishing')?.vehicleId).toBeUndefined();
+  });
+
+  it('does not author the seven removed popup windows', () => {
+    const removedEventIds = [
+      'ev.1996-09.junk',
+      'ev.1998-12.junk',
+      'ev.1999-12.y2k-junk',
+      'ev.2002-03.recovery-room',
+    ];
+    const removedContentIds = [
+      'pop.junk-1996-09',
+      'pop.junk-meridian-companion-1997-03',
+      'pop.junk-1998-12',
+      'pop.junk-vertex-companion-a-1999-05',
+      'pop.junk-vertex-companion-b-1999-05',
+      'pop.y2k-1999-12',
+      'pop.recovery-room-2002-03',
+    ];
+    expect(removedEventIds.every((id) => !TIMELINE.some((e) => e.id === id))).toBe(true);
+    expect(removedContentIds.every((id) => POPUP_MESSAGES[id] === undefined)).toBe(true);
+  });
+
+  it('keeps the Aug 2004 pension reminder informational and independent of Brightwell employment', () => {
+    expect(TIMELINE.find((e) => e.id === 'ev.2004-08.pension-top-up')).toMatchObject({
+      date: '2004-08',
+      channel: 'MAIL',
+      contentId: 'msg.pension-top-up-2004-08',
+    });
+    expect(TIMELINE.find((e) => e.id === 'ev.2004-08.pension-top-up')?.vehicleId).toBeUndefined();
+  });
+
+  it('keeps both Capital Direct messages dated and expiring as authored but non-actionable', () => {
+    expect(TIMELINE.find((e) => e.id === 'ev.1998-05.capital-direct-card-1')).toMatchObject({
+      date: '1998-05', channel: 'MAIL', cls: 'credit', expiresDays: 9,
+    });
+    expect(TIMELINE.find((e) => e.id === 'ev.2000-10.capital-direct-card-2')).toMatchObject({
+      date: '2000-10', channel: 'MAIL', cls: 'credit', expiresDays: 2,
+    });
+    for (const id of ['ev.1998-05.capital-direct-card-1', 'ev.2000-10.capital-direct-card-2']) {
+      expect(TIMELINE.find((e) => e.id === id)?.vehicleId, id).toBeUndefined();
+    }
   });
 
   // §14.3 rule 1 / §16 — the discoverability floor.
@@ -103,7 +222,7 @@ describe('the timeline (§14.2)', () => {
   // §14.3 rule 3 — no two decision-demanding events share a month, except
   // the authored Mar 2000 pair (crash + boiler).
   it('never doubles up a month, except the authored Mar 2000 pair', () => {
-    const nonPassive = new Set(['junk', 'flavour', 'social', 'start']);
+    const nonPassive = new Set(['junk', 'flavour', 'social', 'security', 'start']);
     const decisionEvents = TIMELINE.filter((e) => !nonPassive.has(e.cls));
     const byMonth = new Map<number, string[]>();
     for (const e of decisionEvents) {
@@ -155,7 +274,23 @@ describe('the timeline (§14.2)', () => {
             ? POPUP_MESSAGES[e.contentId]
             : DIALOGS[e.contentId];
       expect(resolved, `${e.id} (${e.channel}) has no content for "${e.contentId}"`).toBeDefined();
+      for (const companionId of e.popupCompanionContentIds ?? []) {
+        expect(POPUP_MESSAGES[companionId], `${e.id} has no companion content for "${companionId}"`).toBeDefined();
+      }
     }
+  });
+
+  it('keeps core educational mail visible for at least 45 simulated days', () => {
+    const coreIds = new Set([
+      'ev.1997-05.brightwell-pension',
+      'ev.1997-07.fenwick-index',
+      'ev.1998-10.ashcombe',
+      'ev.1999-01.fenwick-world',
+      'ev.2003-09.marlow',
+    ]);
+    const coreMail = TIMELINE.filter((e) => coreIds.has(e.id));
+    expect(coreMail).toHaveLength(coreIds.size);
+    for (const event of coreMail) expect(event.expiresDays, event.id).toBeGreaterThanOrEqual(45);
   });
 
   // Every offer's vehicle carries a fact sheet.

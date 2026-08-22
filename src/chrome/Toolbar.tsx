@@ -107,6 +107,7 @@ interface ToolbarButtonSpec {
   onClick: () => void;
   disabled?: boolean;
   badge?: number;
+  notice?: string | null;
 }
 
 export function Toolbar({
@@ -122,6 +123,7 @@ export function Toolbar({
   onFavourites = noop,
   onMail = noop,
   unreadCount = 0,
+  newMailNotice = null,
 }: ToolbarProps) {
   const buttons: ToolbarButtonSpec[] = [
     { key: 'back', label: 'Back', icon: <BackIcon />, onClick: onBack, disabled: !canGoBack },
@@ -143,6 +145,7 @@ export function Toolbar({
       icon: <MailIcon />,
       onClick: onMail,
       badge: unreadCount > 0 ? unreadCount : undefined,
+      notice: newMailNotice,
     },
   ];
 
@@ -163,6 +166,11 @@ export function Toolbar({
             )}
           </span>
           <span className="comet-toolbar__label">{btn.label}</span>
+          {btn.notice && (
+            <span className="comet-toolbar__mail-notice" role="status" aria-live="polite">
+              {btn.notice}
+            </span>
+          )}
         </button>
       ))}
     </div>

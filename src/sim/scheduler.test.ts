@@ -37,6 +37,20 @@ describe('materializeMail', () => {
     expect(mail.amount).toBe(2000);
     expect(mail.arrivedMonth).toBe(monthIndex(1997, 2));
   });
+
+  it('materializes all three late-game educational messages unread without a vehicle', () => {
+    for (const id of [
+      'ev.2002-06.investor-bulletin',
+      'ev.2005-02.investment-charges',
+      'ev.2006-08.long-term-planning',
+    ]) {
+      const event = EVENTS_BY_ID[id];
+      const mail = materializeMail(event, event.month);
+      expect(mail).toMatchObject({ eventId: id, status: 'unread', arrivedMonth: event.month });
+      expect(mail.vehicleId).toBeUndefined();
+    }
+  });
+
 });
 
 describe('materializeDialog', () => {
@@ -51,25 +65,27 @@ describe('materializeDialog', () => {
 
 describe('materializePopups (§20.2)', () => {
   it('opens exactly one item for a count-1 event, id === event.id', () => {
-    const event = EVENTS_BY_ID['ev.1996-02.freestuff'];
+    const event = EVENTS_BY_ID['ev.1996-02.buy-now-pay-later'];
     const popups = materializePopups(event, monthIndex(1996, 2));
     expect(popups).toHaveLength(1);
     expect(popups[0].id).toBe(event.id);
   });
 
-  it('expands count:2 (Meridian, Mar 1997) into two distinct concurrent popups', () => {
+  it('materializes Meridian as exactly its main offer with no companion junk', () => {
     const event = EVENTS_BY_ID['ev.1997-03.meridian'];
     const popups = materializePopups(event, monthIndex(1997, 3));
-    expect(popups).toHaveLength(2);
-    expect(new Set(popups.map((p) => p.id)).size).toBe(2);
+    expect(popups).toHaveLength(1);
     expect(popups.every((p) => p.eventId === event.id)).toBe(true);
+    expect(popups.map((p) => p.contentId)).toEqual(['pop.meridian-1997-03']);
+    expect(popups.map((p) => p.cls)).toEqual(['scam']);
   });
 
-  it('expands count:3 (Vertex, May 1999) into three — the §20.2 cap, exactly hit', () => {
+  it('materializes Vertex as exactly its main offer with no companion junk', () => {
     const event = EVENTS_BY_ID['ev.1999-05.vertex'];
     const popups = materializePopups(event, monthIndex(1999, 5));
-    expect(popups).toHaveLength(3);
-    expect(popups).toHaveLength(MAX_CONCURRENT_POPUPS);
+    expect(popups).toHaveLength(1);
+    expect(popups.map((p) => p.contentId)).toEqual(['pop.vertex-1999-05']);
+    expect(popups.map((p) => p.cls)).toEqual(['scam']);
   });
 
   it('never exceeds the cap even if a hypothetical event asked for more', () => {
@@ -86,9 +102,19 @@ describe('materializePopups (§20.2)', () => {
     expect(materializePopups(hypothetical, monthIndex(1999, 5))).toHaveLength(MAX_CONCURRENT_POPUPS);
   });
 
-  it('auto-closes ~45 simulated days after opening', () => {
-    const event = EVENTS_BY_ID['ev.1996-02.freestuff'];
-    const [popup] = materializePopups(event, monthIndex(1996, 2));
-    expect(popup.closesMonth).toBeGreaterThan(popup.openedMonth);
+  it('keeps popup expiry as short simulated bookkeeping independent of presentation timing', () => {
+    const meridian = materializePopups(EVENTS_BY_ID['ev.1997-03.meridian'], monthIndex(1997, 3));
+    expect(meridian.every((popup) => popup.closesMonth - popup.openedMonth === 2)).toBe(true);
+  });
+
+  it('materializes the Meadowbank phishing lesson only as a non-actionable POP item', () => {
+    const event = EVENTS_BY_ID['ev.2005-09.meadowbank-phishing'];
+    const popups = materializePopups(event, event.month);
+    expect(popups).toHaveLength(1);
+    expect(popups[0]).toMatchObject({
+      contentId: 'pop.meadowbank-phishing-2005-09',
+      cls: 'security',
+      vehicleId: undefined,
+    });
   });
 });

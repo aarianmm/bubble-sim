@@ -33,6 +33,12 @@ export const MAIL_URL = 'http://www.bubble.net/mail';
 export const MONEY_URL = 'http://www.bubble.net/money';
 export const GAME_OVER_URL = 'http://www.bubble.net/over';
 
+/** Popup presentation only resumes on the three ordinary portal surfaces.
+ * Offer flows, the death card, and unknown URLs are deliberately non-neutral. */
+export function isPopupPresentationNeutralUrl(url: string): boolean {
+  return url === HOME_URL || url === MAIL_URL || url === MONEY_URL;
+}
+
 /** Any URL not in PORTAL_ROUTES is an external offer site (§17.1, §22.3). */
 export const OFFER_PAGE: PageDef = { title: '', component: Offer };
 

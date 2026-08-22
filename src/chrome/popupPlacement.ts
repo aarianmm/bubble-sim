@@ -8,9 +8,21 @@ import type { MailItem, MonthIndex, PopupItem } from '../sim/types';
 /** §20.2: "Up to 3 at once during the 1999-2000 mania. Never more." */
 export const MAX_CONCURRENT_POPUPS = 3;
 
+export type PopupPlacementRegion = 'default' | 'mail-lower';
+
+/** Stable FNV-1a integer hash: visual entropy without runtime randomness. */
+function stablePlacementHash(value: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
 /**
- * §20.2 / §25.1 — popup placement, derived from the month index, never
- * `Math.random()`. The same (month, slot) always produces the same offset,
+ * §20.2 / §25.1 — popup placement, derived from stable authored identity,
+ * never `Math.random()`. The same identity always produces the same offset,
  * so a dress rehearsal and the live run place every popup identically
  * (§25.1: "a demo that positions popups differently on stage than in
  * rehearsal is the worst outcome available to us").
@@ -22,9 +34,8 @@ export const MAX_CONCURRENT_POPUPS = 3;
  * sim/tick.ts materialises every PopupItem with x/y/width/height all 0 and
  * says as much in its own comment: "Step 20's UI is free to derive a richer
  * placement from the month index; the sim doesn't care." This is that
- * derivation — Step 24's scheduler (or this file's own caller today, see
- * NotificationDemo.tsx) calls it once per popup to fill in real pixels
- * before the item is ever handed to <Popup>.
+ * derivation — the UI calls it once per popup to fill in real pixels before
+ * the item is handed to <Popup>.
  */
 export function popupOffset(
   month: MonthIndex,
@@ -33,6 +44,8 @@ export function popupOffset(
   contentHeight: number,
   popupWidth: number,
   popupHeight: number,
+  region: PopupPlacementRegion = 'default',
+  identity = `${month}|${slot}`,
 ): { x: number; y: number } {
   const maxX = Math.max(0, contentWidth - popupWidth);
   const maxY = Math.max(0, contentHeight - popupHeight);
@@ -41,6 +54,18 @@ export function popupOffset(
   // visible diagonal.
   const hx = (month * 47 + slot * 131 + 17) % 97;
   const hy = (month * 71 + slot * 53 + 29) % 89;
+  if (region === 'mail-lower') {
+    // Stable identity spreads Mail popups across lower-left, centre and
+    // lower-right while keeping the header and opening lines comparatively clear.
+    const xUnit = stablePlacementHash(`${identity}|x`) / 0xffffffff;
+    const yUnit = stablePlacementHash(`${identity}|y`) / 0xffffffff;
+    const xRatio = 0.05 + xUnit * 0.9;
+    const yRatio = 0.62 + yUnit * 0.16;
+    return {
+      x: maxX <= 0 ? 0 : Math.round(maxX * xRatio),
+      y: maxY <= 0 ? 0 : Math.round(maxY * yRatio),
+    };
+  }
   return {
     x: maxX <= 0 ? 0 : hx % (maxX + 1),
     y: maxY <= 0 ? 0 : hy % (maxY + 1),
