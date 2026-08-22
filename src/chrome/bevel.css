@@ -47,33 +47,33 @@
  * ------------------------------------------------------------------ */
 
 .bevel-out {
-  background: var(--face);
+  background: var(--control-surface);
   border-style: solid;
   border-width: var(--bevel-width);
   border-radius: var(--radius-control);
-  border-top-color: var(--hilite);
-  border-left-color: var(--hilite);
-  border-right-color: var(--dk-shadow);
-  border-bottom-color: var(--dk-shadow);
+  border-top-color: var(--control-hilite);
+  border-left-color: var(--control-hilite);
+  border-right-color: var(--control-dk-shadow);
+  border-bottom-color: var(--control-dk-shadow);
   box-shadow:
-    inset 1px 1px 0 0 var(--face-light),
-    inset -1px -1px 0 0 var(--shadow);
+    inset 1px 1px 0 0 var(--control-face-light),
+    inset -1px -1px 0 0 var(--control-shadow);
   padding: var(--control-pad-y) var(--control-pad-x);
 }
 
 .bevel-in,
 .bevel-pressed {
-  background: var(--face);
+  background: var(--control-surface);
   border-style: solid;
   border-width: var(--bevel-width);
   border-radius: var(--radius-control);
-  border-top-color: var(--dk-shadow);
-  border-left-color: var(--dk-shadow);
-  border-right-color: var(--hilite);
-  border-bottom-color: var(--hilite);
+  border-top-color: var(--control-dk-shadow);
+  border-left-color: var(--control-dk-shadow);
+  border-right-color: var(--control-hilite);
+  border-bottom-color: var(--control-hilite);
   box-shadow:
-    inset 1px 1px 0 0 var(--shadow),
-    inset -1px -1px 0 0 var(--face-light);
+    inset 1px 1px 0 0 var(--control-shadow),
+    inset -1px -1px 0 0 var(--control-face-light);
   padding: var(--control-pad-y) var(--control-pad-x);
 }
 
@@ -90,14 +90,14 @@
 /* A raised control shows its pressed bevel while the mouse is down on it —
  * §18.1's "hovering [the title bar buttons] shows the bevel press". */
 .bevel-out:active {
-  background: var(--face);
-  border-top-color: var(--dk-shadow);
-  border-left-color: var(--dk-shadow);
-  border-right-color: var(--hilite);
-  border-bottom-color: var(--hilite);
+  background: var(--control-surface);
+  border-top-color: var(--control-dk-shadow);
+  border-left-color: var(--control-dk-shadow);
+  border-right-color: var(--control-hilite);
+  border-bottom-color: var(--control-hilite);
   box-shadow:
-    inset 1px 1px 0 0 var(--shadow),
-    inset -1px -1px 0 0 var(--face-light);
+    inset 1px 1px 0 0 var(--control-shadow),
+    inset -1px -1px 0 0 var(--control-face-light);
   padding:
     calc(var(--control-pad-y) + 1px)
     calc(var(--control-pad-x) - 1px)

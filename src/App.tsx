@@ -11,28 +11,54 @@
  *   - otherwise           the real game, inside <EngineProvider> and
  *                          <RouterProvider>
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Window } from './chrome/Window';
 import { TooSmall, useIsViewportTooSmall } from './chrome/TooSmall';
 import { VisualGallery } from './chrome/VisualGallery';
 import { RouterProvider, useRouter } from './chrome/router';
 import { DateReadout, TimeControls, YearSpine, useUnreadNotice } from './chrome/Nav';
-import { NotificationDemo } from './chrome/NotificationDemo';
 import type { NavSection } from './chrome/Chrome.types';
 import { noop } from './chrome/Chrome.types';
 import { EngineProvider } from './ui/EngineProvider';
 import { useEngine } from './ui/engine';
 import { Notifications } from './ui/Notifications';
-import { Presenter } from './dev/Presenter';
+import { EraLoadingPage, EraWelcomeDialog } from './chrome/EraTransition';
 import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
+import { monthIndex, type MonthIndex } from './sim/month';
+
+type VisualMilestone = {
+  era: 'a' | 'b';
+  year: '1996' | '1998' | '2000';
+};
+
+type EvolutionState = {
+  target: VisualMilestone;
+  phase: 'queued' | 'welcome' | 'loading';
+};
+
+/** Owner-directed visual progression: presentation changes, game state does
+ * not. Components continue to render one invariant control tree and consume
+ * only CSS tokens from the two root attributes. See BUILD STATUS deviation 5. */
+function visualMilestoneFor(month: MonthIndex): VisualMilestone {
+  if (month >= monthIndex(2000, 1)) return { era: 'b', year: '2000' };
+  if (month >= monthIndex(1998, 1)) return { era: 'a', year: '1998' };
+  return { era: 'a', year: '1996' };
+}
+
+/** Evolution beats only interrupt continuous play. Non-continuous state loads
+ * remain immediate so tests do not manufacture a chain of missed years. */
+function evolutionReached(previous: MonthIndex, current: MonthIndex): VisualMilestone | null {
+  if (previous === monthIndex(1997, 12) && current === monthIndex(1998, 1)) {
+    return { era: 'a', year: '1998' };
+  }
+  if (previous === monthIndex(1999, 12) && current === monthIndex(2000, 1)) {
+    return { era: 'b', year: '2000' };
+  }
+  return null;
+}
 
 function isVisualRoute(): boolean {
   return new URLSearchParams(window.location.search).get('visual') === '1';
-}
-
-/** §25.4 — presenter tools unlock behind `?dev=1` or Help > About x5. */
-function isDevRoute(): boolean {
-  return new URLSearchParams(window.location.search).get('dev') === '1';
 }
 
 function sectionFor(url: string): NavSection | undefined {
@@ -53,15 +79,92 @@ function urlForSection(section: NavSection): string {
   }
 }
 
-function AppShell() {
+export function AppShell() {
   const engine = useEngine();
   const router = useRouter();
   const { count: unreadCount, flashing: unreadFlashing, statusLine } = useUnreadNotice();
 
-  const [presenterUnlocked, setPresenterUnlocked] = useState(isDevRoute);
-  const [presenterOpen, setPresenterOpen] = useState(isDevRoute);
-  const [aboutClicks, setAboutClicks] = useState(0);
   const [soundsOn, setSoundsOn] = useState(true);
+  const [appliedMilestone, setAppliedMilestone] = useState<VisualMilestone>(() =>
+    visualMilestoneFor(engine.state.month),
+  );
+  const [evolution, setEvolution] = useState<EvolutionState | null>(null);
+  const previousMonthRef = useRef(engine.state.month);
+  const evolutionLoadStartedRef = useRef(false);
+
+  // The root changes only after the milestone's Continue -> loading sequence.
+  // The same chrome controls, handlers, icons and buttons remain mounted.
+  useLayoutEffect(() => {
+    document.documentElement.setAttribute('data-era', appliedMilestone.era);
+    document.documentElement.setAttribute('data-ui-year', appliedMilestone.year);
+  }, [appliedMilestone.era, appliedMilestone.year]);
+
+  // The currently installed chrome remains truthful until loading completes,
+  // while this separate root attribute lets the blocking transition preview
+  // the destination's visual language without branching inside its components.
+  useLayoutEffect(() => {
+    if (!evolution) {
+      document.documentElement.removeAttribute('data-ui-target');
+      return;
+    }
+
+    document.documentElement.setAttribute('data-ui-target', evolution.target.year);
+    return () => document.documentElement.removeAttribute('data-ui-target');
+  }, [evolution]);
+
+  // Arriving naturally at Jan 1998/Jan 2000 queues a blocking evolution beat.
+  // A scheduled simulation dialog already present at the boundary keeps first
+  // place (Jan 2000's break-even line); the evolution pause is acquired now so
+  // the clock cannot restart between the two dialogs.
+  useLayoutEffect(() => {
+    const current = engine.state.month;
+    const previous = previousMonthRef.current;
+    if (current === previous) return;
+    previousMonthRef.current = current;
+
+    const target = evolutionReached(previous, current);
+    if (target) {
+      engine.setEvolutionPaused(true);
+      setEvolution({
+        target,
+        phase: engine.state.dialogs.length > 0 ? 'queued' : 'welcome',
+      });
+      return;
+    }
+
+    // Reset/backward travel and test state loads are deliberate discontinuities,
+    // so they land directly on the appropriate visual state.
+    engine.setEvolutionPaused(false);
+    evolutionLoadStartedRef.current = false;
+    setEvolution(null);
+    setAppliedMilestone(visualMilestoneFor(current));
+  }, [engine.setEvolutionPaused, engine.state.dialogs.length, engine.state.month]);
+
+  useEffect(() => {
+    if (evolution?.phase !== 'queued' || engine.state.dialogs.length > 0) return;
+    setEvolution({ ...evolution, phase: 'welcome' });
+  }, [engine.state.dialogs.length, evolution]);
+
+  useEffect(() => {
+    if (evolution?.phase !== 'loading') return;
+    if (router.loadState.kind !== 'done') {
+      evolutionLoadStartedRef.current = true;
+      return;
+    }
+    if (!evolutionLoadStartedRef.current) return;
+
+    setAppliedMilestone(evolution.target);
+    setEvolution(null);
+    evolutionLoadStartedRef.current = false;
+    engine.setEvolutionPaused(false);
+  }, [engine.setEvolutionPaused, evolution, router.loadState.kind]);
+
+  function beginEvolutionLoad() {
+    if (!evolution) return;
+    evolutionLoadStartedRef.current = false;
+    setEvolution({ ...evolution, phase: 'loading' });
+    router.refresh();
+  }
 
   function newRun() {
     engine.reset();
@@ -79,14 +182,6 @@ function AppShell() {
   }, [engine.state.status, router.url]);
 
   function handleAbout() {
-    const next = aboutClicks + 1;
-    if (next >= 5) {
-      setPresenterUnlocked(true);
-      setPresenterOpen(true);
-      setAboutClicks(0);
-      return;
-    }
-    setAboutClicks(next);
     window.alert('BUBBLE — Comet Navigator\n\nA product of the late 1990s.');
   }
 
@@ -155,15 +250,25 @@ function AppShell() {
           yearSpineSlot: <YearSpine />,
         }}
       >
-        <PageComponent key={router.contentKey} />
+        {evolution?.phase === 'loading' ? (
+          <EraLoadingPage
+            year={evolution.target.year as '1998' | '2000'}
+            loadState={router.loadState}
+            progressPct={router.progressPct}
+          />
+        ) : (
+          <PageComponent key={router.contentKey} />
+        )}
       </Window>
-      <Notifications />
-      {presenterUnlocked && (
-        <>
-          <Presenter open={presenterOpen} onClose={() => setPresenterOpen(false)} />
-          <NotificationDemo />
-        </>
+      {evolution?.phase !== 'loading' && <Notifications />}
+      {evolution?.phase === 'welcome' && (
+        <EraWelcomeDialog
+          year={evolution.target.year as '1998' | '2000'}
+          month={engine.state.month}
+          onContinue={beginEvolutionLoad}
+        />
       )}
+      {evolution?.phase === 'loading' && <div className="era-loading-input-blocker" aria-hidden="true" />}
     </div>
   );
 }

@@ -89,6 +89,7 @@ function mockEngine(state: GameState, resetSpy = vi.fn()): Engine {
     timeRate: 0,
     dispatch: vi.fn(),
     setPaused: vi.fn(),
+    setEvolutionPaused: vi.fn(),
     setTimeRate: vi.fn(),
     jumpToMonth: vi.fn(),
     forceEvent: vi.fn(),
