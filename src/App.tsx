@@ -86,7 +86,7 @@ function urlForSection(section: NavSection): string {
 export function AppShell() {
   const engine = useEngine();
   const router = useRouter();
-  const { count: unreadCount, flashing: unreadFlashing, statusLine } = useUnreadNotice();
+  const { count: unreadCount, flashing: unreadFlashing, statusLine, bannerText } = useUnreadNotice();
 
   const [soundsOn, setSoundsOn] = useState(true);
   const [appliedMilestone, setAppliedMilestone] = useState<VisualMilestone>(() =>
@@ -235,6 +235,7 @@ export function AppShell() {
           onHome: () => router.navigate(HOME_URL),
           onMail: onDeathCard ? noop : () => router.navigate(MAIL_URL),
           unreadCount,
+          newMailNotice: bannerText,
         }}
         addressBar={{
           url: router.url,

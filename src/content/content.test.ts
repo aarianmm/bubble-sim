@@ -136,6 +136,9 @@ describe('every contentId in the timeline resolves (§25.3)', () => {
       if (e.channel === 'MAIL') expect(MAIL_MESSAGES[e.contentId], e.id).toBeDefined();
       if (e.channel === 'POP') expect(POPUP_MESSAGES[e.contentId], e.id).toBeDefined();
       if (e.channel === 'DLG') expect(DIALOGS[e.contentId], e.id).toBeDefined();
+      for (const companionId of e.popupCompanionContentIds ?? []) {
+        expect(POPUP_MESSAGES[companionId], `${e.id} -> ${companionId}`).toBeDefined();
+      }
     }
   });
 
@@ -143,6 +146,98 @@ describe('every contentId in the timeline resolves (§25.3)', () => {
     for (const e of TIMELINE) {
       if (e.vehicleId) expect(FACT_SHEETS[e.vehicleId], `${e.id} -> ${e.vehicleId}`).toBeDefined();
     }
+  });
+});
+
+describe('state-independent storyline copy', () => {
+  it('does not claim the player personally funded Northmoor or Halcyon', () => {
+    expect(MAIL_MESSAGES['msg.northmoor-annual-statement'].body.join(' ')).not.toMatch(/your account earned/i);
+    expect(DIALOGS['dlg.halcyon-suspended-2000-11'].body).not.toMatch(/your balance/i);
+  });
+
+  it('frames April 2000 Restitution around the recent crash, not a later fund collapse', () => {
+    const copy = [
+      MAIL_MESSAGES['msg.restitution-partners'].subject,
+      ...MAIL_MESSAGES['msg.restitution-partners'].body,
+      OFFER_PAGES['restitution-partners'].subCopy,
+    ].join(' ');
+    expect(copy).toMatch(/recent market (crash|fall)/i);
+    expect(copy).not.toMatch(/fund (that )?(ceased trading|collapsed|failed)/i);
+  });
+
+  it('describes windfalls as ready for release rather than already transferred', () => {
+    for (const id of ['msg.windfall-1997-02', 'msg.windfall-2000-02', 'msg.windfall-2003-02']) {
+      const copy = MAIL_MESSAGES[id].body.join(' ');
+      expect(copy, id).toMatch(/ready for release/i);
+      expect(copy, id).toMatch(/credited.+when .+ notice is acknowledged/i);
+      expect(copy, id).not.toMatch(/now transferred|has been transferred/i);
+    }
+  });
+
+  it('does not promise an unsupported Brightwell pension opt-out flow', () => {
+    const copy = MAIL_MESSAGES['msg.brightwell-pension'].body.join(' ');
+    expect(copy).toMatch(/choose how much.+allocated/i);
+    expect(copy).not.toMatch(/opt out again|at any time/i);
+  });
+
+  it('keeps Capital Direct educational without promising an application flow', () => {
+    for (const id of ['msg.capital-direct-card-1998-05', 'msg.capital-direct-card-2000-10']) {
+      const message = MAIL_MESSAGES[id];
+      const copy = [message.subject, ...message.body].join(' ');
+      expect(copy, id).toMatch(/£2,000/);
+      expect(copy, id).toMatch(/0% on purchases.+6 months/i);
+      expect(copy, id).toMatch(/29\.8% APR representative/i);
+      expect(copy, id).not.toMatch(/apply|application|pre-approved|still available/i);
+    }
+  });
+
+  it('keeps the late-game educational Mail state-independent and non-actionable', () => {
+    const ids = [
+      'msg.investor-bulletin-2002-06',
+      'msg.investment-charges-2005-02',
+      'msg.long-term-planning-2006-08',
+    ];
+    for (const id of ids) {
+      const copy = [MAIL_MESSAGES[id].subject, ...MAIL_MESSAGES[id].body].join(' ');
+      expect(copy, id).not.toMatch(/your (fund|portfolio|pension|holding|investment) (has|is|was)|you (invested|joined|accepted|bought)/i);
+      expect(copy, id).not.toMatch(/click|apply|sign up|open an account/i);
+    }
+    expect(MAIL_MESSAGES[ids[0]].body.join(' ')).toMatch(/diversif/i);
+    expect(MAIL_MESSAGES[ids[1]].body.join(' ')).toMatch(/annual investment charge/i);
+    expect(MAIL_MESSAGES[ids[2]].body.join(' ')).toMatch(/long-term saving|pension contributions/i);
+  });
+
+  it('presents Meadowbank phishing as impersonation pressure without promising a CTA', () => {
+    const message = POPUP_MESSAGES['pop.meadowbank-phishing-2005-09'];
+    const copy = [message.from, message.subject, ...message.body].join(' ');
+    expect(copy).toMatch(/Meadowbank Online Banking/i);
+    expect(copy).toMatch(/verification required|verify your online banking/i);
+    expect(copy).toMatch(/restricted|within 24 hours/i);
+    expect(copy).not.toMatch(/click|press|select|verify now/i);
+  });
+});
+
+describe('lightweight junk popup copy', () => {
+  const junkContentIds = [
+    'pop.buy-now-pay-later-1996-02',
+  ];
+
+  it('does not instruct the player to use a nonexistent CTA', () => {
+    for (const id of junkContentIds) {
+      const copy = POPUP_MESSAGES[id].body.join(' ');
+      expect(copy, id).not.toMatch(/\b(click|sign up|order|join|claim|register|forward this)\b/i);
+    }
+  });
+
+  it('uses the February 1996 popup to explain introductory consumer credit', () => {
+    expect(POPUP_MESSAGES['pop.buy-now-pay-later-1996-02']).toEqual({
+      from: 'EasyPay Credit',
+      subject: '0% INTEREST — BUY NOW, PAY LATER',
+      body: [
+        'Spread the cost today with nothing to pay for the first 3 months.',
+        'Standard interest applies after the introductory period.',
+      ],
+    });
   });
 });
 

@@ -32,21 +32,38 @@ export interface UnreadNotice {
   flashing: boolean;
   /** `1 new message` / `3 new messages`, or null when there is nothing to say. */
   statusLine: string | null;
+  /** The same arrival notice, formatted for the toolbar Mail callout. */
+  bannerText: string | null;
 }
 
 export function useUnreadNotice(): UnreadNotice {
-  const count = useUnreadCount();
+  const engine = useEngine();
+  const count = selectUnreadCount(engine.state);
+  const resetKey = engine.mailNoticeResetKey ?? 0;
   const previous = useRef(count);
+  const previousResetKey = useRef(resetKey);
   const [flashing, setFlashing] = useState(false);
   const [statusLine, setStatusLine] = useState<string | null>(null);
 
   useEffect(() => {
+    if (resetKey !== previousResetKey.current) {
+      previousResetKey.current = resetKey;
+      previous.current = count;
+      setFlashing(false);
+      setStatusLine(null);
+      return;
+    }
     const arrived = count - previous.current;
     previous.current = count;
-    // Only a rise is news. Reading or deleting mail lowers the count and must
-    // stay silent — §20.3's whole point is that this tier never demands
-    // attention it has not earned.
-    if (arrived <= 0) return;
+    // Only a rise is news. A decrease never creates a notice, but it does
+    // immediately retire any notice for unread mail the player has already
+    // dealt with. The effect cleanup above also cancels the old timers.
+    if (arrived < 0) {
+      setFlashing(false);
+      setStatusLine(null);
+      return;
+    }
+    if (arrived === 0) return;
 
     setFlashing(true);
     setStatusLine(arrived === 1 ? '1 new message' : `${arrived} new messages`);
@@ -56,9 +73,13 @@ export function useUnreadNotice(): UnreadNotice {
       window.clearTimeout(flashTimer);
       window.clearTimeout(lineTimer);
     };
-  }, [count]);
+  }, [count, resetKey]);
 
-  return { count, flashing, statusLine };
+  const bannerText = statusLine
+    ? `New Mail — ${statusLine.replace(/ new messages?$/, (match) => (match.endsWith('messages') ? ' messages' : ' message'))}`
+    : null;
+
+  return { count, flashing, statusLine, bannerText };
 }
 
 export function DateReadout() {

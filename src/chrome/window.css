@@ -269,6 +269,7 @@
 
 .comet-toolbar {
   position: relative;
+  z-index: 2;
   display: flex;
   align-items: var(--toolbar-align-items);
   gap: var(--toolbar-gap);
@@ -277,7 +278,7 @@
   background: var(--toolbar-surface);
   border-bottom: 1px solid var(--chrome-rule);
   box-shadow: var(--toolbar-shadow);
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* A purely decorative coolbar grip. It is absolutely positioned so it never
@@ -319,6 +320,7 @@
 }
 
 .comet-toolbar__btn {
+  position: relative;
   --control-surface: var(--toolbar-button-surface);
   --control-hilite: var(--toolbar-button-hilite);
   --control-face-light: var(--toolbar-button-face-light);
@@ -341,6 +343,24 @@
   --control-face-light: var(--toolbar-hover-face-light);
   --control-shadow: var(--toolbar-hover-shadow);
   --control-dk-shadow: var(--toolbar-hover-dk-shadow);
+}
+
+.comet-toolbar__mail-notice {
+  position: absolute;
+  top: calc(100% + 3px);
+  right: 0;
+  width: max-content;
+  max-width: 150px;
+  padding: 3px 6px;
+  color: var(--text);
+  background: var(--icon-yellow);
+  border: 1px solid var(--dk-shadow);
+  box-shadow: 1px 1px 0 var(--shadow);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .comet-toolbar__btn:disabled {

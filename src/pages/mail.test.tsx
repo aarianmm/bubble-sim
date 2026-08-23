@@ -110,10 +110,15 @@ function makeEngine(state: GameState, dispatch: (d: Decision) => void = vi.fn())
     state,
     paused: false,
     timeRate: RATE_NORMAL,
+    popupPresentation: { active: null, pending: [], phase: 'showing' },
     dispatch,
     setPaused: vi.fn(),
     setEvolutionPaused: vi.fn(),
     setTimeRate: vi.fn(),
+    closePresentedPopup: vi.fn(),
+    filePresentedPopup: vi.fn(),
+    deferPresentedPopup: vi.fn(),
+    finishPopupGap: vi.fn(),
     jumpToMonth: vi.fn(),
     forceEvent: vi.fn(),
     loadPreset: vi.fn(),
@@ -190,7 +195,7 @@ describe('row class-indistinguishability (§10.3, §22.2)', () => {
     const state = makeState({
       inbox: [
         makeMail({ id: 'a', cls: 'scam', from: 'Cavendish Asset Mgmt', subject: 'Opportunity' }),
-        makeMail({ id: 'b', cls: 'junk', from: 'FREEST0FF.NET', subject: 'FREE RINGTONES 4 U' }),
+        makeMail({ id: 'b', cls: 'junk', from: 'Prize Post', subject: 'You may already have won' }),
         makeMail({ id: 'c', cls: 'legit', from: 'Northmoor Building Society', subject: 'Your statement' }),
       ],
     });
@@ -306,6 +311,28 @@ describe('actions', () => {
     const link = container!.querySelector('.mail-message__offer-link') as HTMLAnchorElement;
     expect(link).not.toBeNull();
     expect(link.getAttribute('href')).toBe('http://www.fenwickfunds.co.uk/index-trust');
+  });
+
+  it('does not expose an offer CTA for informational Capital Direct Mail', () => {
+    const dispatch = vi.fn();
+    const state = makeState({
+      inbox: [makeMail({
+        id: 'capital',
+        from: 'Capital Direct',
+        subject: '0% on purchases for 6 months',
+        contentId: 'msg.capital-direct-card-1998-05',
+        cls: 'credit',
+        vehicleId: undefined,
+      })],
+    });
+    mount(state, dispatch);
+    const row = container!.querySelector('[data-testid="mail-row-capital"]') as HTMLTableRowElement;
+    act(() => row.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    const openBtn = Array.from(container!.querySelectorAll('button')).find((b) => b.textContent?.includes('Open'))!;
+    act(() => openBtn.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+
+    expect(container!.textContent).toContain('29.8% APR representative');
+    expect(container!.querySelector('.mail-message__offer-link')).toBeNull();
   });
 
   it('dispatches delete-mail for the selected row', () => {

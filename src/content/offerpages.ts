@@ -152,7 +152,7 @@ export const OFFER_PAGES: Record<Exclude<VehicleId, 'cash'>, OfferPage> = {
 
   'restitution-partners': {
     headline: 'Restitution Partners',
-    subCopy: 'Lost money in a fund that collapsed? We specialise in recovering client losses.',
+    subCopy: 'Lost money in the recent market fall? We specialise in recovering losses and protecting what remains.',
     ctaLabel: 'Start my claim',
     url: 'http://www.restitution-partners.org.uk/claim',
     siteStyle: 'plain',

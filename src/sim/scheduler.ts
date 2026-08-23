@@ -40,7 +40,8 @@ const POPUP_SIZES = [
   { width: 468, height: 280 },
 ] as const;
 
-/** 45 simulated days, in whole months (§20.2 auto-close / §10.2 expiry). */
+/** Short simulated bookkeeping lifetime. Real visibility is owned by the
+ * live presentation queue in EngineProvider, independently of time rate. */
 const POPUP_LIFETIME_MONTHS = Math.ceil(45 / DAYS_PER_MONTH);
 
 export const EVENTS_BY_ID: Record<EventId, ScriptEvent> = Object.fromEntries(
@@ -102,18 +103,22 @@ export function materializeMail(event: ScriptEvent, month: MonthIndex): MailItem
  * (openedMonth, slot) exactly as this function keys the id.
  */
 export function materializePopups(event: ScriptEvent, month: MonthIndex): PopupItem[] {
-  const msg = POPUP_MESSAGES[event.contentId];
   const count = Math.min(Math.max(1, event.count ?? 1), MAX_CONCURRENT_POPUPS);
-  const closesMonth = month + POPUP_LIFETIME_MONTHS;
   return Array.from({ length: count }, (_, slot) => {
+    const companionContentId = slot > 0 ? event.popupCompanionContentIds?.[slot - 1] : undefined;
+    const contentId = companionContentId ?? event.contentId;
+    const msg = POPUP_MESSAGES[contentId];
+    const cls = companionContentId ? 'junk' : event.cls;
+    const vehicleId = companionContentId ? undefined : event.vehicleId;
+    const closesMonth = month + POPUP_LIFETIME_MONTHS;
     const { width, height } = POPUP_SIZES[slot % POPUP_SIZES.length];
     return {
       id: count === 1 ? event.id : `${event.id}.${slot}`,
       eventId: event.id,
       title: msg?.subject ?? '',
-      contentId: event.contentId,
-      vehicleId: event.vehicleId,
-      cls: event.cls,
+      contentId,
+      vehicleId,
+      cls,
       openedMonth: month,
       closesMonth,
       x: 0,
