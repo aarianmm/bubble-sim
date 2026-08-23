@@ -1,21 +1,21 @@
 /**
  * BUBBLE — the dual money display (Step 16, §19.4).
  *
- * "Every figure appears twice: period-accurate, and in 1996 purchasing
- * power." This is the one component every page imports for every £ figure
+ * Every figure appears twice: period-accurate and in July 2026 purchasing
+ * power. This is the one component every page imports for every £ figure
  * in the game — net worth, salary, expense lines, portfolio rows, offers,
  * shocks, the death card. There is exactly one global toggle
  * (`state.flags.moneyBase`, flipped by `{ type: 'toggle-money-base' }`) and
  * it lives on GameState, not in any component's local state, so flipping it
- * anywhere — the `View > Money as 1996 £` menu item (src/App.tsx) or a
+ * anywhere — the `View > Money as 2026 £` menu item (src/App.tsx) or a
  * click on a headline figure here — swaps every mounted <Money> at once.
  *
- * Base year is 1996 (§19.4: "comparing to your own starting point... makes
- * the erosion personal"), via sim/selectors.ts's `to1996` — never
- * recomputed here.
+ * The owner requested today's money as the more relevant reference point.
+ * sim/selectors.ts's fixed ONS-grounded `to2026` conversion keeps that
+ * comparison deterministic and offline.
  */
 import { useEngine } from './engine';
-import { to1996 } from '../sim/selectors';
+import { to2026 } from '../sim/selectors';
 import { monthLabelTitle, type MonthIndex } from '../sim/month';
 import './money.css';
 
@@ -66,17 +66,17 @@ export function Money({
 }: MoneyProps) {
   const { state, dispatch } = useEngine();
   const atMonth = month ?? state.month;
-  const baseIs1996 = state.flags.moneyBase === '1996';
-  const in1996 = to1996(amount, atMonth);
-  const primaryAmount = baseIs1996 ? in1996 : amount;
-  const secondaryAmount = baseIs1996 ? amount : in1996;
+  const baseIs2026 = state.flags.moneyBase === '2026';
+  const in2026 = to2026(amount, atMonth);
+  const primaryAmount = baseIs2026 ? in2026 : amount;
+  const secondaryAmount = baseIs2026 ? amount : in2026;
   const clickable = interactive ?? variant === 'headline';
 
   const secondaryLabel =
     variant === 'headline'
-      ? baseIs1996
+      ? baseIs2026
         ? `in ${monthLabelTitle(atMonth)} money`
-        : 'in 1996 money'
+        : 'in 2026 money'
       : null;
 
   function handleClick() {
@@ -105,8 +105,8 @@ export function Money({
         type="button"
         className={classes}
         onClick={handleClick}
-        aria-pressed={baseIs1996}
-        aria-label="Toggle money display between period-accurate and 1996 pounds"
+        aria-pressed={baseIs2026}
+        aria-label="Toggle money display between period-accurate and 2026 pounds"
       >
         {body}
       </button>

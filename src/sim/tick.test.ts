@@ -653,6 +653,19 @@ describe('solvencyCheck (§7.3.6, §12.3)', () => {
  * ------------------------------------------------------------------ */
 
 describe('tick (§7.3) — composition and order', () => {
+  it('records live wealth and NASDAQ history once per committed month', () => {
+    const january = tick(makeState({ month: 0, cash: 0 }), [], []);
+    expect(january.wealthHistory).toEqual([january.cash]);
+    expect(january.marketHistory).toEqual([100]);
+
+    const februaryMonth = monthIndex(1996, 2);
+    const february = tick({ ...january, month: februaryMonth }, [], []);
+    const nasdaqMove = SERIES.rows[februaryMonth].values['idx-nasdaq' as never] as number;
+    expect(february.wealthHistory).toHaveLength(2);
+    expect(february.marketHistory).toHaveLength(2);
+    expect(february.marketHistory[1]).toBeCloseTo(100 * nasdaqMove, 6);
+  });
+
   it('runs sub-steps in the exact §7.3 order: pay-in and expenses land before a same-month shock', () => {
     // A cash-only month with no shock: pay in, then expenses out.
     const month = monthIndex(1996, 6);

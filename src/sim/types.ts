@@ -292,8 +292,8 @@ export interface RunFlags {
   incomeSuspendedMonths: number;
   /** Era A until the Jan 2002 switch (§18.2). */
   era: 'a' | 'b';
-  /** Dual money display: which figure is primary (§19.4). */
-  moneyBase: 'period' | '1996';
+  /** Dual money display: period pounds or July 2026 purchasing power. */
+  moneyBase: 'period' | '2026';
   /** The player opened the inbox at least once. Feeds a death line. */
   everOpenedInbox: boolean;
   /** The player opened at least one fact sheet. Feeds a death line. */
@@ -335,9 +335,9 @@ export interface GameState {
   dialogs: DialogItem[];
   flags: RunFlags;
   stats: RunStats;
-  /** Every month's net worth, for the death-card decade graph (§22.6). */
+  /** Every committed month's net worth, shared by Home and the final report. */
   wealthHistory: number[];
-  /** The market line on the same graph. */
+  /** NASDAQ Composite indexed to 100 at Jan 1996 — the chapter's bubble line. */
   marketHistory: number[];
   deathMonth: MonthIndex | null;
   deathCauseId: DeathCauseId | null;

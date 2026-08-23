@@ -12,6 +12,43 @@
  * (§25.1 hard rule: "no component knows which era it is in").
  */
 
+/* Modern product shell around the period simulation. It is deliberately
+   independent of `data-era`: no historical theme is installed until a player
+   enters the unlocked decade. */
+:root {
+  --launch-bg: #071013;
+  --launch-bg-soft: #0c191d;
+  --launch-panel: #101f23;
+  --launch-panel-raised: #162a2f;
+  --launch-ink: #f3f8f6;
+  --launch-muted: #91a6a5;
+  --launch-dim: #536765;
+  --launch-accent: #c6ff3e;
+  --launch-accent-ink: #102000;
+  --launch-cyan: #51e3ff;
+  --launch-warm: #ffbc4c;
+  --launch-alert: #ff5a62;
+  --launch-border: rgba(205, 255, 240, 0.16);
+  --launch-border-strong: rgba(205, 255, 240, 0.34);
+  --launch-grid: rgba(191, 244, 235, 0.1);
+  --launch-glow: rgba(198, 255, 62, 0.24);
+  --launch-shadow: rgba(0, 0, 0, 0.48);
+  --launch-market-area: rgba(81, 227, 255, 0.12);
+  --launch-surface: linear-gradient(145deg, #12262b 0%, #0b171a 100%);
+  --launch-page-surface: radial-gradient(circle at 74% 34%, rgba(41, 110, 105, 0.25) 0%, rgba(41, 110, 105, 0) 32%), linear-gradient(135deg, #071013 0%, #0a1619 58%, #101d1d 100%);
+  --launch-accent-surface: linear-gradient(135deg, #d8ff72 0%, #aeea27 100%);
+  --launch-retro-surface: radial-gradient(circle at center, #173554 0%, #071425 60%, #02070e 100%);
+  --launch-retro-window: #c0c0c0;
+  --launch-retro-title: #000080;
+  --launch-retro-title-text: #ffffff;
+  --launch-retro-field: #000000;
+  --launch-retro-green: #73ff62;
+  --launch-retro-cyan: #33e6ff;
+  --launch-retro-magenta: #ff4bdf;
+  --launch-retro-grid: rgba(51, 230, 255, 0.2);
+  --launch-retro-scanline: rgba(0, 0, 0, 0.22);
+}
+
 /* ------------------------------------------------------------------ *
  * 1996–1997 — Windows 95 baseline.
  * ------------------------------------------------------------------ */
@@ -114,6 +151,39 @@
   --money-primary-surface: var(--face);
   --money-primary-text: var(--text);
   --money-radius: 0;
+  --chart-market: #800000;
+  --chart-player: #000080;
+  --chart-real: #008000;
+  --chart-grid: #c0c0c0;
+  --chart-axis: #808080;
+  --chart-panel: #ffffff;
+  --chart-marker: #ff0000;
+  --chart-card-surface: var(--field);
+  --chart-card-shadow: none;
+  --chart-card-radius: 0;
+  --chart-plot-surface: var(--field);
+  --chart-plot-border: transparent;
+  --chart-horizontal-grid-opacity: 1;
+  --chart-vertical-grid-opacity: 0;
+  --chart-area-opacity: 0;
+  --chart-line-width: 1.5;
+  --chart-line-cap: butt;
+  --chart-line-join: miter;
+  --chart-line-filter: none;
+  --chart-point-halo-opacity: 0;
+  --chart-ring-width: 10;
+  --chart-ring-cap: butt;
+  --chart-ring-filter: none;
+  --chart-orbit-opacity: 0;
+  --chart-center-surface: transparent;
+  --chart-center-border: transparent;
+  --chart-center-radius: 0;
+  --chart-center-shadow: none;
+  --chart-segment-1: #000080;
+  --chart-segment-2: #008080;
+  --chart-segment-3: #800080;
+  --chart-segment-4: #808000;
+  --chart-segment-5: #008000;
   --sidebar-shadow: none;
   --sidebar-text: var(--text);
   --sidebar-item-surface: transparent;
@@ -455,6 +525,39 @@
   --money-primary-surface: linear-gradient(180deg, #ffffff 0%, #7bcddd 52%, #168db2 100%);
   --money-primary-text: #003f5d;
   --money-radius: 2px;
+  --chart-market: #b4342c;
+  --chart-player: #006b9f;
+  --chart-real: #1f8c62;
+  --chart-grid: #b5d4e1;
+  --chart-axis: #52798e;
+  --chart-panel: #f7fcff;
+  --chart-marker: #e5402c;
+  --chart-card-surface: linear-gradient(180deg, #ffffff 0%, #e2f3f8 100%);
+  --chart-card-shadow: inset 0 1px 0 #ffffff, 0 1px 2px rgba(14, 69, 94, 0.28);
+  --chart-card-radius: 2px;
+  --chart-plot-surface: #f7fcff;
+  --chart-plot-border: #8cb9ca;
+  --chart-horizontal-grid-opacity: 0.9;
+  --chart-vertical-grid-opacity: 0.48;
+  --chart-area-opacity: 0.08;
+  --chart-line-width: 2;
+  --chart-line-cap: square;
+  --chart-line-join: miter;
+  --chart-line-filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.9));
+  --chart-point-halo-opacity: 0.18;
+  --chart-ring-width: 11;
+  --chart-ring-cap: square;
+  --chart-ring-filter: drop-shadow(0 1px 1px rgba(14, 69, 94, 0.3));
+  --chart-orbit-opacity: 0.34;
+  --chart-center-surface: #edfaff;
+  --chart-center-border: #8cb9ca;
+  --chart-center-radius: 2px;
+  --chart-center-shadow: inset 0 1px 2px rgba(14, 69, 94, 0.2);
+  --chart-segment-1: #006b9f;
+  --chart-segment-2: #00a4b8;
+  --chart-segment-3: #5a7fba;
+  --chart-segment-4: #8ea82a;
+  --chart-segment-5: #2b8b63;
   --sidebar-shadow: inset -3px 0 0 rgba(23, 92, 130, 0.3), inset 1px 0 0 rgba(255, 255, 255, 0.72);
   --sidebar-text: #123d59;
   --sidebar-item-surface: rgba(255, 255, 255, 0.28);
@@ -777,6 +880,39 @@
   --money-primary-surface: linear-gradient(180deg, #f5ffce 0%, #a9df5d 48%, #67b328 100%);
   --money-primary-text: #174300;
   --money-radius: 8px;
+  --chart-market: #e04b31;
+  --chart-player: #087fb4;
+  --chart-real: #57a91d;
+  --chart-grid: #a9dbe5;
+  --chart-axis: #3b7892;
+  --chart-panel: #effdff;
+  --chart-marker: #ff6a32;
+  --chart-card-surface: linear-gradient(180deg, #ffffff 0%, #dffaff 43%, #b9e8ef 100%);
+  --chart-card-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.9), inset 0 -2px 0 rgba(20, 111, 145, 0.18), 0 3px 8px rgba(0, 78, 108, 0.28);
+  --chart-card-radius: 8px;
+  --chart-plot-surface: #effdff;
+  --chart-plot-border: #6fc1d0;
+  --chart-horizontal-grid-opacity: 0.72;
+  --chart-vertical-grid-opacity: 0.72;
+  --chart-area-opacity: 0.16;
+  --chart-line-width: 2.7;
+  --chart-line-cap: round;
+  --chart-line-join: round;
+  --chart-line-filter: drop-shadow(0 0 2px rgba(46, 184, 208, 0.72));
+  --chart-point-halo-opacity: 0.32;
+  --chart-ring-width: 12;
+  --chart-ring-cap: round;
+  --chart-ring-filter: drop-shadow(0 2px 2px rgba(0, 83, 115, 0.42));
+  --chart-orbit-opacity: 0.72;
+  --chart-center-surface: linear-gradient(180deg, #ffffff 0%, #d9f8fb 100%);
+  --chart-center-border: #69bed0;
+  --chart-center-radius: 50%;
+  --chart-center-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.9), 0 1px 4px rgba(0, 89, 122, 0.28);
+  --chart-segment-1: #087fb4;
+  --chart-segment-2: #24bdd0;
+  --chart-segment-3: #78c936;
+  --chart-segment-4: #f0a533;
+  --chart-segment-5: #725fc0;
   --sidebar-shadow: inset -4px 0 0 rgba(0, 82, 126, 0.38), inset 2px 0 0 rgba(255, 255, 255, 0.65);
   --sidebar-text: #073e5a;
   --sidebar-item-surface: rgba(255, 255, 255, 0.44);

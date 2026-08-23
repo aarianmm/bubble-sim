@@ -120,6 +120,9 @@ describe('/money allocation lifecycle', () => {
     expect(slider('Cash').value).toBe('60');
     expect(slider('Northmoor 3-Year Fixed Bond').value).toBe('40');
     expect(statusText()).toContain('DRAFT ONLY');
+    expect(container.querySelector('.money-allocation-chart')?.textContent).toContain('Northmoor 3-Year Fixed Bond 40%');
+    expect(container.querySelector('.money-allocation-chart__center')?.textContent).toContain('DRAFT');
+    expect(container.querySelector('.money-allocation-chart__orbit')).toBeTruthy();
 
     // This is the reported regression: routing unmounted MoneyPage and its
     // page-local useState draft, so returning silently showed 100% cash.
@@ -149,6 +152,7 @@ describe('/money allocation lifecycle', () => {
     expect(slider('Cash').value).toBe('60');
     expect(slider('Northmoor 3-Year Fixed Bond').value).toBe('40');
     expect(statusText()).toContain('ALLOCATION APPLIED');
+    expect(container.querySelector('.money-allocation-chart__center')?.textContent).toContain('APPLIED');
 
     clickButton('HOME');
     expect(engineHandle!.state.holdings['northmoor-bond']!.value).toBeCloseTo(wealthBefore * 0.4, 6);
@@ -231,6 +235,21 @@ describe('/money allocation lifecycle', () => {
       cssToken(era1998, '--money-radius'),
       cssToken(era2000, '--money-radius'),
     ]).toEqual(['0', '2px', '8px']);
+    expect([
+      cssToken(era1996, '--chart-area-opacity'),
+      cssToken(era1998, '--chart-area-opacity'),
+      cssToken(era2000, '--chart-area-opacity'),
+    ]).toEqual(['0', '0.08', '0.16']);
+    expect([
+      cssToken(era1996, '--chart-line-width'),
+      cssToken(era1998, '--chart-line-width'),
+      cssToken(era2000, '--chart-line-width'),
+    ]).toEqual(['1.5', '2', '2.7']);
+    expect([
+      cssToken(era1996, '--chart-ring-cap'),
+      cssToken(era1998, '--chart-ring-cap'),
+      cssToken(era2000, '--chart-ring-cap'),
+    ]).toEqual(['butt', 'square', 'round']);
 
     // Motion is intentionally stepped for the period UI and must respect the
     // user's reduced-motion preference.

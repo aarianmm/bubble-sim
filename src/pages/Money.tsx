@@ -403,7 +403,7 @@ function formatGBP(amount: number): string {
 
 /**
  * Adapter over the shared dual-money component (§19.4). Every figure on this
- * page renders in both period and 1996 money, and the global toggle swaps
+ * page renders in both period and 2026 money, and the global toggle swaps
  * which is primary everywhere at once.
  */
 function MoneyFigure({
@@ -429,6 +429,49 @@ function MoneyFigure({
       />
       {suffix ?? ''}
     </>
+  );
+}
+
+function AllocationGraphic({ rows, isDirty }: { rows: readonly DraftRow[]; isDirty: boolean }) {
+  let offset = 0;
+  const segments = rows.map((row, index) => {
+    const start = offset;
+    offset += row.pct;
+    return { ...row, start, tone: (index % 5) + 1 };
+  });
+  const description = rows.map((row) => `${row.label} ${row.pct}%`).join(', ');
+
+  return (
+    <section className="money-allocation-chart" aria-label={`Target allocation: ${description}`}>
+      <div className="money-allocation-chart__graphic">
+        <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+          <circle className="money-allocation-chart__orbit" cx="50" cy="50" r="47" pathLength="100" />
+          <circle className="money-allocation-chart__track" cx="50" cy="50" r="38" pathLength="100" />
+          {segments.filter((row) => row.pct > 0).map((row) => (
+            <circle
+              key={row.id}
+              className={`money-allocation-chart__segment money-allocation-chart__segment--${row.tone}`}
+              cx="50"
+              cy="50"
+              r="38"
+              pathLength="100"
+              strokeDasharray={`${row.pct} ${100 - row.pct}`}
+              strokeDashoffset={-row.start}
+            />
+          ))}
+        </svg>
+        <span className="money-allocation-chart__center"><b>100%</b><small>{isDirty ? 'DRAFT' : 'APPLIED'}</small></span>
+      </div>
+      <div className="money-allocation-chart__copy">
+        <span className="money-allocation-chart__eyebrow">TARGET MIX</span>
+        <div className="money-allocation-chart__legend">
+          {segments.slice(0, 4).map((row) => (
+            <span key={row.id}><i className={`money-allocation-chart__key money-allocation-chart__key--${row.tone}`} />{row.label} <b>{row.pct}%</b></span>
+          ))}
+          {segments.length > 4 && <span>+ {segments.length - 4} more instruments</span>}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -677,19 +720,24 @@ export function MoneyPage() {
         <span className="money-date">{monthLabel(state.month)}</span>
       </div>
 
-      <div className="money-total">
-        <span className="money-total__label">Total</span>
-        <MoneyFigure
-          amount={netWorthNow}
-          month={state.month}
-          suffix=" in 1996 money"
-        />
-      </div>
+      <div className="money-summary">
+        <div className="money-summary__copy">
+          <div className="money-total">
+            <span className="money-total__label">Total</span>
+            <MoneyFigure
+              amount={netWorthNow}
+              month={state.month}
+              suffix=" in 2026 money"
+            />
+          </div>
 
-      <div className="money-guide" aria-label="How allocation editing works">
-        <span><b>1</b> Set targets</span>
-        <span><b>2</b> Pin a percentage only if it must stay fixed while editing</span>
-        <span><b>3</b> Rebalance Now, then confirm to move money</span>
+          <div className="money-guide" aria-label="How allocation editing works">
+            <span><b>1</b> Set targets</span>
+            <span><b>2</b> Pin a percentage only if it must stay fixed while editing</span>
+            <span><b>3</b> Rebalance Now, then confirm to move money</span>
+          </div>
+        </div>
+        <AllocationGraphic rows={draft} isDirty={isDirty} />
       </div>
 
       <div className="money-rows bevel-in">

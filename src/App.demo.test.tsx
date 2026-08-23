@@ -186,6 +186,20 @@ const JAN_2000 = 48;
 const MAR_2000 = 50;
 
 describe('§25.5 — the demo path, beat by beat, driven through the real AppShell', () => {
+  it('enters the untouched period simulation only after the launch hub, decade library and retro intro', () => {
+    mountProductionApp('/');
+    expect(container!.querySelector('.launch-page')).toBeTruthy();
+    expect(container!.querySelector('.comet-window')).toBeNull();
+    click(byText<HTMLButtonElement>(container!, 'button', 'Start simulation'));
+    expect(container!.querySelectorAll('.decade-card:not(:disabled)')).toHaveLength(1);
+    click(container!.querySelector('.decade-card--available'));
+    expect(container!.querySelector('.retro-transition')).toBeTruthy();
+    click(byText<HTMLButtonElement>(container!, 'button', 'Skip intro'));
+    expect(container!.querySelector('.launch-page')).toBeNull();
+    expect(container!.querySelector('.comet-window')).toBeTruthy();
+    expect(container!.querySelector('.comet-addressbar__url')?.textContent).toBe('http://www.bubble.net/home');
+  });
+
   it('does not expose retired Presenter Tools through the legacy ?dev=1 URL', () => {
     mountProductionApp('/?dev=1');
     expect(document.body.textContent).not.toContain('Presenter Tools');

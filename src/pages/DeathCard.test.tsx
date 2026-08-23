@@ -20,7 +20,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { DeathCard } from './DeathCard';
+import { buildPlayerReport, DeathCard } from './DeathCard';
 import { EngineContext, type Engine } from '../ui/engine';
 import { EngineProvider } from '../ui/EngineProvider';
 import { RouterProvider, useRouter } from '../chrome/router';
@@ -153,7 +153,7 @@ describe('DeathCard (§22.6) — renders for every band', () => {
       expect(container.textContent).toContain(band);
       expect(container.textContent).toContain(DEATH_LINE(causeId));
       // §23 — no draw-on animation: the full <path> is present immediately.
-      const lines = container.querySelectorAll('.deathcard-graph__line');
+      const lines = container.querySelectorAll('.performance-chart__line');
       expect(lines.length).toBeGreaterThan(0);
       for (const line of lines) expect(line.getAttribute('d')).toBeTruthy();
     });
@@ -216,6 +216,29 @@ describe('DeathCard (§22.6) — renders for every band', () => {
     expect(container.textContent).toContain('You paid');
     expect(container.textContent).toContain('£1,840');
     expect(container.textContent).toContain('£96');
+  });
+
+  it('builds specific coaching from the replay log and observed mistakes', () => {
+    const state = fixtureState({
+      stats: fixtureStats({ scamsFunded: 1, forcedSales: 2, trackerCounterfactualFees: 20 }),
+      flags: {
+        onScamList: true,
+        incomeSuspendedMonths: 0,
+        era: 'a',
+        moneyBase: 'period',
+        everOpenedInbox: true,
+        everOpenedFactSheet: false,
+      },
+      decisions: [
+        { type: 'accept-offer', month: 1, vehicleId: 'meridian-guaranteed', source: 'test' },
+        { type: 'rebalance', month: 1, targets: { 'meridian-guaranteed': 50 }, cashPct: 50 },
+      ],
+    });
+    const report = buildPlayerReport(state);
+    expect(report.activity).toMatchObject({ decisions: 2, rebalances: 1, factSheets: 0, offersAccepted: 1 });
+    expect(report.nextSteps.join(' ')).toContain('fact sheet');
+    expect(report.nextSteps.join(' ')).toContain('cash buffer');
+    expect(report.nextSteps.join(' ')).toContain('guarantees');
   });
 
   it('every money figure renders through the same £ formatting <Money> uses (§19.4)', () => {

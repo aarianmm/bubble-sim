@@ -671,7 +671,7 @@ External sites are real destinations you navigate to:
 | Element | Behaviour |
 |---|---|
 | Title bar | Shows the current page title. Updates on navigation, as a real browser does. `_ □ ✕` are inert but correctly drawn — hovering shows the bevel press. Clicking `✕` prompts *"Are you sure you want to leave?"* and, if confirmed, quits the run. |
-| Menu bar | `File > New run`, `File > Quit`, `View > Money as 1996 £` (the dual-money toggle, §19.4), `Help > About`, `Help > This is not financial advice`. Real menus, real dropdowns, mostly greyed out — correct for the era and it hides the settings where they belong. |
+| Menu bar | `File > New run`, `File > Quit`, `View > Money as 2026 £` (the dual-money toggle, §19.4), `Help > About`, `Help > This is not financial advice`. Real menus, real dropdowns, mostly greyed out — correct for the era and it hides the settings where they belong. |
 | Back / Forward | **Functional.** Navigation history across pages. Greyed when unavailable. |
 | Stop / Refresh | Stop cancels a page load. Refresh re-renders. Both real. |
 | Home | Returns to `/home`. |
@@ -761,12 +761,12 @@ Because the chrome is functional, it must stay honest, or the illusion collapses
 
 ### 19.4 Dual money display
 
-Every figure appears twice: **period-accurate, and in 1996 purchasing power.**
+Every figure appears twice: **period-accurate, and in 2026 purchasing power.**
 
-- Period money is primary (larger, on top). 1996 money is secondary (smaller, beneath, in `--disabled` grey).
-- **Global toggle** at `View > Money as 1996 £` in the menu bar, and by clicking the headline figure on `/home`. Swaps which is primary, everywhere at once, instantly.
+- Period money is primary (larger, on top). 2026 money is secondary (smaller, beneath, in `--disabled` grey).
+- **Global toggle** at `View > Money as 2026 £` in the menu bar, and by clicking the headline figure on `/home`. Swaps which is primary, everywhere at once, instantly.
 - Applies to: net worth, salary, every expense line, every portfolio row, every offer, every shock, every number on the death card.
-- Base year is **1996** — the year the player started — not 2026. Comparing to your own starting point is more legible than comparing to a year the player has no feel for, and it makes the erosion personal rather than academic.
+- Comparison year is **2026**, at the project owner's request, because it gives a present-day player a recognisable purchasing-power reference. The offline conversion is pinned to ONS CPI series D7BT: 68.8 for 1996 and 142.9 for July 2026. Period-to-1996 conversion still happens first so each simulated month retains its authored inflation path.
 - **Design for the moment where a growing nominal number sits above a shrinking real one.** That is the game's thesis in two lines of type.
 
 ## 20. The notification vocabulary
@@ -904,7 +904,7 @@ Each of these is a web page rendered inside the frame from §18. Chrome is omitt
 │                  │        Y O U R   M O N E Y                          │
 │  ──────────      │                                                     │
 │  SEP 1998        │              £2,140                                 │
-│  ▶▶  ⏸           │              £1,720 in 1996 money                   │
+│  ▶▶  ⏸           │              £3,574 in 2026 money                   │
 │                  │                                                     │
 │  ──────────      │        ┌─────────────────────────────────┐          │
 │  1996 ▓          │        │ THIS MONTH                      │          │
@@ -922,7 +922,7 @@ Each of these is a web page rendered inside the frame from §18. Chrome is omitt
 
 **Controls:** `▶▶` hold-to-fast-forward (4×, held not toggled — it keeps a hand on the game); `⏸ / ▶` pause; click the headline figure to toggle dual money; the left-nav year bars are a live progress spine showing how far you've got and quietly implying how far there is to go.
 
-The headline number is the emotional core of the screen. When the nominal figure grows while the 1996 figure shrinks, that pairing should be given room and weight — it is the single most important piece of typography in the product.
+The headline number is the emotional core of the screen. When the nominal figure grows while the 2026 figure shrinks, that pairing should be given room and weight — it is the single most important piece of typography in the product. Two compact live charts sit below it: the dot-com-era NASDAQ path and the player's nominal/2026 wealth path. They use the same deterministic history that drives the ending report.
 
 ### 22.2 `/mail` — the inbox
 
@@ -1008,7 +1008,7 @@ The same sheet for the tracker reads: *fee 0.4%, holdings 623, launched 1989, re
 
 ```
 │   MY MONEY                                          SEPTEMBER 2000    │
-│   Total  £6,200        £4,780 in 1996 money                           │
+│   Total  £6,200        £9,933 in 2026 money                           │
 │   ┌─────────────────────────────────────────────────────────────────┐ │
 │   │ Cash                                    £1,240            20%   │ │
 │   │ 🔓 ▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░             │ │
@@ -1124,7 +1124,7 @@ Everything needed, kept deliberately small. All original work.
 **Last updated:** 23 Aug 2026
 
 > Local browser runs and owner-supplied screenshots now inform the visual pass.
-> The 347 automated tests span pure simulation checks and jsdom interactions;
+> The 355 automated tests span pure simulation checks and jsdom interactions;
 > the integration test drives the real `<App/>` with real DOM clicks through
 > §25.5's demo path. Recheck the full decade in a browser before a live rehearsal,
 > especially §21 rule 1 (Halcyon must be the best-looking page in the build,
@@ -1170,24 +1170,25 @@ perfect play         2005-02    KNOWN GAP
 | 13 | Navigation | Real history stack, correctly greyed Back/Forward, title + address sync, **status-bar URL preview on link hover** (§19.3's red-flag delivery mechanism) |
 | 14 | Clock, year spine, time controls | 1.2s/month, hold-to-fast-forward at 4×. The base year keeps §22.1's original growing `▓` staircase and current `◄` marker. From 1998 the same mounted rows become a connected timeline with completed/current/upcoming nodes and an explicit `NOW` badge; 2000 rounds and glosses those parts. Visibility and paint remain milestone-token-driven |
 | 15 | Presenter test driver (retired from deployment) | The original jump/preset/event driver remains test-only so integration coverage can land on authored beats. `App.tsx` has no import, URL unlock, About-click unlock, or render path for it; see Deviation 6 |
-| 16 | Dual money display | One component; the toggle swaps every figure at once (proven by test) |
-| 17 | `/home` | Headline pairing, this-month strip, year spine, fact-checked news ticker |
+| 16 | Dual money display | One component; the toggle swaps every figure at once (proven by test). The comparison is now 2026 purchasing power, using an offline fixed ONS CPI D7BT reference (1996 68.8; July 2026 142.9) |
+| 17 | `/home` | Headline pairing, this-month strip, year spine and fact-checked ticker, plus live accessible NASDAQ and player-wealth charts. Both charts are fed by the same pure monthly tick history used by the ending report. Their invariant SVG structure participates in the UI evolution: flat sparse plots in 1996, framed area/data-console treatment in 1998, then rounded layered fills, stronger grids, endpoint halos and luminous depth in 2000—all through milestone tokens |
 | 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view |
 | 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate) |
 | 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups draggable, capped at 3, positioned by arithmetic on the month index |
-| 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. Allocation controls retain the original flat 1996 treatment, change to a square cyan/blue console in 1998, and become glossy aqua/lime in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Real-engine route regressions prove the lifecycle and milestone switching |
+| 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. A live target-allocation donut makes draft versus applied state visible without changing the allocator's mechanics. Allocation controls and graph retain the original flat 1996 treatment, change to a square cyan/blue console with a subtle orbit in 1998, and become a glossy rounded aqua/lime instrument with depth and stronger segment caps in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Real-engine route regressions prove the lifecycle and milestone switching |
 | 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
 | 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending |
 | 26 | Bands + cause-of-death | `bandFor(status, deathMonth)` takes **no wealth parameter**, so §15's anti-gambling guardrail is structural. Five of six §22.6 lines proven reachable by real runs |
-| 27 | Death card | Full-page, chrome retained, **every toolbar button greyed except Home**. Inline-SVG decade graph, player line vs market. Missed red flags quoted from the fact sheet the player could have read (§11.2 rule 5) |
+| 27 | Death card | Full-page, chrome retained, **every toolbar button greyed except Home**. The shared accessible decade chart compares the player's money with the NASDAQ. A deterministic personal report summarises the player's decisions, fact-sheet reading, rebalances, scam exposure and forced sales, then gives specific next-run guidance. Missed red flags are still quoted from the fact sheet the player could have read (§11.2 rule 5) |
 | 28 | **One-click replay** | `engine.reset()`, no menu, no confirmation |
 | 29–30 | Visual progression at Jan 1998 and Jan 2000 | Continuous play pauses at each boundary on the previous design and presents a large mandatory prompt: `We are now entering the year 1998/2000. Please update the system.` `[ Update the system ]` starts the real router load beneath a blue full-viewport installer that covers every old chrome control, shows staged installation status and preserves the frozen date. Only after loading finishes are the destination root attributes applied; a second full-screen `Welcome to 1998/2000` surface then previews the installed interface and `[ Enter the updated system ]` returns control. The three-stage sequence borrows the supplied Windows Aero reference's deep desktop-blue field, translucent framed panels, glass highlights and luminous controls. The welcome signal and progress sheen use discrete step animation with reduced-motion fallbacks. 1998 installs a markedly taller IE4/Win98 channel interface; 2000 makes the starker Frutiger Aero-inspired jump across the full shell and changes the toolbar from stacked legacy tools to horizontal glass controls. Functional control slots, handlers and ordering remain invariant; their milestone metrics and presentation deliberately do not. `?visual=1` exposes the prompt, installer and completion surfaces for review; test-only state loads still apply a target milestone immediately. The authored Jan 2002 computer-upgrade dialog remains narrative and no longer changes the theme; see Deviation 5 |
+| — | Launch experience and chapter library | A modern product-level opening surface introduces BUBBLE through Overview, Simulation, Leaderboard, User reports and Settings tabs. Simulation explains the core loop before opening a minimal chapter library. Only 1996–2000 is playable; later cards are visibly locked presentation previews. Starting the demo runs an original deterministic stepped retro boot sequence, then mounts the existing simulation unchanged. No account, stored report, ranking or later-decade mechanic is implied |
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1). 347 tests green.
+### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 355 tests green.
 
-Six bugs were found and fixed during integration, all worth knowing about:
+Seven bugs were found and fixed during integration, all worth knowing about:
 
 - **`mvpDeferred` events were being skipped entirely.** §26.1 wants them
   *delivered* without their deferred mechanic, not removed from the run — the
@@ -1225,6 +1226,13 @@ Six bugs were found and fixed during integration, all worth knowing about:
   demo on stage.** Its jump-to-date replayed from Jan 1996 with *no* decisions,
   so moving between beats silently discarded every earlier choice. The panel no
   longer ships; `DEMO.md` uses only the normal play/fast-forward controls.
+- **The live browser never recorded wealth or market history.** Only the
+  headless runner appended those points, while the mounted engine calls the pure
+  monthly tick directly. The old ending chart was therefore empty during a real
+  playthrough. History ownership now lives in `tick()`, which records exactly
+  one wealth and indexed NASDAQ point per committed month; `run.ts`, Home and
+  the ending report all consume that same source. A regression prevents the
+  headless and browser paths from drifting again.
 
 Two §25.5 details worth knowing before rehearsing:
 
@@ -1278,7 +1286,7 @@ Two §25.5 details worth knowing before rehearsing:
 
 ### Not being built — §26.3
 
-Randomised runs · a second decade · generative scams · leaderboards · shared-seed
+Randomised runs · a playable second decade · generative scams · live leaderboards · shared-seed
 play-a-friend · student-loan opening · a full Windows desktop · accounts or saves ·
 mobile.
 
@@ -1366,6 +1374,28 @@ mobile.
    and a labelled `NOW` badge. The later 2000 layer adds rounded blue/green glass
    treatment. All eleven years and the same live clock source remain, with no
    simulation timing or navigation behaviour change.
+8. **A modern launch shell and locked chapter library now sit outside the period
+   browser.** The owner requested a contemporary introduction, tutorial-style
+   Simulation tab, chapter picker and dramatic retro hand-off. This departs from
+   §18's assumption that the maximised faux browser is the entire product
+   surface. The exception ends before gameplay: selecting the only unlocked
+   1996–2000 card runs a deterministic `steps()` boot animation and then mounts
+   the existing browser, routes and simulation without altering them. The
+   Leaderboard, User reports and Settings tabs explicitly describe unavailable
+   local/demo functionality; they do not add accounts, persistence, rankings or
+   a second playable decade.
+9. **Purchasing-power comparisons use 2026 rather than 1996.** The owner asked
+   for a present-day reference that is more meaningful to current players. The
+   implementation first applies the existing month-specific conversion back to
+   1996, then multiplies by the fixed ONS CPI D7BT ratio 142.9 / 68.8 (July 2026
+   versus 1996). The constants are bundled so the deterministic offline build
+   never depends on a live statistics service.
+10. **The visual market comparator is the NASDAQ Composite.** The request named
+   FTSE or S&P as examples, but this chapter's authored calibration and ending
+   are explicitly tied to the March 2000 NASDAQ peak. Index values remain the
+   reconstructed offline series disclosed in known issue 3. Using one shared
+   series on Home and the ending report avoids presenting two competing bubble
+   stories.
 
 ---
 ---

@@ -288,3 +288,22 @@ unknown IDs, non-finite/out-of-range values, and allocations that do not total
 100%, then refuses collapsed buys even for a forged but otherwise valid
 decision. Regression tests cover all of these paths and the six-strategy
 calibration fixture now emits valid 100% decisions.
+
+---
+
+## 16. Live gameplay did not record wealth or market history — §22.1, §22.6, §25.2
+
+**Status:** fixed on 23 Aug 2026 during the graph/reporting expansion.
+
+`run.ts` appended `wealthHistory` and `marketHistory` after calling `tick()`, but
+the mounted `EngineProvider` advances the game by calling `tick()` directly.
+Consequently a real browser run never populated either array and the ending
+graph had no live points. Any new Home chart built on those fields would also
+have stayed blank even though headless verification appeared healthy.
+
+History recording now belongs to the pure monthly tick boundary. Each committed
+month replaces or appends exactly one net-worth point and one NASDAQ point,
+indexed to 100 at January 1996. The headless runner returns that state instead of
+maintaining a second implementation. Unit coverage drives the live tick path and
+asserts one chronological point per month, while the existing strategy suite
+confirms that moving this bookkeeping did not alter any calibrated death date.

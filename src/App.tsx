@@ -30,6 +30,8 @@ import {
 import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
 import { MoneyDraftProvider } from './pages/Money';
 import { monthIndex, type MonthIndex } from './sim/month';
+import { LaunchExperience, type LaunchScreen } from './launch/LaunchExperience';
+import { ExperienceNavigationContext } from './launch/experience';
 
 type VisualMilestone = {
   era: 'a' | 'b';
@@ -218,7 +220,7 @@ export function AppShell() {
           onQuit: newRun,
           onToggleMoneyBase: () =>
             engine.dispatch({ type: 'toggle-money-base', month: engine.state.month }),
-          moneyBaseIs1996: engine.state.flags.moneyBase === '1996',
+          moneyBaseIs2026: engine.state.flags.moneyBase === '2026',
           onToggleSounds: () => setSoundsOn((v) => !v),
           soundsOn,
           onAbout: handleAbout,
@@ -298,9 +300,21 @@ export function AppShell() {
 
 export function App() {
   const tooSmall = useIsViewportTooSmall();
+  const [experience, setExperience] = useState<'hub' | 'library' | 'play'>(() =>
+    new URLSearchParams(window.location.search).get('play') === '1' ? 'play' : 'hub',
+  );
 
   if (isVisualRoute()) {
     return <VisualGallery />;
+  }
+
+  if (experience !== 'play') {
+    return (
+      <LaunchExperience
+        initialScreen={experience as LaunchScreen}
+        onLaunch={() => setExperience('play')}
+      />
+    );
   }
 
   if (tooSmall) {
@@ -308,10 +322,12 @@ export function App() {
   }
 
   return (
-    <EngineProvider>
-      <RouterProvider initialUrl={HOME_URL}>
-        <AppShell />
-      </RouterProvider>
-    </EngineProvider>
+    <ExperienceNavigationContext.Provider value={{ returnToLibrary: () => setExperience('library') }}>
+      <EngineProvider>
+        <RouterProvider initialUrl={HOME_URL}>
+          <AppShell />
+        </RouterProvider>
+      </EngineProvider>
+    </ExperienceNavigationContext.Provider>
   );
 }

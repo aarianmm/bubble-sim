@@ -399,7 +399,7 @@ function applyDecision(state: GameState, decision: Decision): GameState {
     }
 
     case 'toggle-money-base':
-      return { ...state, flags: { ...state.flags, moneyBase: state.flags.moneyBase === 'period' ? '1996' : 'period' } };
+      return { ...state, flags: { ...state.flags, moneyBase: state.flags.moneyBase === 'period' ? '2026' : 'period' } };
 
     case 'navigate':
     case 'set-time-rate':
@@ -560,5 +560,17 @@ export function tick(state: GameState, monthEvents: ScriptEvent[], monthDecision
       trackerCounterfactualFees: next.stats.trackerCounterfactualFees + investedValue(next) * TRACKER_FEE_PCT_PER_MONTH,
     },
   };
-  return next;
+
+  // The live engine and headless runner both call this same tick. Recording
+  // history here keeps Home and the final report truthful in an interactive
+  // run; previously only run.ts populated these arrays, leaving the shipped
+  // end graph empty. NASDAQ is the market comparator because this chapter is
+  // specifically about the dot-com bubble and its March 2000 peak.
+  const priorMarketLevel = next.marketHistory[next.month - 1] ?? 100;
+  const marketMultiplier = seriesRowFor(next.month)['idx-nasdaq'] ?? 1;
+  return {
+    ...next,
+    wealthHistory: [...next.wealthHistory.slice(0, next.month), netWorth(next)],
+    marketHistory: [...next.marketHistory.slice(0, next.month), priorMarketLevel * marketMultiplier],
+  };
 }

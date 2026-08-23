@@ -59,10 +59,10 @@ export interface TitleBarProps {
 export interface MenuBarProps {
   onNewRun?: () => void;
   onQuit?: () => void;
-  /** View > Money as 1996 £ — the dual-money toggle (§19.4). */
+  /** View > Money as 2026 £ — the dual-money toggle. */
   onToggleMoneyBase?: () => void;
-  /** Whether 1996 £ is currently the primary figure — drives the checkmark. */
-  moneyBaseIs1996?: boolean;
+  /** Whether 2026 £ is currently the primary figure — drives the checkmark. */
+  moneyBaseIs2026?: boolean;
   /** View > Sounds — global mute (§23). */
   onToggleSounds?: () => void;
   soundsOn?: boolean;

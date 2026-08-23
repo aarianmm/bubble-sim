@@ -44,6 +44,20 @@ export function to1996(amount: number, month: MonthIndex): number {
   return amount * deflatorTo1996(month);
 }
 
+/**
+ * Purchasing power in July 2026 pounds. The simulation's authored CPI path
+ * converts the period amount back to its 1996 base; the fixed ONS all-items
+ * CPI ratio then carries that base to the latest available 2026 observation.
+ * ONS D7BT: 1996 annual index 68.8; July 2026 index 142.9 (2015=100).
+ * Fixed and bundled so the game remains deterministic and fully offline.
+ */
+export const CPI_1996 = 68.8;
+export const CPI_JULY_2026 = 142.9;
+
+export function to2026(amount: number, month: MonthIndex): number {
+  return to1996(amount, month) * (CPI_JULY_2026 / CPI_1996);
+}
+
 export interface MonthSummary {
   payIn: number;
   out: number;

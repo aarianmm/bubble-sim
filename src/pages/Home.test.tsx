@@ -44,15 +44,15 @@ describe('/home (§22.1)', () => {
     expect(container.textContent).toContain('Historical data is real');
   });
 
-  it('the headline pairing shows period money primary, 1996 money secondary, at start', () => {
+  it('the headline pairing shows period money primary and 2026 money secondary at start', () => {
     mount();
     const headline = container.querySelector('.money--headline')!;
     const primary = headline.querySelector('.money__primary')!.textContent;
     const secondary = headline.querySelector('.money__secondary')!.textContent;
-    // Month 0 (Jan 1996): net worth is £0, and 1996 money is quoted as such.
+    // Month 0 (Jan 1996): net worth is £0 in either purchasing-power base.
     expect(primary).toBe('£0');
     expect(secondary).toContain('£0');
-    expect(secondary).toContain('in 1996 money');
+    expect(secondary).toContain('in 2026 money');
   });
 
   it('clicking the headline figure toggles dual money for the whole page (§19.4, §22.1)', () => {
@@ -66,6 +66,20 @@ describe('/home (§22.1)', () => {
     const secondary = headlineButton.querySelector('.money__secondary')!.textContent;
     // Now period money is the secondary line, labelled by the current month.
     expect(secondary).toContain('in January 1996 money');
+  });
+
+  it('shows separate accessible NASDAQ and personal wealth charts', () => {
+    mount();
+    expect(container.textContent).toContain('NASDAQ COMPOSITE');
+    expect(container.textContent).toContain('YOUR WEALTH PATH');
+    const charts = container.querySelectorAll('svg[role="img"]');
+    expect(charts).toHaveLength(2);
+    expect(charts[0].getAttribute('aria-label')).toContain('NASDAQ Composite path');
+    expect(charts[1].getAttribute('aria-label')).toContain('2026 money');
+    // These invariant SVG layers are progressively revealed by the 1996,
+    // 1998 and 2000 token sets rather than by branching in React.
+    expect(container.querySelectorAll('.performance-chart__plot')).toHaveLength(2);
+    expect(container.querySelectorAll('.performance-chart__year-grid line')).toHaveLength(12);
   });
 
   it('the ticker carries this year\'s real headlines (§22.1, §5.1)', () => {
