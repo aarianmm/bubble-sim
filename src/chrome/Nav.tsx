@@ -155,11 +155,15 @@ function FastForwardButton() {
 }
 
 export function TimeControls() {
+  const { autoPaused } = useEngine();
   return (
-    <div className="chrome comet-nav__time-controls">
-      <FastForwardButton />
-      <PauseButton />
-    </div>
+    <>
+      <div className="chrome comet-nav__time-controls">
+        <FastForwardButton />
+        <PauseButton />
+      </div>
+      {autoPaused && <div className="comet-nav__auto-pause">Paused while reviewing</div>}
+    </>
   );
 }
 

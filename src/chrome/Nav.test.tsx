@@ -30,11 +30,13 @@ function engineWith(inbox: MailItem[], mailNoticeResetKey = 0): Engine {
   return {
     state: { inbox } as unknown as GameState,
     paused: false,
+    autoPaused: false,
     timeRate: 1,
     popupPresentation: { active: null, pending: [], phase: 'showing' },
     mailNoticeResetKey,
     dispatch: () => undefined,
     setPaused: () => undefined,
+    setAutoPaused: () => undefined,
     setTimeRate: () => undefined,
     closePresentedPopup: () => undefined,
     filePresentedPopup: () => undefined,

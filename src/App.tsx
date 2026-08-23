@@ -11,7 +11,7 @@
  *   - otherwise           the real game, inside <EngineProvider> and
  *                          <RouterProvider>
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Window } from './chrome/Window';
 import { TooSmall, useIsViewportTooSmall } from './chrome/TooSmall';
 import { VisualGallery } from './chrome/VisualGallery';
@@ -24,7 +24,7 @@ import { EngineProvider } from './ui/EngineProvider';
 import { useEngine } from './ui/engine';
 import { Notifications } from './ui/Notifications';
 import { Presenter } from './dev/Presenter';
-import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
+import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL, shouldAutoPauseSimulationUrl } from './pages/registry';
 
 function isVisualRoute(): boolean {
   return new URLSearchParams(window.location.search).get('visual') === '1';
@@ -51,6 +51,19 @@ function urlForSection(section: NavSection): string {
     case 'money':
       return MONEY_URL;
   }
+}
+
+export function SimulationRoutePause() {
+  const engine = useEngine();
+  const router = useRouter();
+  const autoPause = shouldAutoPauseSimulationUrl(router.url);
+
+  useLayoutEffect(() => {
+    engine.setAutoPaused('route', autoPause);
+    return () => engine.setAutoPaused('route', false);
+  }, [autoPause, engine.setAutoPaused]);
+
+  return null;
 }
 
 function AppShell() {
@@ -107,6 +120,7 @@ function AppShell() {
 
   return (
     <div className={onDeathCard ? 'app-shell app-shell--death' : 'app-shell'}>
+      <SimulationRoutePause />
       <Window
         titleBar={{ title: router.title, onCloseConfirmed: newRun }}
         menuBar={{

@@ -37,10 +37,12 @@ function makeEngine(overrides: Partial<Engine> = {}): Engine {
   return {
     state: baseState,
     paused: false,
+    autoPaused: false,
     timeRate: 1,
     popupPresentation: { active: makePopup(), pending: [], phase: 'showing' },
     dispatch: vi.fn(),
     setPaused: vi.fn(),
+    setAutoPaused: vi.fn(),
     setTimeRate: vi.fn(),
     closePresentedPopup: vi.fn(),
     filePresentedPopup: vi.fn(),
@@ -247,6 +249,24 @@ describe('popup presentation timing', () => {
     act(() => vi.advanceTimersByTime(20000));
     expect(closePresentedPopup).not.toHaveBeenCalled();
     render(engine);
+    act(() => vi.advanceTimersByTime(6999));
+    expect(closePresentedPopup).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1));
+    expect(closePresentedPopup).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves one active popup and its remaining timeout across Mail-message auto-pause', () => {
+    const closePresentedPopup = vi.fn();
+    const running = makeEngine({ closePresentedPopup });
+    render(running, MAIL_URL);
+    act(() => vi.advanceTimersByTime(4000));
+
+    render({ ...running, autoPaused: true, timeRate: 0 }, MAIL_URL);
+    act(() => vi.advanceTimersByTime(20000));
+    expect(document.querySelectorAll('.comet-popup')).toHaveLength(1);
+    expect(closePresentedPopup).not.toHaveBeenCalled();
+
+    render(running, MAIL_URL);
     act(() => vi.advanceTimersByTime(6999));
     expect(closePresentedPopup).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(1));

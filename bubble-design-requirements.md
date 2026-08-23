@@ -360,7 +360,7 @@ Those counts are the authored manifest, not a probability. The ratio is the *rea
 
 The player cannot read everything carefully *and* keep up with time. That's the intended tension.
 
-- Time runs at **0.4×** while the inbox is open. Reading costs time, but not punishingly.
+- Time runs normally in the inbox list and pauses while an individual message is open for reading.
 - Popups do **not** slow time. Ignoring them is a real option with a real cost.
 - Junk, legit and scam rows are **visually identical in the inbox list**. Only the message body, the site it links to, and the fact sheet distinguish them.
 
@@ -946,7 +946,7 @@ Webmail of the era. Message list, no preview pane in Era A; preview pane appears
 - Sortable column headers with the correct sunken-on-press bevel.
 - **No visual class indicator.** Junk, legit and scam rows are identical.
 - Row hover = full-row highlight in `--title` with white text, as a period list control does.
-- Time runs at 0.4× while `/mail` is open.
+- Time runs normally in the `/mail` inbox list and pauses while an individual message is open.
 - `[ Delete all ]` exists and is a real strategy. It will also delete a windfall.
 
 ### 22.3 An offer page — the external site
@@ -1511,7 +1511,7 @@ Built by agents, fast, in parallel where possible. So this section is not a sche
 |---|---|---|---|
 | **16** ∥ | Dual money display. One component, one global toggle in `View >` and on the `/home` headline. | `src/ui/Money.tsx` | Every figure renders both; toggle swaps primary everywhere at once |
 | **17** ∥ | `/home`. §22.1 — headline, this-month strip, year spine, news ticker. | `src/pages/Home.tsx` | Matches §22.1 at 1024×768; headline toggles dual money on click |
-| **18** ∥ | `/mail`. §22.2 — list, sortable headers, expiry column, row select, open, delete, delete-all. No class indicator on rows. | `src/pages/Mail.tsx` | Junk, legit and scam rows are pixel-identical; time runs at 0.4× while open |
+| **18** ∥ | `/mail`. §22.2 — list, sortable headers, expiry column, row select, open, delete, delete-all. No class indicator on rows. | `src/pages/Mail.tsx` | Junk, legit and scam rows are pixel-identical; the list runs normally and an open message pauses time |
 | **19** ∥ | Offer page template + **fact sheet component**. Fact sheet identical on every page, same position, same size, Times New Roman table. | `src/pages/Offer.tsx`, `src/ui/FactSheet.tsx` | Renders any of the 17 vehicles from Step 6 data; the tracker's sheet and Halcyon's sheet differ only in field values |
 | **20** ∥ | Dialog system. §20.1 — blocking, dims the page, pauses time, no dismiss, max two buttons. | `src/chrome/Dialog.tsx` | Time is frozen while open; there is no code path that closes one without a choice |
 | **21** ∥ | Popup system. §20.2 — random-free positioning, draggable, real `✕`, chromeless, up to 3 concurrent, auto-close after 45 sim days. | `src/chrome/Popup.tsx` | Three open at once in May 1999; closing does not delete the inbox copy |
@@ -1586,7 +1586,7 @@ Fewer of these than there would be in a generated game: decision count, scam fre
 
 **Answer before the script freezes — i.e. before Step 36, after which it is copy edits only and no date changes:**
 
-- **Inbox time rate.** 0.4× is a guess. If players never open the inbox it's too punishing; if they read every word it's too generous.
+- **Mail reading pause.** The inbox list keeps running; opening a message pauses time so careful reading is not punished.
 - **Popup volume at the 1999 peak.** Three concurrent is the authored cap. Watch for the point where it stops being atmospheric and starts being hated.
 - **Does the Halcyon fact sheet actually get opened?** This is the load-bearing moment of the whole design (§21). If players fund it without ever clicking through, the fact-sheet button is in the wrong place or the wrong size, and that is a UI bug, not a player error.
 - **Does anyone find the Northmoor trap?** If nobody notices that the "safe" 5.2% bond also loses to rent, that lesson isn't landing and needs its own death-card line.

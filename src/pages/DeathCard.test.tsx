@@ -86,10 +86,12 @@ function mockEngine(state: GameState, resetSpy = vi.fn()): Engine {
   return {
     state,
     paused: true,
+    autoPaused: false,
     timeRate: 0,
     popupPresentation: { active: null, pending: [], phase: 'showing' },
     dispatch: vi.fn(),
     setPaused: vi.fn(),
+    setAutoPaused: vi.fn(),
     setTimeRate: vi.fn(),
     closePresentedPopup: vi.fn(),
     filePresentedPopup: vi.fn(),

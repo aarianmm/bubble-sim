@@ -223,6 +223,9 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(createInitialState);
   const [mailNoticeResetKey, setMailNoticeResetKey] = useState(0);
   const [paused, setPausedState] = useState(false);
+  const [autoPauseReasons, setAutoPauseReasons] = useState<Set<'route' | 'mail-message'>>(
+    () => new Set(),
+  );
   const [rateOverride, setRateOverride] = useState<number>(RATE_NORMAL);
   const [forcedSale, setForcedSale] = useState<PendingForcedSale | null>(null);
   const [popupPresentation, setPopupPresentation] = useState<PopupPresentationState>({
@@ -319,7 +322,8 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   // §20.1: a blocking dialog freezes time; a pending forced-sale choice
   // does too (it's the same "time paused until a choice is made" contract,
   // §12.3); the run ending freezes it for good.
-  const frozen = paused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
+  const autoPaused = autoPauseReasons.size > 0;
+  const frozen = paused || autoPaused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
   const timeRate = frozen ? 0 : rateOverride;
 
   const rafRef = useRef<number | null>(null);
@@ -444,6 +448,15 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   }, [timeRate, beginMonth]);
 
   const setPaused = useCallback((p: boolean) => setPausedState(p), []);
+  const setAutoPaused = useCallback((reason: 'route' | 'mail-message', active: boolean) => {
+    setAutoPauseReasons((current) => {
+      if (active === current.has(reason)) return current;
+      const next = new Set(current);
+      if (active) next.add(reason);
+      else next.delete(reason);
+      return next;
+    });
+  }, []);
   const setTimeRate = useCallback((rate: number) => setRateOverride(rate), []);
 
   /* ---------------------------------------------------------------- *
@@ -531,6 +544,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
           accumulatorRef.current = 0;
           commitState(createInitialState());
           setPausedState(false);
+          setAutoPauseReasons(new Set());
           setRateOverride(RATE_NORMAL);
           return;
         case 'cash-only-march-2000':
@@ -686,11 +700,13 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       paused,
+      autoPaused,
       timeRate,
       popupPresentation,
       mailNoticeResetKey,
       dispatch,
       setPaused,
+      setAutoPaused,
       setTimeRate,
       closePresentedPopup,
       filePresentedPopup,
@@ -702,7 +718,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       showDeathCard,
       reset,
     }),
-    [state, paused, timeRate, popupPresentation, mailNoticeResetKey, dispatch, setPaused, setTimeRate, closePresentedPopup, filePresentedPopup, deferPresentedPopup, finishPopupGap, jumpToMonth, forceEvent, loadPreset, showDeathCard, reset],
+    [state, paused, autoPaused, timeRate, popupPresentation, mailNoticeResetKey, dispatch, setPaused, setAutoPaused, setTimeRate, closePresentedPopup, filePresentedPopup, deferPresentedPopup, finishPopupGap, jumpToMonth, forceEvent, loadPreset, showDeathCard, reset],
   );
 
   return (
