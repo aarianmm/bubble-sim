@@ -243,3 +243,48 @@ security-alert sender was updated too because it imitates the browser chrome.
 Internal `comet-*` CSS selectors remain unchanged: they are invisible stable
 implementation identifiers, and renaming them would add risk without changing
 anything a player sees.
+
+---
+
+## 14. Money allocation drafts disappeared on navigation — §12.2, §22.5
+
+**Status:** fixed on 23 Aug 2026.
+
+Dragging an allocation slider updated only `MoneyPage`'s local React state.
+Navigating to Home or Inbox unmounted that routed page, so returning to My Money
+silently rebuilt the sliders from the still-unmodified portfolio—usually 100%
+cash. The rebalance simulation and explicit confirmation path were correct, but
+the disappearing draft made the interface look as though a visible allocation
+had already failed and gave no clear indication that money had not moved yet.
+
+The draft now belongs to a provider mounted above the router's page-remount
+boundary, is reconciled when a newly accepted vehicle adds a row, and is cleared
+only by Reset, a new/test-loaded run, or successful confirmation. The footer
+distinguishes a pending draft from the currently applied allocation. A jsdom
+regression drives the real `AppShell` and `EngineProvider` through the reported
+journey, then confirms the rebalance and verifies both cash and holding values
+survive a second navigation.
+
+---
+
+## 15. Suspended funds accepted new money and rebalances trusted malformed totals — §11.4, §12.1
+
+**Status:** fixed on 23 Aug 2026.
+
+The allocation UI rendered a normal enabled slider after an instrument had
+collapsed, and the simulation's rebalance executor accepted arbitrary target
+maps without checking IDs, finite ranges, or the required 100% total. A player
+could therefore allocate new money into a suspended fund; a replay or test
+fixture could also submit an over-allocated decision. Post-collapse market rows
+use a multiplier of 1, so money incorrectly added after suspension could remain
+there instead of being lost or rejected.
+
+Suspended rows are now reconciled as soon as collapse state changes. Worthless
+funds are disabled, sellable residual holdings can only be reduced, and
+unsellable Vertex holdings are frozen. Proportional redistribution treats every
+other suspended row as a calculation-only pin so dragging Cash or an active fund
+cannot increase it indirectly. The pure tick boundary independently rejects
+unknown IDs, non-finite/out-of-range values, and allocations that do not total
+100%, then refuses collapsed buys even for a forged but otherwise valid
+decision. Regression tests cover all of these paths and the six-strategy
+calibration fixture now emits valid 100% decisions.

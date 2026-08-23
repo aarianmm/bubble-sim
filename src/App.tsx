@@ -28,6 +28,7 @@ import {
   EraWelcomeDialog,
 } from './chrome/EraTransition';
 import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
+import { MoneyDraftProvider } from './pages/Money';
 import { monthIndex, type MonthIndex } from './sim/month';
 
 type VisualMilestone = {
@@ -259,7 +260,9 @@ export function AppShell() {
           yearSpineSlot: <YearSpine />,
         }}
       >
-        <PageComponent key={router.contentKey} />
+        <MoneyDraftProvider>
+          <PageComponent key={router.contentKey} />
+        </MoneyDraftProvider>
       </Window>
       {evolution?.phase !== 'loading' && evolution?.phase !== 'complete' && <Notifications />}
       {evolution?.phase === 'welcome' && (

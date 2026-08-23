@@ -1,26 +1,23 @@
 /**
  * Money.tsx — the pure allocation maths (Step 23, §12.2).
  *
- * SEAM: the scheduler that unlocks vehicles (Step 24, src/sim/scheduler.ts)
- * is not merged into this worktree, so a real `useEngine()` state's
- * `holdings` is always `{}` right now — the portfolio is empty at every
- * date. These tests build fixture `GameState`s with holdings directly
+ * These tests build focused fixture `GameState`s with holdings directly
  * (matching the exact numbers in §22.5's worked example: £1,240 cash +
  * £3,100 tracker + £1,860 mediocre fund = £6,200 net worth, Sep 2000) so
  * the slider maths — proportional redistribution, locks, the 100%
- * invariant, and the rebalance confirm-step itemisation — is verified
- * against real numbers without needing the real scheduler or a DOM. There
- * is no @testing-library/react in this repo (vitest's `environment` is
- * 'node', not 'jsdom' — see vite.config.ts) and no other *.test.tsx exists
- * anywhere in the codebase, so this file deliberately does not render
- * <MoneyPage/>; it tests the exported pure functions it's built from.
+ * invariant, suspended-fund constraints, and the rebalance confirm-step
+ * itemisation — is verified independently of React. MoneyPage.test.tsx then
+ * drives the real AppShell, router and engine in jsdom.
  */
 import { describe, expect, it } from 'vitest';
 import {
   buildDraftRows,
   buildRebalanceDecision,
   buildRebalancePreview,
+  allocationConstraint,
+  reconcileDraftRows,
   redistribute,
+  redistributeForState,
   returnSincePurchase,
   roundToIntegerAllocation,
   toggleLock,
@@ -86,6 +83,128 @@ describe('buildDraftRows', () => {
   it('is 100% cash with no holdings (the real app today — Step 24 not merged)', () => {
     const rows = buildDraftRows(createInitialState());
     expect(rows).toEqual([{ id: 'cash', label: 'Cash', pct: 100, locked: false }]);
+  });
+});
+
+describe('persistent draft reconciliation and suspended constraints', () => {
+  it('keeps existing targets and adds a newly accepted vehicle at 0%', () => {
+    const state = fixtureState();
+    const draft: DraftRow[] = [
+      { id: 'cash', label: 'Cash', pct: 20, locked: false },
+      { id: 'fenwick-index', label: 'Tracker', pct: 50, locked: true },
+      { id: 'technova-growth', label: 'Mediocre', pct: 30, locked: false },
+    ];
+    const withNewOffer: GameState = {
+      ...state,
+      unlocked: [...state.unlocked, 'granville-plc'],
+      holdings: {
+        ...state.holdings,
+        'granville-plc': fixtureHolding({ vehicleId: 'granville-plc' }),
+      },
+    };
+    const reconciled = reconcileDraftRows(draft, withNewOffer);
+    expect(reconciled.map((row) => [row.id, row.pct, row.locked])).toEqual([
+      ['cash', 20, false],
+      ['fenwick-index', 50, true],
+      ['technova-growth', 30, false],
+      ['granville-plc', 0, false],
+    ]);
+    expect(reconciled.reduce((sum, row) => sum + row.pct, 0)).toBe(100);
+  });
+
+  it('removes an impossible pending purchase when an instrument becomes suspended', () => {
+    const base = createInitialState();
+    const suspended: GameState = {
+      ...base,
+      cash: 1000,
+      unlocked: ['meridian-guaranteed'],
+      holdings: {
+        'meridian-guaranteed': fixtureHolding({
+          vehicleId: 'meridian-guaranteed',
+          value: 0,
+          collapsed: true,
+        }),
+      },
+    };
+    const reconciled = reconcileDraftRows([
+      { id: 'cash', label: 'Cash', pct: 50, locked: false },
+      { id: 'meridian-guaranteed', label: 'Meridian', pct: 50, locked: true },
+    ], suspended);
+    expect(reconciled.map((row) => [row.id, row.pct, row.locked])).toEqual([
+      ['cash', 100, false],
+      ['meridian-guaranteed', 0, false],
+    ]);
+  });
+
+  it('disables a worthless suspension, caps an exitable suspension, and freezes Vertex', () => {
+    const base = createInitialState();
+    const state: GameState = {
+      ...base,
+      cash: 80,
+      unlocked: ['meridian-guaranteed', 'vertex-communications'],
+      holdings: {
+        'meridian-guaranteed': fixtureHolding({
+          vehicleId: 'meridian-guaranteed', value: 0, collapsed: true,
+        }),
+        'vertex-communications': fixtureHolding({
+          vehicleId: 'vertex-communications', value: 20, collapsed: true,
+        }),
+      },
+    };
+    const rows = buildDraftRows(state);
+    expect(allocationConstraint(state, rows.find((row) => row.id === 'meridian-guaranteed')!)).toMatchObject({
+      maxPct: 0, disabled: true,
+    });
+    expect(allocationConstraint(state, rows.find((row) => row.id === 'vertex-communications')!)).toMatchObject({
+      maxPct: 20, disabled: true,
+    });
+
+    const exitable: GameState = {
+      ...state,
+      cash: 80,
+      unlocked: ['meridian-guaranteed'],
+      holdings: {
+        'meridian-guaranteed': fixtureHolding({
+          vehicleId: 'meridian-guaranteed', value: 20, collapsed: true,
+        }),
+      },
+    };
+    expect(allocationConstraint(exitable, buildDraftRows(exitable)[1])).toMatchObject({
+      maxPct: 20, disabled: false,
+    });
+  });
+
+  it('never increases a suspended row through another slider\'s proportional redistribution', () => {
+    const base = createInitialState();
+    const state: GameState = {
+      ...base,
+      cash: 50,
+      unlocked: ['fenwick-index', 'meridian-guaranteed'],
+      holdings: {
+        'fenwick-index': fixtureHolding({ vehicleId: 'fenwick-index', value: 30 }),
+        'meridian-guaranteed': fixtureHolding({
+          vehicleId: 'meridian-guaranteed', value: 20, collapsed: true,
+        }),
+      },
+    };
+    const rows = buildDraftRows(state);
+    const afterCashDrag = redistributeForState(state, rows, 'cash', 0);
+    expect(afterCashDrag.map((row) => [row.id, row.pct])).toEqual([
+      ['cash', 0],
+      ['fenwick-index', 80],
+      ['meridian-guaranteed', 20],
+    ]);
+
+    const afterSuspendedReduction = redistributeForState(
+      state,
+      rows.map((row) => (row.id === 'fenwick-index' ? { ...row, locked: true } : row)),
+      'meridian-guaranteed',
+      10,
+    );
+    expect(afterSuspendedReduction.find((row) => row.id === 'meridian-guaranteed')?.pct).toBe(10);
+    expect(afterSuspendedReduction.find((row) => row.id === 'fenwick-index')?.pct).toBe(30);
+    expect(afterSuspendedReduction.reduce((sum, row) => sum + row.pct, 0)).toBe(100);
+    expect(afterSuspendedReduction.find((row) => row.id === 'fenwick-index')?.locked).toBe(true);
   });
 });
 

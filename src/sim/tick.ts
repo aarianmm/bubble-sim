@@ -211,6 +211,29 @@ function unlockVehicle(state: GameState, vehicleId: VehicleId): GameState {
   };
 }
 
+type RebalanceDecision = Extract<Decision, { type: 'rebalance' }>;
+
+/**
+ * Decisions normally come from /money's integer sliders, but replays,
+ * presenter fixtures and future UI surfaces can call the pure simulation
+ * directly. Reject malformed allocations at the boundary so cashPct cannot be
+ * ignored by a partial/over-allocated target map and no locked-out vehicle can
+ * receive money through a forged decision.
+ */
+export function isValidRebalanceDecision(state: GameState, decision: RebalanceDecision): boolean {
+  if (!Number.isFinite(decision.cashPct) || decision.cashPct < 0 || decision.cashPct > 100) return false;
+
+  let total = decision.cashPct;
+  for (const [rawId, rawPct] of Object.entries(decision.targets)) {
+    const id = rawId as VehicleId;
+    if (id === 'cash' || !state.unlocked.includes(id)) return false;
+    if (typeof rawPct !== 'number' || !Number.isFinite(rawPct) || rawPct < 0 || rawPct > 100) return false;
+    total += rawPct;
+  }
+
+  return Math.abs(total - 100) < 0.001;
+}
+
 function applyDecision(state: GameState, decision: Decision): GameState {
   switch (decision.type) {
     case 'open-mail': {
@@ -290,6 +313,7 @@ function applyDecision(state: GameState, decision: Decision): GameState {
     }
 
     case 'rebalance': {
+      if (!isValidRebalanceDecision(state, decision)) return state;
       const total = netWorth(state);
       if (total <= 0) return state;
       let next = state;
@@ -299,12 +323,24 @@ function applyDecision(state: GameState, decision: Decision): GameState {
         const h = next.holdings[id];
         if (!h) continue;
         const vehicle = VEHICLES[id];
-        const targetPct = decision.targets[id] ?? 0;
-        const targetValue = total * (targetPct / 100);
+        const requestedTargetPct = decision.targets[id] ?? 0;
+        let targetPct = requestedTargetPct;
+        let targetValue = total * (requestedTargetPct / 100);
+
+        // A suspended fund cannot accept fresh money. An unsellable collapsed
+        // holding (Vertex) is frozen in both directions; a sellable collapsed
+        // holding may still be reduced, but never increased. Store the
+        // effective target rather than a target the engine refused to execute.
+        const frozen = h.collapsed && !vehicle.sellableAfterCollapse;
+        const collapsedBuy = h.collapsed && targetValue > h.value + 0.005;
+        if (frozen || collapsedBuy) {
+          targetValue = h.value;
+          targetPct = (h.value / total) * 100;
+        }
+
         const diff = targetValue - h.value;
         if (diff < -0.005) {
-          const unsellable = h.collapsed && !vehicle.sellableAfterCollapse; // §11.5 Vertex
-          const sellAmount = unsellable ? 0 : Math.min(h.value, -diff);
+          const sellAmount = Math.min(h.value, -diff);
           if (sellAmount > 0) {
             const exitFee = sellAmount * (vehicle.exitFeePct / 100);
             next = {
@@ -326,6 +362,7 @@ function applyDecision(state: GameState, decision: Decision): GameState {
       for (const id of next.unlocked) {
         const h = next.holdings[id];
         if (!h) continue;
+        if (h.collapsed) continue; // defence in depth: suspended funds never receive new cash
         const vehicle = VEHICLES[id];
         const targetValue = total * (h.targetPct / 100);
         const diff = targetValue - h.value;

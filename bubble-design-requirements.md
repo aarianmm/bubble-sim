@@ -1123,14 +1123,13 @@ Everything needed, kept deliberately small. All original work.
 **Live:** https://bubble-sim.pages.dev/ · **Repo:** https://github.com/aarianmm/bubble-sim · **stack:** Vite + React + TS, static, no backend
 **Last updated:** 23 Aug 2026
 
-> **Nobody has looked at this in a real browser yet.** The Chrome extension was
-> unavailable to every agent for the whole build, so all 335 tests are jsdom and
-> code review. The integration test drives the real `<App/>` with real DOM
-> clicks through §25.5's demo path, which is a strong check on behaviour — but it
-> says nothing about whether the thing *looks* right. §21 rule 1 (Halcyon must be
-> the best-looking page in the build, Northmoor one of the worst) is verified
-> structurally only, and it is load-bearing for the fairness contract. Look at it
-> before you rehearse.
+> Local browser runs and owner-supplied screenshots now inform the visual pass.
+> The 347 automated tests span pure simulation checks and jsdom interactions;
+> the integration test drives the real `<App/>` with real DOM clicks through
+> §25.5's demo path. Recheck the full decade in a browser before a live rehearsal,
+> especially §21 rule 1 (Halcyon must be the best-looking page in the build,
+> Northmoor one of the worst), because that contrast is load-bearing for the
+> fairness contract.
 
 The MVP was built step by step on `step/*` branches, merged into `mvp`, and
 merged to `main` via PR #1. `main` deploys to the live URL above; pull requests
@@ -1148,7 +1147,7 @@ change to update it in the same commit, every deviation to be recorded under
 ```
 strategy             dies       expected
 cash-only            2000-03    Mar 2000      ✓
-accept-everything    2001-09    2000-2001     ✓
+accept-everything    2001-01    2000-2001     ✓
 greedy               2000-01    2000          ✓
 tracker-only         2003-01    2003-2004     ✓
 bond-only            2004-08    KNOWN GAP
@@ -1176,7 +1175,7 @@ perfect play         2005-02    KNOWN GAP
 | 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view |
 | 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate) |
 | 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups draggable, capped at 3, positioned by arithmetic on the month index |
-| 23 | `/money` | Sliders always total 100% under proportional redistribution with per-row locks; `[Rebalance Now]` itemises every buy, sell, realised P&L and exit fee before executing |
+| 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. Allocation controls retain the original flat 1996 treatment, change to a square cyan/blue console in 1998, and become glossy aqua/lime in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Real-engine route regressions prove the lifecycle and milestone switching |
 | 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
 | 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending |
 | 26 | Bands + cause-of-death | `bandFor(status, deathMonth)` takes **no wealth parameter**, so §15's anti-gambling guardrail is structural. Five of six §22.6 lines proven reachable by real runs |
@@ -1186,9 +1185,9 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1). 335 tests green.
+### MVP complete at Step 28 (§26.1). 347 tests green.
 
-Four bugs were found and fixed during integration, all worth knowing about:
+Six bugs were found and fixed during integration, all worth knowing about:
 
 - **`mvpDeferred` events were being skipped entirely.** §26.1 wants them
   *delivered* without their deferred mechanic, not removed from the run — the
@@ -1208,6 +1207,20 @@ Four bugs were found and fixed during integration, all worth knowing about:
   runner's own loop, and the live engine calls `tick()` directly. Now maintained
   in `tick()`, with a determinism test driving identical decisions through both
   paths to prove they cannot drift (§25.2).
+- **Money allocation drafts vanished on navigation.** The sliders correctly
+  prepared a rebalance, but the draft lived inside the routed page component;
+  Home, Inbox or Refresh unmounted it and silently reconstructed 100% cash.
+  Draft ownership now sits above routed content, the page states plainly when
+  money has not moved, and a real-engine regression proves that confirmation
+  updates both cash and the selected holding across later navigation.
+- **Suspended funds and malformed rebalance inputs bypassed the allocation
+  contract.** A collapsed vehicle could still receive new cash through a slider
+  or a direct replay decision, and the simulation trusted totals/ranges that the
+  normal UI happened not to emit. The editor now freezes or caps suspended rows,
+  excludes them from proportional increases, and the pure simulation validates
+  every rebalance before applying it. The accept-everything verification fixture
+  was normalised to a real 100% allocation instead of relying on historical
+  over-allocation; it still funds a scam and dies in the authored 2000–2001 band.
 - **A literal reading of the former presenter workflow would have broken the
   demo on stage.** Its jump-to-date replayed from Jan 1996 with *no* decisions,
   so moving between beats silently discarded every earlier choice. The panel no
