@@ -41,7 +41,7 @@ export const noop = (): void => {};
  * ------------------------------------------------------------------ */
 
 export interface TitleBarProps {
-  /** Full title bar text, e.g. "BUBBLE — Comet Navigator" or a page title. */
+  /** Full title bar text, e.g. "BUBBLE — Bubble Navigator" or a page title. */
   title: string;
   /** Clicking ✕ prompts "Are you sure you want to leave?" (§18.1); this
    * fires only after the player confirms. */
@@ -72,9 +72,8 @@ export interface MenuBarProps {
 
 /* ------------------------------------------------------------------ *
  * Toolbar — Back / Forward / Stop / Refresh / Home / Search / Favourites /
- * Mail (§18.1). Era A vs B icon size and label visibility is a CSS token
- * (--toolbar-icon-size, --toolbar-label-display) — this component always
- * renders both the icon and the label.
+ * Mail (§18.1). Milestone-specific sizing and the visible SVG art group are
+ * CSS tokens; this component always renders one icon slot and one label.
  * ------------------------------------------------------------------ */
 
 export interface ToolbarProps {
@@ -106,8 +105,8 @@ export interface AddressBarProps {
   /** Dropdown of visited URLs — where lookalike domains get caught (§17.1). */
   visitedUrls?: string[];
   onSelectUrl?: (url: string) => void;
-  /** Era B only shows a Go button; the token --go-button-display controls
-   * visibility, so this handler is always wired, never conditionally. */
+  /** The token seam can reveal a Go button without changing component
+   * structure; current milestones keep the visible control inventory fixed. */
   onGo?: () => void;
 }
 
@@ -121,8 +120,8 @@ export interface StatusBarProps {
   progressPct?: number;
   /** Right: zone indicator, e.g. "🌐 Internet". */
   zoneLabel?: string;
-  /** Era B only — the popup-blocker count. Rendered unconditionally; the
-   * --popup-blocker-display token hides it in Era A. */
+  /** Rendered unconditionally behind a visibility token; current milestones
+   * keep it hidden so the status-bar functions do not change. */
   popupsBlockedCount?: number;
 }
 

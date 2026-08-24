@@ -177,11 +177,10 @@ export function TimeControls() {
 
 const YEARS = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => START_YEAR + i);
 
-/** §22.1: "the left-nav year bars are a live progress spine showing how far
- * you've got and quietly implying how far there is to go." Each year's bar
- * is a fixed staircase length (year N gets N blocks, matching the §22.1
- * mockup); the live part is the ◄ marker tracking the current year, with
- * years not yet reached reading as greyed-out. */
+/** §22.1: the left nav is a live progress spine showing how far the player
+ * has travelled and how much decade remains. The original block staircase
+ * and the later connected timeline stay mounted together; milestone tokens
+ * decide which visual language is exposed without teaching React the era. */
 export function YearSpine() {
   const { state } = useEngine();
   const currentYear = yearOf(state.month);
@@ -190,15 +189,21 @@ export function YearSpine() {
       {YEARS.map((year, i) => {
         const isCurrent = year === currentYear;
         const isFuture = year > currentYear;
+        const isPast = year < currentYear;
+        const stateLabel = isCurrent ? 'current year' : isFuture ? 'upcoming' : 'completed';
         return (
           <li
             key={year}
+            aria-current={isCurrent ? 'date' : undefined}
+            aria-label={`${year}: ${stateLabel}`}
             className={
               'comet-nav__spine-row' +
               (isCurrent ? ' comet-nav__spine-row--current' : '') +
-              (isFuture ? ' disabled-text' : '')
+              (isPast ? ' comet-nav__spine-row--past' : '') +
+              (isFuture ? ' comet-nav__spine-row--future' : '')
             }
           >
+            <span className="comet-nav__spine-node" aria-hidden="true" />
             <span className="comet-nav__spine-year">{year}</span>
             <span className="comet-nav__spine-bar" aria-hidden="true">
               {'▓'.repeat(i + 1)}
@@ -208,6 +213,9 @@ export function YearSpine() {
                 ◄
               </span>
             )}
+            <span className="comet-nav__spine-status" aria-hidden="true">
+              {isCurrent ? 'NOW' : isPast ? '✓' : ''}
+            </span>
           </li>
         );
       })}

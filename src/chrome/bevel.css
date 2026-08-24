@@ -47,33 +47,33 @@
  * ------------------------------------------------------------------ */
 
 .bevel-out {
-  background: var(--face);
+  background: var(--control-surface);
   border-style: solid;
   border-width: var(--bevel-width);
   border-radius: var(--radius-control);
-  border-top-color: var(--hilite);
-  border-left-color: var(--hilite);
-  border-right-color: var(--dk-shadow);
-  border-bottom-color: var(--dk-shadow);
+  border-top-color: var(--control-hilite);
+  border-left-color: var(--control-hilite);
+  border-right-color: var(--control-dk-shadow);
+  border-bottom-color: var(--control-dk-shadow);
   box-shadow:
-    inset 1px 1px 0 0 var(--face-light),
-    inset -1px -1px 0 0 var(--shadow);
+    inset 1px 1px 0 0 var(--control-face-light),
+    inset -1px -1px 0 0 var(--control-shadow);
   padding: var(--control-pad-y) var(--control-pad-x);
 }
 
 .bevel-in,
 .bevel-pressed {
-  background: var(--face);
+  background: var(--control-surface);
   border-style: solid;
   border-width: var(--bevel-width);
   border-radius: var(--radius-control);
-  border-top-color: var(--dk-shadow);
-  border-left-color: var(--dk-shadow);
-  border-right-color: var(--hilite);
-  border-bottom-color: var(--hilite);
+  border-top-color: var(--control-dk-shadow);
+  border-left-color: var(--control-dk-shadow);
+  border-right-color: var(--control-hilite);
+  border-bottom-color: var(--control-hilite);
   box-shadow:
-    inset 1px 1px 0 0 var(--shadow),
-    inset -1px -1px 0 0 var(--face-light);
+    inset 1px 1px 0 0 var(--control-shadow),
+    inset -1px -1px 0 0 var(--control-face-light);
   padding: var(--control-pad-y) var(--control-pad-x);
 }
 
@@ -90,14 +90,14 @@
 /* A raised control shows its pressed bevel while the mouse is down on it —
  * §18.1's "hovering [the title bar buttons] shows the bevel press". */
 .bevel-out:active {
-  background: var(--face);
-  border-top-color: var(--dk-shadow);
-  border-left-color: var(--dk-shadow);
-  border-right-color: var(--hilite);
-  border-bottom-color: var(--hilite);
+  background: var(--control-surface);
+  border-top-color: var(--control-dk-shadow);
+  border-left-color: var(--control-dk-shadow);
+  border-right-color: var(--control-hilite);
+  border-bottom-color: var(--control-hilite);
   box-shadow:
-    inset 1px 1px 0 0 var(--shadow),
-    inset -1px -1px 0 0 var(--face-light);
+    inset 1px 1px 0 0 var(--control-shadow),
+    inset -1px -1px 0 0 var(--control-face-light);
   padding:
     calc(var(--control-pad-y) + 1px)
     calc(var(--control-pad-x) - 1px)
@@ -115,7 +115,9 @@
 }
 
 .sunken-field {
-  background: var(--field);
+  /* A shell surface may supply its own paint without redefining the bevel or
+   * shadow geometry. The fallback keeps every 1996 field unchanged. */
+  background: var(--sunken-surface, var(--field));
   border-style: solid;
   border-width: var(--bevel-width);
   border-radius: var(--radius-control);
@@ -147,7 +149,7 @@
 
 .win-scrollbar {
   scrollbar-width: auto;
-  scrollbar-color: var(--face) var(--shadow);
+  scrollbar-color: var(--scrollbar-thumb-surface) var(--scrollbar-track-surface);
 }
 
 .win-scrollbar::-webkit-scrollbar {
@@ -156,16 +158,14 @@
 }
 
 .win-scrollbar::-webkit-scrollbar-track {
-  background: var(--face);
-  /* the classic 50%-grey dither of a Win95 scrollbar track */
-  background-image: linear-gradient(45deg, var(--face-light) 25%, transparent 25%, transparent 75%, var(--face-light) 75%),
-    linear-gradient(45deg, var(--face-light) 25%, transparent 25%, transparent 75%, var(--face-light) 75%);
-  background-size: 2px 2px;
-  background-position: 0 0, 1px 1px;
+  background: var(--scrollbar-track-surface);
+  background-image: var(--scrollbar-track-image);
+  background-size: var(--scrollbar-track-size);
+  background-position: var(--scrollbar-track-position);
 }
 
 .win-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--face);
+  background: var(--scrollbar-thumb-surface);
   border-style: solid;
   border-width: 1px;
   border-top-color: var(--hilite);
@@ -178,7 +178,7 @@
 }
 
 .win-scrollbar::-webkit-scrollbar-button {
-  background: var(--face);
+  background: var(--scrollbar-button-surface);
   border-style: solid;
   border-width: 1px;
   border-top-color: var(--hilite);
@@ -188,7 +188,7 @@
 }
 
 .win-scrollbar::-webkit-scrollbar-corner {
-  background: var(--face);
+  background: var(--scrollbar-corner-surface);
 }
 
 /* ------------------------------------------------------------------ *

@@ -115,6 +115,7 @@ function makeEngine(state: GameState, dispatch: (d: Decision) => void = vi.fn())
     dispatch,
     setPaused: vi.fn(),
     setAutoPaused: vi.fn(),
+    setEvolutionPaused: vi.fn(),
     setTimeRate: vi.fn(),
     closePresentedPopup: vi.fn(),
     filePresentedPopup: vi.fn(),

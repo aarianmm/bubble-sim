@@ -44,7 +44,7 @@ export function TooSmall() {
         </p>
         <p className="comet-toosmall__badge-row">
           <span className="chrome sunken-field comet-toosmall__pill">Best viewed at 1024×768</span>
-          <span className="chrome sunken-field comet-toosmall__pill">Comet Navigator</span>
+          <span className="chrome sunken-field comet-toosmall__pill">Bubble Navigator</span>
         </p>
       </div>
     </div>

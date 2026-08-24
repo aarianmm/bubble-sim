@@ -5,10 +5,12 @@
  */
 
 .comet-nav__date {
+  --sunken-surface: var(--sidebar-date-surface);
   margin: 4px 2px 6px;
   padding: 3px 6px;
   text-align: center;
   font-weight: 700;
+  color: var(--sidebar-date-text);
 }
 
 .comet-nav__time-controls {
@@ -18,8 +20,10 @@
 }
 
 .comet-nav__time-btn {
+  --control-surface: var(--sidebar-time-surface);
   flex: 1 1 0;
   cursor: default;
+  color: var(--sidebar-time-text);
 }
 
 .comet-nav__auto-pause {
@@ -41,6 +45,7 @@
 }
 
 .comet-nav__spine {
+  position: relative;
   list-style: none;
   margin: 0;
   padding: 0 2px;
@@ -50,29 +55,106 @@
   font-family: var(--font-mono);
 }
 
+.comet-nav__spine::before {
+  content: '';
+  display: var(--nav-spine-rail-display);
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: calc(var(--nav-row-padding-x) + 9px);
+  width: var(--nav-spine-rail-width);
+  background: var(--nav-spine-rail-surface);
+  box-shadow: var(--nav-spine-rail-shadow);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .comet-nav__spine-row {
-  display: flex;
+  position: relative;
+  display: var(--nav-row-display);
+  grid-template-columns: var(--nav-row-grid-template);
   align-items: center;
-  gap: 4px;
+  gap: var(--nav-row-gap);
+  min-height: var(--nav-row-min-height);
+  padding: var(--nav-row-padding-y) var(--nav-row-padding-x);
+  border-radius: var(--nav-row-radius);
+  color: var(--nav-spine-past);
   white-space: nowrap;
 }
 
 .comet-nav__spine-row--current {
+  background: var(--nav-spine-current-surface);
+  box-shadow: var(--nav-spine-current-shadow);
+  color: var(--nav-spine-current-text);
   font-weight: 700;
+}
+
+.comet-nav__spine-row--future {
+  color: var(--nav-spine-future);
+  text-shadow: 1px 1px 0 var(--disabled-shadow);
+}
+
+.comet-nav__spine-node {
+  display: var(--nav-timeline-display);
+  position: relative;
+  z-index: 1;
+  justify-self: center;
+  width: var(--nav-spine-node-size);
+  height: var(--nav-spine-node-size);
+  background: var(--nav-spine-node-future);
+  border: 1px solid var(--nav-spine-node-border);
+  border-radius: var(--nav-spine-node-radius);
+  box-shadow: var(--nav-spine-node-shadow);
+}
+
+.comet-nav__spine-row--past .comet-nav__spine-node {
+  background: var(--nav-spine-node-past);
+}
+
+.comet-nav__spine-row--current .comet-nav__spine-node {
+  width: var(--nav-spine-node-current-size);
+  height: var(--nav-spine-node-current-size);
+  background: var(--nav-spine-node-current);
+  box-shadow: var(--nav-spine-node-current-shadow);
 }
 
 .comet-nav__spine-year {
   flex: 0 0 auto;
-  width: 28px;
+  width: var(--nav-year-width);
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .comet-nav__spine-bar {
+  display: var(--nav-legacy-display);
   flex: 0 0 auto;
   letter-spacing: -1px;
 }
 
 .comet-nav__spine-marker {
+  display: var(--nav-legacy-display);
   flex: 0 0 auto;
+}
+
+.comet-nav__spine-status {
+  display: var(--nav-modern-status-display);
+  min-width: 20px;
+  color: var(--nav-spine-past-status);
+  font-size: 9px;
+  text-align: center;
+}
+
+.comet-nav__spine-row--current .comet-nav__spine-status {
+  min-width: 34px;
+  padding: 2px 4px;
+  background: var(--nav-current-badge-surface);
+  border: 1px solid var(--nav-current-badge-border);
+  border-radius: var(--nav-current-badge-radius);
+  box-shadow: var(--nav-current-badge-shadow);
+  color: var(--nav-current-badge-text);
+  font-family: var(--font-chrome);
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 /**

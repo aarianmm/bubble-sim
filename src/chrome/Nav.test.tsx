@@ -7,9 +7,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { TimeControls, UNREAD_FLASH_MS, useUnreadNotice } from './Nav';
+import { TimeControls, UNREAD_FLASH_MS, useUnreadNotice, YearSpine } from './Nav';
 import { EngineContext, type Engine } from '../ui/engine';
 import type { GameState, MailItem } from '../sim/types';
+import { monthIndex } from '../sim/month';
 import { EVENTS_BY_ID, materializeMail } from '../sim/scheduler';
 
 function mail(id: string, status: MailItem['status'] = 'unread'): MailItem {
@@ -28,11 +29,12 @@ function mail(id: string, status: MailItem['status'] = 'unread'): MailItem {
 
 function engineWith(
   inbox: MailItem[],
+  month = 0,
   mailNoticeResetKey = 0,
   overrides: Partial<Engine> = {},
 ): Engine {
   return {
-    state: { inbox } as unknown as GameState,
+    state: { inbox, month } as unknown as GameState,
     paused: false,
     autoPaused: false,
     timeRate: 1,
@@ -41,6 +43,7 @@ function engineWith(
     dispatch: () => undefined,
     setPaused: () => undefined,
     setAutoPaused: () => undefined,
+    setEvolutionPaused: () => undefined,
     setTimeRate: () => undefined,
     closePresentedPopup: () => undefined,
     filePresentedPopup: () => undefined,
@@ -67,7 +70,7 @@ function Probe() {
 function render(inbox: MailItem[], mailNoticeResetKey = 0) {
   act(() => {
     root.render(
-      <EngineContext.Provider value={engineWith(inbox, mailNoticeResetKey)}>
+      <EngineContext.Provider value={engineWith(inbox, 0, mailNoticeResetKey)}>
         <Probe />
       </EngineContext.Provider>,
     );
@@ -222,7 +225,7 @@ describe('effective pause control state', () => {
     const setPaused = vi.fn();
     act(() => {
       root.render(
-        <EngineContext.Provider value={engineWith([], 0, { setPaused, ...overrides })}>
+        <EngineContext.Provider value={engineWith([], 0, 0, { setPaused, ...overrides })}>
           <TimeControls />
         </EngineContext.Provider>,
       );
@@ -263,5 +266,32 @@ describe('effective pause control state', () => {
     expect(button.textContent).toBe('▶');
     act(() => button.click());
     expect(setPaused).toHaveBeenCalledWith(false);
+  });
+});
+
+describe('the year timeline (§22.1)', () => {
+  it('distinguishes completed, current and upcoming years while preserving all eleven years', () => {
+    act(() => {
+      root.render(
+        <EngineContext.Provider value={engineWith([], monthIndex(2000, 6))}>
+          <YearSpine />
+        </EngineContext.Provider>,
+      );
+    });
+
+    const rows = Array.from(container.querySelectorAll<HTMLElement>('.comet-nav__spine-row'));
+    expect(rows).toHaveLength(11);
+
+    const completed = rows.find((row) => row.getAttribute('aria-label') === '1999: completed');
+    const current = rows.find((row) => row.getAttribute('aria-label') === '2000: current year');
+    const upcoming = rows.find((row) => row.getAttribute('aria-label') === '2001: upcoming');
+
+    expect(completed?.classList.contains('comet-nav__spine-row--past')).toBe(true);
+    expect(completed?.querySelector('.comet-nav__spine-status')?.textContent).toBe('✓');
+    expect(current?.getAttribute('aria-current')).toBe('date');
+    expect(current?.querySelector('.comet-nav__spine-status')?.textContent).toBe('NOW');
+    expect(current?.querySelector('.comet-nav__spine-bar')?.textContent).toBe('▓▓▓▓▓');
+    expect(current?.querySelector('.comet-nav__spine-marker')?.textContent?.trim()).toBe('◄');
+    expect(upcoming?.classList.contains('comet-nav__spine-row--future')).toBe(true);
   });
 });

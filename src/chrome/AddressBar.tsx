@@ -4,9 +4,8 @@
  * caught." Editable is not required, so this is a read-only field plus a
  * history dropdown.
  *
- * Era A has no `Go` button (§18.2); the button is always in the DOM and the
- * `--go-button-display` token hides it, so this component never branches on
- * era.
+ * The `Go` button is always in the DOM behind a visibility token, so visual
+ * milestones never require this component to branch or change structure.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { AddressBarProps } from './Chrome.types';

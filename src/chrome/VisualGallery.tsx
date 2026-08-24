@@ -2,40 +2,119 @@
  * The `?visual=1` gallery (Step 11's stated done-condition: "A visual test
  * route renders a raised button, a sunken field and a pressed button
  * correctly at 1×.") Also exercises the full Step 12 Window composition and
- * an era toggle, so a reviewer can confirm the §25.1 hard rule visually:
- * flipping `data-era` must restyle everything below without touching a
+ * milestone toggles, so a reviewer can confirm the §25.1 hard rule visually:
+ * changing root attributes restyles everything below without touching a
  * single component.
  */
 import { useEffect, useState } from 'react';
 import { Window } from './Window';
+import { EraLoadingPage, EraUpdateCompletePage, EraWelcomeDialog } from './EraTransition';
+import { monthIndex } from '../sim/month';
 import './gallery.css';
 
-export function VisualGallery() {
-  const [era, setEra] = useState<'a' | 'b'>('a');
+type TransitionPreview = {
+  year: '1998' | '2000';
+  phase: 'welcome' | 'loading' | 'complete';
+} | null;
 
-  // tokens.css keys every theme off `:root[data-era]` — CSS's `:root` is
-  // always the document element, never a nested node, so exercising the
-  // era switch for real means setting the attribute there, exactly as the
-  // real app will (§18.2). Restored to Era A on unmount so leaving the
-  // gallery doesn't strand the document in Era B.
+const SAMPLE_SPINE_YEARS = [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006];
+
+export function VisualGallery() {
+  const [year, setYear] = useState<'1996' | '1998' | '2000'>('1996');
+  const [transitionPreview, setTransitionPreview] = useState<TransitionPreview>(null);
+
+  // Exercise the exact root-attribute path used by AppShell. Restored to the
+  // opening style on unmount so leaving the gallery cannot strand the game in
+  // a later visual milestone.
   useEffect(() => {
-    document.documentElement.setAttribute('data-era', era);
+    document.documentElement.setAttribute('data-era', year === '2000' ? 'b' : 'a');
+    document.documentElement.setAttribute('data-ui-year', year);
     return () => {
       document.documentElement.setAttribute('data-era', 'a');
+      document.documentElement.setAttribute('data-ui-year', '1996');
     };
-  }, [era]);
+  }, [year]);
+
+  useEffect(() => {
+    if (!transitionPreview) {
+      document.documentElement.removeAttribute('data-ui-target');
+      return;
+    }
+
+    document.documentElement.setAttribute('data-ui-target', transitionPreview.year);
+    return () => document.documentElement.removeAttribute('data-ui-target');
+  }, [transitionPreview]);
 
   return (
     <div className="gallery-root">
       <div className="chrome gallery-controls">
-        <button type="button" className="bevel-out" onClick={() => setEra('a')}>
-          Era A (1996–2000)
+        <button type="button" className="bevel-out" onClick={() => setYear('1996')}>
+          1996 baseline
         </button>
-        <button type="button" className="bevel-out" onClick={() => setEra('b')}>
-          Era B (2001–2006)
+        <button type="button" className="bevel-out" onClick={() => setYear('1998')}>
+          1998 refinement
         </button>
-        <span>current era: {era}</span>
+        <button type="button" className="bevel-out" onClick={() => setYear('2000')}>
+          2000 Aero shell
+        </button>
+        <span className="gallery-controls__divider" aria-hidden="true" />
+        <button
+          type="button"
+          className="bevel-out"
+          onClick={() => setTransitionPreview({ year: '1998', phase: 'welcome' })}
+        >
+          Preview 1998 transition
+        </button>
+        <button
+          type="button"
+          className="bevel-out"
+          onClick={() => setTransitionPreview({ year: '2000', phase: 'welcome' })}
+        >
+          Preview 2000 transition
+        </button>
+        {transitionPreview && (
+          <button type="button" className="bevel-out" onClick={() => setTransitionPreview(null)}>
+            Close preview
+          </button>
+        )}
+        {transitionPreview?.phase === 'loading' && (
+          <button
+            type="button"
+            className="bevel-out"
+            onClick={() => setTransitionPreview({ ...transitionPreview, phase: 'complete' })}
+          >
+            Show update complete
+          </button>
+        )}
+        <span>current visual milestone: {year}</span>
       </div>
+
+      {transitionPreview?.phase === 'welcome' && (
+        <EraWelcomeDialog
+          year={transitionPreview.year}
+          month={monthIndex(Number(transitionPreview.year), 1)}
+          onContinue={() => setTransitionPreview({ ...transitionPreview, phase: 'loading' })}
+        />
+      )}
+
+      {transitionPreview?.phase === 'loading' && (
+        <div className="gallery-transition-stage">
+          <EraLoadingPage
+            year={transitionPreview.year}
+            loadState={{ kind: 'transferring' }}
+            progressPct={64}
+          />
+        </div>
+      )}
+
+      {transitionPreview?.phase === 'complete' && (
+        <div className="gallery-transition-stage">
+          <EraUpdateCompletePage
+            year={transitionPreview.year}
+            onEnter={() => setTransitionPreview(null)}
+          />
+        </div>
+      )}
 
       <div className="chrome gallery-section window-face">
         <h2>Bevel primitives</h2>
@@ -73,7 +152,7 @@ export function VisualGallery() {
         <h2 className="chrome">Full window (§18.1)</h2>
         <div className="gallery-window-frame">
           <Window
-            titleBar={{ title: 'BUBBLE — Comet Navigator' }}
+            titleBar={{ title: 'BUBBLE — Bubble Navigator' }}
             menuBar={{ moneyBaseIs1996: false, soundsOn: true }}
             toolbar={{ unreadCount: 3 }}
             addressBar={{
@@ -81,7 +160,60 @@ export function VisualGallery() {
               visitedUrls: ['http://www.bubble.net/home', 'http://www.bubble.net/mail'],
             }}
             statusBar={{ loadState: { kind: 'done' }, progressPct: 0, popupsBlockedCount: 2 }}
-            sidebar={{ active: 'home', unreadCount: 3 }}
+            sidebar={{
+              active: 'home',
+              unreadCount: 3,
+              dateSlot: (
+                <div className="chrome sunken-field comet-nav__date">JAN {year}</div>
+              ),
+              timeControlsSlot: (
+                <div className="chrome comet-nav__time-controls">
+                  <button type="button" className="bevel-out comet-nav__time-btn">
+                    ▶▶
+                  </button>
+                  <button type="button" className="bevel-out comet-nav__time-btn">
+                    ⏸
+                  </button>
+                </div>
+              ),
+              yearSpineSlot: (
+                <ul className="chrome comet-nav__spine" aria-label="Year progress preview">
+                  {SAMPLE_SPINE_YEARS.map((sampleYear, i) => {
+                    const currentYear = Number(year);
+                    const isCurrent = sampleYear === currentYear;
+                    const isFuture = sampleYear > currentYear;
+                    const isPast = sampleYear < currentYear;
+                    return (
+                      <li
+                        key={sampleYear}
+                        aria-current={isCurrent ? 'date' : undefined}
+                        aria-label={`${sampleYear}: ${isCurrent ? 'current year' : isFuture ? 'upcoming' : 'completed'}`}
+                        className={
+                          'comet-nav__spine-row' +
+                          (isCurrent ? ' comet-nav__spine-row--current' : '') +
+                          (isPast ? ' comet-nav__spine-row--past' : '') +
+                          (isFuture ? ' comet-nav__spine-row--future' : '')
+                        }
+                      >
+                        <span className="comet-nav__spine-node" aria-hidden="true" />
+                        <span className="comet-nav__spine-year">{sampleYear}</span>
+                        <span className="comet-nav__spine-bar" aria-hidden="true">
+                          {'▓'.repeat(i + 1)}
+                        </span>
+                        {isCurrent && (
+                          <span className="comet-nav__spine-marker" aria-hidden="true">
+                            ◄
+                          </span>
+                        )}
+                        <span className="comet-nav__spine-status" aria-hidden="true">
+                          {isCurrent ? 'NOW' : isPast ? '✓' : ''}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ),
+            }}
           >
             <div className="chrome gallery-placeholder-page">
               <p>Content area placeholder — pages mount here (Step 16+).</p>
