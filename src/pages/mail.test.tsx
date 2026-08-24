@@ -113,6 +113,7 @@ function makeEngine(state: GameState, dispatch: (d: Decision) => void = vi.fn())
     popupPresentation: { active: null, pending: [], phase: 'showing' },
     dispatch,
     setPaused: vi.fn(),
+    setEvolutionPaused: vi.fn(),
     setTimeRate: vi.fn(),
     closePresentedPopup: vi.fn(),
     filePresentedPopup: vi.fn(),

@@ -1,9 +1,8 @@
 /**
- * Presenter tools (Step 15, finished by Step 24, §25.4) — behind `?dev=1`
- * or Help > About clicked five times (wired in App.tsx). Built as insurance
- * on the demo, not a debug panel: styled as a period utility window so it
- * doesn't break the illusion on the accidental occasion it's visible in
- * front of judges.
+ * Retired Presenter test driver (Step 15, §25.4). The project owner removed
+ * this surface from App.tsx, so it is imported only by integration tests and
+ * is absent from the deployed module graph. It remains here to land tests on
+ * authored dates without waiting through the full decade.
  *
  * "Force any event" and "Load a saved state" are both real now —
  * src/ui/EngineProvider.tsx's forceEvent()/loadPreset() run the actual

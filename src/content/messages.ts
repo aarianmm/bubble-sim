@@ -293,7 +293,7 @@ export const POPUP_MESSAGES: Record<string, MessageBody> = {
 
   // §20.5 — the one exception. Imitates system chrome; content mirrors the mock-up.
   'pop.security-alert-2003-04': {
-    from: 'Comet Navigator',
+    from: 'Bubble Navigator',
     subject: 'SECURITY ALERT',
     body: ['SECURITY ALERT: Your savings are at risk.', 'Immediate action required.'],
   },

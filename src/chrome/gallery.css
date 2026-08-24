@@ -15,9 +15,24 @@
 
 .gallery-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   color: var(--hilite);
+}
+
+.gallery-controls__divider {
+  width: 1px;
+  height: 22px;
+  background: var(--dk-shadow);
+  border-right: 1px solid var(--hilite);
+}
+
+.gallery-transition-stage {
+  height: 520px;
+  min-width: 720px;
+  overflow: hidden;
+  border: 2px solid var(--dk-shadow);
 }
 
 .gallery-section {

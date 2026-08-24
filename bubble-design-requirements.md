@@ -596,10 +596,10 @@ Secondary stats on the death card, for bragging and teaching, not for scoring: p
 - **Discoverability floor:** the first message of the first run must be unmistakably safe and must require opening the fact sheet, so the player learns the sheet exists before it matters. Everything after that is on them.
 - The replay button, plus a death card that names exactly what killed you, is the tutorial. Runs 2 and 3 are where learning happens. Assume nobody understands the game on run 1, and that this is fine.
 
-**The demo caveat.** "Die fast, learn across runs" is the product's design and it stays in the pitch — but the demo is a *single* playthrough, and a first run that ends in OUCH at eight minutes is a bad thing to show a judge. Two consequences, both handled in §25.4:
+**The demo caveat.** "Die fast, learn across runs" is the product's design and it stays in the pitch — but the demo is a *single* playthrough, and a first run that ends in OUCH at eight minutes is a bad thing to show a judge. Two consequences:
 
 - The demo is driven by an operator who knows the script and plays the **demo path** — competent, reaching 2004+, showing the crash, one scam dodged and one shock survived.
-- If the pitch wants to show the cash-only death as well, that is what the **presenter tools** are for: jump to Mar 2000 on a cash-only state and show the death card in fifteen seconds. Do not play it out live.
+- The shipped application has no presenter/debug shortcut. If the pitch also wants to show the cash-only death, use a separate full run or a recording; do not interrupt the decision-carrying demo path.
 
 ---
 ---
@@ -643,7 +643,7 @@ External sites are real destinations you navigate to:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│ ⊞  BUBBLE — Comet Navigator                              _   □   ✕     │  ← title bar
+│ ⊞  BUBBLE — Bubble Navigator                             _   □   ✕     │  ← title bar
 ├────────────────────────────────────────────────────────────────────────┤
 │  File   Edit   View   Go   Favorites   Help                            │  ← menu bar
 ├────────────────────────────────────────────────────────────────────────┤
@@ -688,7 +688,7 @@ The look shifts **once**, at the crash, dividing the run in two. Half the art, m
 | | **ERA A — 1996–2000** | **ERA B — 2001–2006** |
 |---|---|---|
 | Feel | Windows 95/98, IE4 | Windows XP Luna, IE6 |
-| Browser name | **Comet Navigator 4.0** | **Comet Navigator 6** |
+| Browser name | **Bubble Navigator 4.0** | **Bubble Navigator 6** |
 | Title bar | Flat `#000080`, white bold 11px | Gradient `#0058EE → #3F8CF3`, rounded top 6px, soft text shadow |
 | Window face | `#C0C0C0` | `#ECE9D8` |
 | Bevels | Hard 1px double bevel, no radius | Softer, 2px radius on buttons |
@@ -779,7 +779,7 @@ Shocks, job loss, forced sales, year turns, death. Time is **paused**.
 
 ```
         ┌──────────────────────────────────────────────┐
-        │ ⚠  Comet Navigator                       ✕   │   ← ✕ is drawn but disabled
+        │ ⚠  Bubble Navigator                      ✕   │   ← ✕ is drawn but disabled
         ├──────────────────────────────────────────────┤
         │                                              │
         │    ⚠     The boiler has failed. Your         │
@@ -851,7 +851,7 @@ Without this rule, everything on screen is potentially lying, the player stops r
 
 ```
         ┌──────────────────────────────────────────────┐
-        │ ⚠  Comet Navigator                       ✕   │
+        │ ⚠  Bubble Navigator                      ✕   │
         ├──────────────────────────────────────────────┤
         │    ⚠     SECURITY ALERT: Your savings are    │
         │          at risk. Immediate action required. │
@@ -1121,10 +1121,10 @@ Everything needed, kept deliberately small. All original work.
 # BUILD STATUS
 
 **Live:** https://bubble-sim.pages.dev/ · **Repo:** https://github.com/aarianmm/bubble-sim · **stack:** Vite + React + TS, static, no backend
-**Last updated:** 20 Aug 2026
+**Last updated:** 23 Aug 2026
 
 > **Nobody has looked at this in a real browser yet.** The Chrome extension was
-> unavailable to every agent for the whole build, so all 270 tests are jsdom and
+> unavailable to every agent for the whole build, so all 335 tests are jsdom and
 > code review. The integration test drives the real `<App/>` with real DOM
 > clicks through §25.5's demo path, which is a strong check on behaviour — but it
 > says nothing about whether the thing *looks* right. §21 rule 1 (Halcyon must be
@@ -1166,11 +1166,11 @@ perfect play         2005-02    KNOWN GAP
 | 6 | Fact sheets | All 17 vehicles, ten fields each, `— none —` never blank. Every scam carries ≥2 red flags (tested) |
 | 7–8 | Month tick + headless runner | §7.3's six sub-steps in exact order; full decade runs in <50ms |
 | 9 | **Verification gate** | Six scripted strategies asserting exact death dates. In CI |
-| 10–11 | Design tokens + bevel system | Era A **and** Era B token sets. Zero hex values anywhere outside `tokens.css` |
-| 12 | Window chrome | Title bar, working menus, toolbar, address bar, status bar, 16px scrollbars, `TooSmall` fallback |
+| 10–11 | Design tokens + bevel system | Three deliberately stark milestone layers built entirely from root CSS tokens: the untouched flat Windows 95 grey in 1996; a taller, sectional IE4/Windows 98 channel-and-rebar shell in 1998; then an owner-directed glossy blue/aqua/lime millennium shell in 2000. Later milestones change bar metrics, spacing, tool orientation, framing, labels and scrollbar paint—not only colour. The 2000 art direction draws on the Frutiger Aero Archive's glass, saturated sky/water blue and optimistic green references while retaining the same functional browser inventory and shaded icon image list. Zero hex values anywhere outside `tokens.css` |
+| 12 | Window chrome | Bubble Navigator title bar, working menus, toolbar, address bar, status bar, 16px scrollbars, `TooSmall` fallback. The 1996 bars remain original. 1998 adds visible coolbar grippers, Channel Bar/Internet Zone labels, a BUBBLE-branded toolbar panel, wider navigation rail, modem footer, connection/activity panes and a conventional size grip. 2000 reflows the same tools into hot-tracked horizontal glass pills, reveals IE5's Go control, adds a trusted-zone capsule, luminous broadband tray and glossy scrollbar |
 | 13 | Navigation | Real history stack, correctly greyed Back/Forward, title + address sync, **status-bar URL preview on link hover** (§19.3's red-flag delivery mechanism) |
-| 14 | Clock, year spine, time controls | 1.2s/month, hold-to-fast-forward at 4× |
-| 15 | **Presenter tools** (`?dev=1`) | Jump-to-date, time-rate override, reset, instant death card |
+| 14 | Clock, year spine, time controls | 1.2s/month, hold-to-fast-forward at 4×. The base year keeps §22.1's original growing `▓` staircase and current `◄` marker. From 1998 the same mounted rows become a connected timeline with completed/current/upcoming nodes and an explicit `NOW` badge; 2000 rounds and glosses those parts. Visibility and paint remain milestone-token-driven |
+| 15 | Presenter test driver (retired from deployment) | The original jump/preset/event driver remains test-only so integration coverage can land on authored beats. `App.tsx` has no import, URL unlock, About-click unlock, or render path for it; see Deviation 6 |
 | 16 | Dual money display | One component; the toggle swaps every figure at once (proven by test) |
 | 17 | `/home` | Headline pairing, this-month strip, year spine, fact-checked news ticker |
 | 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view |
@@ -1182,10 +1182,11 @@ perfect play         2005-02    KNOWN GAP
 | 26 | Bands + cause-of-death | `bandFor(status, deathMonth)` takes **no wealth parameter**, so §15's anti-gambling guardrail is structural. Five of six §22.6 lines proven reachable by real runs |
 | 27 | Death card | Full-page, chrome retained, **every toolbar button greyed except Home**. Inline-SVG decade graph, player line vs market. Missed red flags quoted from the fact sheet the player could have read (§11.2 rule 5) |
 | 28 | **One-click replay** | `engine.reset()`, no menu, no confirmation |
+| 29–30 | Visual progression at Jan 1998 and Jan 2000 | Continuous play pauses at each boundary on the previous design and presents a large mandatory prompt: `We are now entering the year 1998/2000. Please update the system.` `[ Update the system ]` starts the real router load beneath a blue full-viewport installer that covers every old chrome control, shows staged installation status and preserves the frozen date. Only after loading finishes are the destination root attributes applied; a second full-screen `Welcome to 1998/2000` surface then previews the installed interface and `[ Enter the updated system ]` returns control. The three-stage sequence borrows the supplied Windows Aero reference's deep desktop-blue field, translucent framed panels, glass highlights and luminous controls. The welcome signal and progress sheen use discrete step animation with reduced-motion fallbacks. 1998 installs a markedly taller IE4/Win98 channel interface; 2000 makes the starker Frutiger Aero-inspired jump across the full shell and changes the toolbar from stacked legacy tools to horizontal glass controls. Functional control slots, handlers and ordering remain invariant; their milestone metrics and presentation deliberately do not. `?visual=1` exposes the prompt, installer and completion surfaces for review; test-only state loads still apply a target milestone immediately. The authored Jan 2002 computer-upgrade dialog remains narrative and no longer changes the theme; see Deviation 5 |
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1). 270 tests green.
+### MVP complete at Step 28 (§26.1). 335 tests green.
 
 Four bugs were found and fixed during integration, all worth knowing about:
 
@@ -1207,12 +1208,10 @@ Four bugs were found and fixed during integration, all worth knowing about:
   runner's own loop, and the live engine calls `tick()` directly. Now maintained
   in `tick()`, with a determinism test driving identical decisions through both
   paths to prove they cannot drift (§25.2).
-- **A literal reading of §25.5 would have broken the demo on stage.** The
-  presenter's jump-to-date replays from Jan 1996 with *no* decisions, so using it
-  to move between beats silently discards every earlier choice — at Mar 2000 the
-  operator would have found nothing real to sell. `DEMO.md` drives continuity
-  with the normal play/fast-forward controls and reserves jump-to-date for
-  rehearsal and recovery.
+- **A literal reading of the former presenter workflow would have broken the
+  demo on stage.** Its jump-to-date replayed from Jan 1996 with *no* decisions,
+  so moving between beats silently discarded every earlier choice. The panel no
+  longer ships; `DEMO.md` uses only the normal play/fast-forward controls.
 
 Two §25.5 details worth knowing before rehearsing:
 
@@ -1221,7 +1220,7 @@ Two §25.5 details worth knowing before rehearsing:
   Northmoor rather than cash, because §12.2 redistributes proportionally by
   current weight. Drag Northmoor to 0% first. Locked in by a regression test.
 - `DialogCopy.title` is authored but never rendered — §20.1's own mock-up fixes
-  the dialog titlebar to "Comet Navigator". Dead content, not a bug.
+  the dialog titlebar to "Bubble Navigator". Dead content, not a bug.
 
 ## To be done
 
@@ -1247,12 +1246,15 @@ Two §25.5 details worth knowing before rehearsing:
    real; month-to-month texture between documented anchor points is interpolated.
    Stated plainly in `series.json`'s `meta.note`. Drop in real month-end closes
    before the pitch.
-
+4. **Vitest 2.1.9 has a critical UI-server advisory** (§25.4). It is a
+   development-only dependency and its UI server is neither used nor shipped, so
+   the static game is not exposed. Upgrade to Vitest ≥3.2.6, reconcile the Vite
+   peer dependency and refresh the lockfile; see `KNOWN-ISSUES.md` for the audit
+   evidence.
 ### Outside the MVP boundary — §26.1, priority-ordered
 
 | Step | What | Status |
 |---|---|---|
-| 29–30 | Era B visual switch at Jan 2002 | **Tokens written and working** — `data-era="b"` already flips every surface with no component change. Only the Jan 2002 trigger is unbuilt |
 | 31 | Credit card / debt | Not built. The two credit offers are in the script, marked `mvpDeferred` |
 | 32 | Scam 6 — the fake dialog (§20.5) | Not built. Ships as an ordinary loud popup. Scam 5 (Restitution) *is* built. `Popup.tsx` carries the `imitatesDialog` seam and its three required tells are documented |
 | 33 | Social mail (Dave) | Content authored; both messages are in the script |
@@ -1297,6 +1299,60 @@ mobile.
    Nov 1999 job loss, £1,100 killed the cash player in January 2000. §14.1 names
    shocks as the difficulty lever and permits £250–£1,600. Below roughly £635 the
    March 2000 death date is robust.
+5. **The visual progression now lands at Jan 1998 and Jan 2000, not once at Jan
+   2002.** The project owner explicitly requested visible improvement at both
+   earlier milestones while preserving every function, icon and button. The
+   shell therefore derives `data-era` and `data-ui-year` from the current month,
+   and all three designs alter CSS tokens only. The stronger 1998 treatment is
+   grounded in contemporary Windows 98 gradient-caption and IE4 coolbar imagery.
+   The initial 2000 treatment followed IE5/IE5.5 and Windows 2000 closely, but
+   the owner found that change too subtle and explicitly requested a broader,
+   starker treatment based on the Frutiger Aero Archive. The shipped milestone
+   therefore brings that later visual language forward: glossy blue/aqua glass,
+   optimistic green highlights, soft rounded controls and brighter layered
+   panels now cover every chrome region. This deliberately departs from §18.2's
+   period-exact Windows XP/IE6 palette in favour of the requested visual arc.
+   The shaded icon group remains in the same eight SVG slots and handlers.
+   After further owner review, the later bar metrics are deliberately no longer
+   identical: 1998 grows the rebar bands and sidebar, while 2000 rearranges the
+   same toolbar children from stacked icon/label controls into wider horizontal
+   glass buttons and reveals the already-mounted Go control. This is a visual
+   layout departure only; control order, accessible names, handlers and game
+   behaviour remain unchanged. The 1996 grid remains exactly original.
+   In continuous play, each boundary now pauses before changing: a large system
+   prompt announces the incoming year and requires `[ Update the system ]`; a
+   blue installation screen then covers the complete viewport under an
+   engine-level clock hold. Only the completed load applies the next installed
+   theme, after which a second full-screen welcome displays the new visual
+   language and `[ Enter the updated system ]` returns control. A separate
+   temporary `data-ui-target` attribute styles all three phases without changing
+   the live chrome early. The sequence takes glass framing, deep blue desktop
+   space and luminous layered panels from the owner's supplied Windows Aero
+   reference image while remaining code-native and fully offline. At the
+   owner's request, the welcome signal and the 2000 loading sheen are narrow
+   exceptions to §23's animation list: both use hard `steps()` timing, no easing,
+   and stop under `prefers-reduced-motion`. This deliberately replaces §18.2's
+   "no announcement" direction at the owner's request. Test-only state loads
+   bypass the sequence and apply the target milestone immediately.
+   §18.2's Jan 2002 computer-upgrade dialog remains authored and resolves
+   normally, but is now narrative rather than the visual trigger. No simulation
+   rule, event, route, control or handler changes with the presentation.
+6. **Presenter Tools are not shipped.** At the project owner's request, this
+   departs from §25.4 and Step 15: `?dev=1` is ignored, repeated About clicks do
+   not unlock anything, and `App.tsx` imports neither the Presenter dialog nor
+   its notification harness. The old component remains a test-only driver for
+   fast integration coverage, but production builds tree-shake it and its CSS;
+   the deployment exposes only public gameplay controls and `?visual=1` visual
+   QA. The generated bundle is checked for the absence of `Presenter Tools`.
+7. **The sidebar year spine evolves after 1996 instead of retaining §22.1's
+   growing block staircase for the full decade.** The owner requested that the
+   base year stay original, then gain a stronger design treatment in 1998 and
+   2000. Both the legacy `▓` / `◄` presentation and the later timeline remain in
+   the invariant DOM. Root tokens expose the exact staircase in 1996; 1998 and
+   2000 switch to a continuous rail, completed/current/upcoming nodes, checks
+   and a labelled `NOW` badge. The later 2000 layer adds rounded blue/green glass
+   treatment. All eleven years and the same live clock source remain, with no
+   simulation timing or navigation behaviour change.
 
 ---
 ---
@@ -1380,20 +1436,13 @@ Six strategies, each a hardcoded decision list run against the §14.2 script. Co
 
 Also assert, as unit tests: every scam has ≥2 red flags on its fact sheet (§11.2); every event in `/script` resolves to real content in `/content`; every fact sheet has all ten fields populated; no two decision events share a month except the authored Mar 2000 pair.
 
-### 25.4 Presenter tools
+### 25.4 Presenter tools (retired)
 
-The demo is one playthrough, in front of judges, on a clock, possibly on someone else's wifi. Build the tools that make that safe. **Half a day of work, and it is the difference between a demo and an incident.**
-
-Behind a `?dev=1` URL parameter, or `Help > About` clicked five times:
-
-| Tool | Why |
-|---|---|
-| **Jump to date** | Skip to Mar 2000 for the crash, or Dec 2006 for the win card, without playing eleven minutes of 1997 |
-| **Load a saved state** | Presets for each demo beat: "just before the crash", "holding the Ponzi", "about to be forced to sell" |
-| **Force any event** | Fire the boiler shock, the Ponzi collapse or the fake dialog on demand |
-| **Instant death card** | Any band, any cause line, one click — for the closing shot |
-| **Time-rate override** | 1×, 4×, 20×. Twenty is for skipping quiet years live if Q&A runs long |
-| **Reset to Jan 1996** | One key. Between judges. |
+The deployed application has no Presenter Tools UI. `?dev=1` is ignored and
+Help > About is only an About action, regardless of click count. Rehearsal uses
+the same play, pause, hold-to-fast-forward and replay controls available to a
+player. A test-only driver may retain date/preset/event helpers for fast
+integration coverage, provided it is not imported into the production graph.
 
 Plus, for safety: **the build must work fully offline.** No CDN, no font fetch, no analytics, no telemetry. Everything bundled. Assume the venue wifi fails, because at some point it will.
 
@@ -1438,7 +1487,7 @@ Built by agents, fast, in parallel where possible. So this section is not a sche
 | Dual money display | The inflation lesson |
 | 4 scams, fairness contract satisfied | The scam mechanic needs the Ponzi, the pump, and two cheap ones |
 | Death card + bands + one-click replay | The closing shot of the demo |
-| Presenter tools | Insurance on the only performance that counts |
+| Continuous public-control demo path | The performance exercises the same app judges receive |
 
 **Everything below is outside the MVP.** Each is a discrete, additive layer that touches little else — none of them is load-bearing, and the game is demonstrable without any of them.
 
@@ -1497,9 +1546,10 @@ Built by agents, fast, in parallel where possible. So this section is not a sche
 | **12** | Window chrome. Title bar, menu bar with working dropdowns, toolbar, address bar, status bar, 16px scrollbars. Static — no navigation yet. | `src/chrome/Window.tsx` and children | Renders §18.1 at 1024×768 with no layout shift; menus open and close |
 | **13** | Navigation. URL state, history stack, functional Back/Forward with correct greying, title-bar sync, status-bar URL preview on link hover (§19.3). | `src/chrome/router.tsx` | Back is greyed on first page; navigating three pages and going back twice lands correctly; hover shows target URL |
 | **14** | Left nav + clock + time controls. Date, unread count, year progress spine, `⏸/▶`, hold-to-fast-forward at 4×. | `src/chrome/Nav.tsx` | Time advances at ~1.2s/month; holding fast-forward gives 4×; pause stops it |
-| **15** | **Presenter tools, early.** Jump-to-date, force-event, time-rate override, reset, state presets. Behind `?dev=1`. | `src/dev/Presenter.tsx` | Jump to Mar 2000 lands in one action |
+| **15** | **Test-only demo driver, early.** Jump-to-date, force-event and state presets for integration coverage only; never imported by the deployed app. | `src/dev/Presenter.tsx` | Tests can land on Mar 2000; production `?dev=1` exposes no panel |
 
-> **Step 15 is deliberately early.** Every UI step after this is verified by jumping straight to the month that exercises it. Without it, agents are playing eleven minutes of 1997 to check a 2001 dialog.
+> **Step 15 is test infrastructure only.** It keeps integration checks fast
+> without creating a hidden control surface in the shipped application.
 
 ---
 
@@ -1598,7 +1648,7 @@ Fewer of these than there would be in a generated game: decision count, scam fre
 **Naming, decide any time:**
 
 - **The game.** BUBBLE is still a placeholder. Alternates: *Nine Nine*, *Dial-Up*, *The Long Run*.
-- **The browser.** *Comet Navigator* needs to evoke IE without being it. Alternatives: *Vista*, *Sextant*, *Beacon*, *Compass*.
+- **The browser.** *Bubble Navigator* needs to evoke IE without being it. The owner retired the former Comet name so the product and browser chrome share one brand.
 - **The 12 fictional firms.** Check every name against real 1996–2006 companies before shipping — §5.1 rule 3.
 
 **Not open, and worth saying so:** whether the run is randomised, whether there's a second decade, whether difficulty scales. All settled: no. See §26.

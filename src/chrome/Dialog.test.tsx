@@ -66,6 +66,7 @@ describe('Dialog — no code path closes it without a choice (§20.1)', () => {
     const onResolve = vi.fn();
     mount(<Dialog dialog={makeDialog()} onResolve={onResolve} />);
     const closeBtn = document.querySelector('.comet-dialog__close') as HTMLButtonElement;
+    expect(document.querySelector('.comet-dialog__title')?.textContent).toBe('Bubble Navigator');
     expect(closeBtn).toBeTruthy();
     expect(closeBtn.disabled).toBe(true);
     act(() => {

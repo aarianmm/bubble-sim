@@ -41,6 +41,7 @@ function makeEngine(overrides: Partial<Engine> = {}): Engine {
     popupPresentation: { active: makePopup(), pending: [], phase: 'showing' },
     dispatch: vi.fn(),
     setPaused: vi.fn(),
+    setEvolutionPaused: vi.fn(),
     setTimeRate: vi.fn(),
     closePresentedPopup: vi.fn(),
     filePresentedPopup: vi.fn(),
