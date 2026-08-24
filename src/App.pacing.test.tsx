@@ -5,9 +5,16 @@ import { createRoot, type Root } from 'react-dom/client';
 import { SimulationRoutePause } from './App';
 import { RouterProvider, useRouter, type RouterValue } from './chrome/router';
 import { OFFER_PAGES } from './content/offerpages';
-import { HOME_URL, MAIL_URL, MONEY_URL, resolveRoute } from './pages/registry';
+import {
+  HOME_URL,
+  MAIL_URL,
+  MONEY_URL,
+  resolveRoute,
+  shouldAutoPauseSimulationUrl,
+} from './pages/registry';
 import { EngineProvider } from './ui/EngineProvider';
 import { MS_PER_MONTH, RATE_FAST, RATE_NORMAL, RATE_PRESENTER, useEngine, type Engine } from './ui/engine';
+import { Notifications } from './ui/Notifications';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -36,6 +43,7 @@ function Surface() {
       <SimulationRoutePause />
       <Probe />
       <Page />
+      <Notifications />
     </>
   );
 }
@@ -106,27 +114,31 @@ describe('context-aware reading and decision pause', () => {
     expect(RATE_PRESENTER).toBe(20);
   });
 
-  it('keeps the Mail inbox running, pauses an open message, then resumes in the inbox', () => {
+  it('pauses the Mail inbox and an open message, then resumes only on Home', () => {
     forceNorthmoorMail();
     navigate(MAIL_URL);
-    expect(engine!.autoPaused).toBe(false);
-    expect(engine!.timeRate).toBe(RATE_NORMAL);
+    const pausedMonth = engine!.state.month;
+    expect(engine!.autoPaused).toBe(true);
+    expect(engine!.timeRate).toBe(0);
     advance(MS_PER_MONTH * 2 + 100);
-    const runningMonth = engine!.state.month;
-    expect(runningMonth).toBeGreaterThan(0);
+    expect(engine!.state.month).toBe(pausedMonth);
 
     openNorthmoorMail();
     expect(engine!.autoPaused).toBe(true);
     expect(engine!.timeRate).toBe(0);
     advance(MS_PER_MONTH * 4);
-    expect(engine!.state.month).toBe(runningMonth);
+    expect(engine!.state.month).toBe(pausedMonth);
 
     click(Array.from(container!.querySelectorAll('button')).find((button) =>
       button.textContent?.includes('[ Back ]')) ?? null);
+    expect(engine!.autoPaused).toBe(true);
+    expect(engine!.timeRate).toBe(0);
+
+    navigate(HOME_URL);
     expect(engine!.autoPaused).toBe(false);
     expect(engine!.timeRate).toBe(RATE_NORMAL);
-    advance(MS_PER_MONTH + 100);
-    expect(engine!.state.month).toBeGreaterThan(runningMonth);
+    advance(MS_PER_MONTH * 2 + 100);
+    expect(engine!.state.month).toBeGreaterThan(pausedMonth);
   });
 
   it('keeps manual pause authoritative across Mail reading and the inbox', () => {
@@ -137,6 +149,8 @@ describe('context-aware reading and decision pause', () => {
     expect(engine!.autoPaused).toBe(true);
     click(Array.from(container!.querySelectorAll('button')).find((button) =>
       button.textContent?.includes('[ Back ]')) ?? null);
+    expect(engine!.autoPaused).toBe(true);
+    navigate(HOME_URL);
     expect(engine!.autoPaused).toBe(false);
     expect(engine!.paused).toBe(true);
     expect(engine!.timeRate).toBe(0);
@@ -154,6 +168,9 @@ describe('context-aware reading and decision pause', () => {
 
     expect(container!.querySelector('.mail-message')).toBeNull();
     expect(container!.querySelector('.mail-table')).not.toBeNull();
+    expect(engine!.autoPaused).toBe(true);
+    expect(engine!.timeRate).toBe(0);
+    navigate(HOME_URL);
     expect(engine!.autoPaused).toBe(false);
     expect(engine!.timeRate).toBe(RATE_NORMAL);
   });
@@ -211,6 +228,44 @@ describe('context-aware reading and decision pause', () => {
     navigate('http://unknown.example/not-a-gameplay-route');
     expect(engine!.autoPaused).toBe(true);
     expect(engine!.timeRate).toBe(0);
+  });
+
+  it.each([
+    ['Home', HOME_URL, false],
+    ['Mail inbox', MAIL_URL, true],
+    ['My Money', MONEY_URL, true],
+    ['offer/company page', OFFER_PAGES['northmoor-bond'].url, true],
+    ['fact sheet', `${OFFER_PAGES['northmoor-bond'].url}/factsheet`, true],
+    ['accept decision', `${OFFER_PAGES['northmoor-bond'].url}/accept`, true],
+    ['unknown route', 'http://unknown.example/future-screen', true],
+  ])('%s follows the Home-only running policy', (_label, url, expected) => {
+    expect(shouldAutoPauseSimulationUrl(url)).toBe(expected);
+  });
+
+  it('preserves one popup and its remaining timeout across paused routes, then resumes on Home', () => {
+    act(() => engine!.forceEvent('ev.1998-03.cavendish'));
+    const popupId = engine!.popupPresentation.active?.id;
+    expect(popupId).toBeTruthy();
+    expect(document.querySelectorAll('.comet-popup')).toHaveLength(1);
+    advance(4000);
+
+    navigate(MAIL_URL);
+    expect(engine!.autoPaused).toBe(true);
+    advance(20000);
+    expect(engine!.popupPresentation.active?.id).toBe(popupId);
+    expect(document.querySelectorAll('.comet-popup')).toHaveLength(1);
+
+    navigate(MONEY_URL);
+    advance(20000);
+    expect(engine!.popupPresentation.active?.id).toBe(popupId);
+    expect(document.querySelectorAll('.comet-popup')).toHaveLength(1);
+
+    navigate(HOME_URL);
+    advance(6999);
+    expect(engine!.popupPresentation.active?.id).toBe(popupId);
+    advance(1);
+    expect(engine!.popupPresentation.active).toBeNull();
+    expect(document.querySelector('.comet-popup')).toBeNull();
   });
 
   it('retains manual pause after leaving My Money for Home', () => {

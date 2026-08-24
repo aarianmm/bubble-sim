@@ -39,10 +39,10 @@ export function isPopupPresentationNeutralUrl(url: string): boolean {
   return url === HOME_URL || url === MAIL_URL || url === MONEY_URL;
 }
 
-/** Home and the Mail list are normal running surfaces. My Money, every
- * external offer flow, the terminal page, and unknown URLs pause safely. */
+/** Home is the only normal running surface. Every other current or future
+ * route pauses safely by default. */
 export function shouldAutoPauseSimulationUrl(url: string): boolean {
-  return url !== HOME_URL && url !== MAIL_URL;
+  return url !== HOME_URL;
 }
 
 /** Any URL not in PORTAL_ROUTES is an external offer site (§17.1, §22.3). */
