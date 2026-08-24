@@ -88,14 +88,22 @@ export function DateReadout() {
 }
 
 function PauseButton() {
-  const { paused, setPaused } = useEngine();
+  const { paused, autoPaused, setPaused } = useEngine();
+  const effectivePaused = paused || autoPaused;
+  const label = autoPaused
+    ? paused
+      ? 'Resume after reviewing'
+      : 'Keep paused after reviewing'
+    : paused
+      ? 'Play'
+      : 'Pause';
   return (
     <button
       type="button"
       className="chrome bevel-out comet-nav__time-btn"
-      aria-pressed={paused}
-      aria-label={paused ? 'Play' : 'Pause'}
-      title={paused ? 'Play' : 'Pause'}
+      aria-pressed={effectivePaused}
+      aria-label={label}
+      title={label}
       onClick={() => setPaused(!paused)}
     >
       {paused ? '▶' : '⏸'}
@@ -155,11 +163,15 @@ function FastForwardButton() {
 }
 
 export function TimeControls() {
+  const { autoPaused } = useEngine();
   return (
-    <div className="chrome comet-nav__time-controls">
-      <FastForwardButton />
-      <PauseButton />
-    </div>
+    <>
+      <div className="chrome comet-nav__time-controls">
+        <FastForwardButton />
+        <PauseButton />
+      </div>
+      {autoPaused && <div className="comet-nav__auto-pause">Paused while reviewing</div>}
+    </>
   );
 }
 

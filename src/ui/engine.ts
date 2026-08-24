@@ -17,10 +17,9 @@ import type { MonthIndex } from '../sim/month';
 /** §7.4 — one simulated month is 1.2 real seconds at 1x. */
 export const MS_PER_MONTH = 1200;
 
-/** §7.4 / §10.3 — held fast-forward is 4x; the inbox slows time to 0.4x. */
+/** §7.4 — held fast-forward is 4x. */
 export const RATE_NORMAL = 1;
 export const RATE_FAST = 4;
-export const RATE_INBOX = 0.4;
 
 /** §25.4 presenter tool — 20x is for skipping quiet years live. */
 export const RATE_PRESENTER = 20;
@@ -35,6 +34,8 @@ export interface Engine {
   state: GameState;
   /** True while a blocking dialog is open, or the player pressed pause (§20.1). */
   paused: boolean;
+  /** True while one or more reading/decision contexts request a pause. */
+  autoPaused: boolean;
   /** Effective multiplier on MS_PER_MONTH. 0 while paused. */
   timeRate: number;
   popupPresentation: PopupPresentationState;
@@ -44,6 +45,7 @@ export interface Engine {
 
   dispatch(decision: Decision): void;
   setPaused(paused: boolean): void;
+  setAutoPaused(reason: 'route' | 'mail-message', paused: boolean): void;
   /** Presentation-owned hold for the Jan 1998/2000 prompt, install and
    * completed welcome. Independent of Pause, which cannot release it. */
   setEvolutionPaused(paused: boolean): void;

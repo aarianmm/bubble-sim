@@ -26,6 +26,14 @@
   color: var(--sidebar-time-text);
 }
 
+.comet-nav__auto-pause {
+  margin: -2px 2px 6px;
+  color: var(--shadow);
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .comet-nav__time-btn--held {
   border-top-color: var(--dk-shadow);
   border-left-color: var(--dk-shadow);

@@ -27,7 +27,14 @@ import {
   EraUpdateCompletePage,
   EraWelcomeDialog,
 } from './chrome/EraTransition';
-import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
+import {
+  resolveRoute,
+  GAME_OVER_URL,
+  HOME_URL,
+  MAIL_URL,
+  MONEY_URL,
+  shouldAutoPauseSimulationUrl,
+} from './pages/registry';
 import { monthIndex, type MonthIndex } from './sim/month';
 
 type VisualMilestone = {
@@ -81,6 +88,19 @@ function urlForSection(section: NavSection): string {
     case 'money':
       return MONEY_URL;
   }
+}
+
+export function SimulationRoutePause() {
+  const engine = useEngine();
+  const router = useRouter();
+  const autoPause = shouldAutoPauseSimulationUrl(router.url);
+
+  useLayoutEffect(() => {
+    engine.setAutoPaused('route', autoPause);
+    return () => engine.setAutoPaused('route', false);
+  }, [autoPause, engine.setAutoPaused]);
+
+  return null;
 }
 
 export function AppShell() {
@@ -210,6 +230,7 @@ export function AppShell() {
 
   return (
     <div className={onDeathCard ? 'app-shell app-shell--death' : 'app-shell'}>
+      <SimulationRoutePause />
       <Window
         titleBar={{ title: router.title, onCloseConfirmed: newRun }}
         menuBar={{
