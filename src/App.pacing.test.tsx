@@ -142,6 +142,22 @@ describe('context-aware reading and decision pause', () => {
     expect(engine!.timeRate).toBe(0);
   });
 
+  it('clears Mail auto-pause if the open message disappears from the visible inbox', () => {
+    forceNorthmoorMail();
+    navigate(MAIL_URL);
+    openNorthmoorMail();
+    const openMail = engine!.state.inbox.find((item) => item.eventId === 'ev.1996-04.northmoor-bond')!;
+    expect(engine!.autoPaused).toBe(true);
+    expect(container!.querySelector('.mail-message')).not.toBeNull();
+
+    act(() => engine!.dispatch({ type: 'delete-mail', month: engine!.state.month, mailId: openMail.id }));
+
+    expect(container!.querySelector('.mail-message')).toBeNull();
+    expect(container!.querySelector('.mail-table')).not.toBeNull();
+    expect(engine!.autoPaused).toBe(false);
+    expect(engine!.timeRate).toBe(RATE_NORMAL);
+  });
+
   it('pauses My Money during allocation work and resumes on Home', () => {
     navigate(MONEY_URL);
     const month = engine!.state.month;

@@ -87,11 +87,17 @@ export function Mail() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const openItem = openId ? inbox.find((m) => m.id === openId) ?? null : null;
+  const hasVisibleOpenItem = openId !== null && openItem !== null;
 
   useLayoutEffect(() => {
-    engine.setAutoPaused('mail-message', openId !== null);
+    engine.setAutoPaused('mail-message', hasVisibleOpenItem);
     return () => engine.setAutoPaused('mail-message', false);
-  }, [engine.setAutoPaused, openId]);
+  }, [engine.setAutoPaused, hasVisibleOpenItem]);
+
+  useLayoutEffect(() => {
+    if (openId !== null && openItem === null) setOpenId(null);
+  }, [openId, openItem]);
 
   const sorted = useMemo(() => {
     const rows = [...inbox];
@@ -135,8 +141,6 @@ export function Mail() {
     setOpenId(null);
     setSelectedId(null);
   }
-
-  const openItem = openId ? inbox.find((m) => m.id === openId) ?? null : null;
 
   if (openItem) {
     const body = MAIL_MESSAGES[openItem.contentId]?.body ?? [];

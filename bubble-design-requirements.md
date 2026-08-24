@@ -108,7 +108,7 @@ Everything downstream follows from these seven. They are settled; don't relitiga
 | 2 | **Vehicles only arrive as messages** | Investments come by inbox and popup, never from a shop menu | Triage *is* the game. There is no curated "fund list" screen |
 | 3 | **Accept ≠ invest** | Accepting unlocks a vehicle into the portfolio; it holds £0 until allocated | Two separate skills: what you let in, and what you fund |
 | 4 | **Scams hurt at both tiers** | Accepting costs a little (fees, more scam mail). Allocating costs everything | Sloppy triage bleeds you. Sloppy allocation ends the run |
-| 5 | **Hybrid pacing** | Shocks and life events block and pause time. Offers and junk arrive non-blocking, with expiries | Authored drama for disasters, attention pressure for opportunities |
+| 5 | **Hybrid pacing** | Shocks and life events block. Mail and popups arrive non-blocking with expiries; opening detailed financial reading or decision surfaces pauses time | Authored delivery pressure without rushing careful reading, investigation or allocation |
 | 6 | **Two-way % allocation sliders, free rebalance** | Player sets target % across cash + every unlocked vehicle; game buys/sells to match | Retreat to cash is always possible — §12.3 explains why the death spiral survives anyway |
 | 7 | **Investing is the only lever** | The player never chooses their rent, food, job or lifestyle | The eagle stays unambiguous. No lifestyle system to build |
 | 8 | **Everything is authored** | One fixed timeline. No RNG anywhere in the run | The demo is reproducible on stage. Content is data, tunable without a rebuild. §14.2 is the script |
@@ -314,8 +314,8 @@ Vehicles reach the player through two distinct channels with different pressure.
 
 | Channel | Carries | Blocking? | Scams, in the authored run | Expiry |
 |---|---|---|---|---|
-| **Inbox (mail)** | Solicited and semi-solicited: workplace pension letters, building society literature, fund prospectuses, Dave, windfalls, statements | No — badge only | **1 of 9 offers** | Yes, visible |
-| **Popup window** | Unsolicited: ads, promos, "opportunities", junk | No — but it's on screen and must be closed | **5 of 8 offers** | Yes, closes on its own eventually |
+| **Inbox (mail)** | Solicited and semi-solicited: workplace pension letters, building society literature, fund prospectuses, Dave, windfalls, statements | Delivery/list: no. Open message: yes | **1 of 9 offers** | Yes, visible |
+| **Popup window** | Unsolicited: ads, promos, "opportunities", junk | Delivery: no. Its linked offer/decision pages pause | **5 of 8 offers** | Yes, closes on its own eventually |
 | **System dialog** | Shocks, job loss, forced sales, year turns, death | **Yes** | **0 — see §20.4** | n/a |
 
 Those counts are the authored manifest, not a probability. The ratio is the *reason* the manifest looks like this: popups skew scam heavily, mail mostly doesn't, and one mail scam exists specifically so the player can't learn "mail is safe."
@@ -358,9 +358,10 @@ Those counts are the authored manifest, not a probability. The ratio is the *rea
 
 ### 10.3 Triage pressure
 
-The player cannot read everything carefully *and* keep up with time. That's the intended tension.
+The player must still triage arrivals before they expire, but detailed financial reading and decisions are not speed-reading tests.
 
 - Time runs normally in the inbox list and pauses while an individual message is open for reading.
+- Time pauses on My Money, offer pages, fact sheets and accept/decision routes. Home and the Mail inbox are the running surfaces.
 - Popups do **not** slow time. Ignoring them is a real option with a real cost.
 - Junk, legit and scam rows are **visually identical in the inbox list**. Only the message body, the site it links to, and the fact sheet distinguish them.
 
@@ -920,7 +921,7 @@ Each of these is a web page rendered inside the frame from §18. Chrome is omitt
 │ Done                                                    🌐 Internet    │
 ```
 
-**Controls:** `▶▶` hold-to-fast-forward (4×, held not toggled — it keeps a hand on the game); `⏸ / ▶` pause; click the headline figure to toggle dual money; the left-nav year bars are a live progress spine showing how far you've got and quietly implying how far there is to go.
+**Controls:** `▶▶` hold-to-fast-forward (4×, held not toggled — it keeps a hand on the game); `⏸ / ▶` manual pause, whose pressed state also reflects an active reading/decision pause; click the headline figure to toggle dual money; the left-nav year bars are a live progress spine showing how far you've got and quietly implying how far there is to go.
 
 The headline number is the emotional core of the screen. When the nominal figure grows while the 1996 figure shrinks, that pairing should be given room and weight — it is the single most important piece of typography in the product.
 
@@ -952,6 +953,7 @@ Webmail of the era. Message list, no preview pane in Era A; preview pane appears
 ### 22.3 An offer page — the external site
 
 Reached by clicking a message or a popup CTA. **The address bar and the page style are both doing work here.**
+Simulation time pauses while the player reviews the offer or follows its accept/decision flow.
 
 ```
 │  Address │ 📄 http://www.cavendish-assets.co.uk.offers.net/tech ▾│ Go │
@@ -978,6 +980,8 @@ Reached by clicking a message or a popup CTA. **The address bar and the page sty
 ### 22.4 The fact sheet
 
 Identical layout for every vehicle, legit or otherwise. **The layout is the lesson** — once you know where "Regulated by" sits on the page, you check it every time. Installing that habit is what we're actually here to do.
+
+Simulation time pauses while the sheet is open, so fees, risk, diversification and red flags can be read without clock pressure.
 
 Rendered as a plain grey table in Times New Roman on every site, however garish the page around it — as though it were a required regulatory disclosure, because in this fiction it is.
 
@@ -1121,10 +1125,10 @@ Everything needed, kept deliberately small. All original work.
 # BUILD STATUS
 
 **Live:** https://bubble-sim.pages.dev/ · **Repo:** https://github.com/aarianmm/bubble-sim · **stack:** Vite + React + TS, static, no backend
-**Last updated:** 20 Aug 2026
+**Last updated:** 24 Aug 2026
 
 > **Nobody has looked at this in a real browser yet.** The Chrome extension was
-> unavailable to every agent for the whole build, so all 270 tests are jsdom and
+> unavailable to every agent for the whole build, so all 346 tests are jsdom and
 > code review. The integration test drives the real `<App/>` with real DOM
 > clicks through §25.5's demo path, which is a strong check on behaviour — but it
 > says nothing about whether the thing *looks* right. §21 rule 1 (Halcyon must be
@@ -1169,14 +1173,14 @@ perfect play         2005-02    KNOWN GAP
 | 10–11 | Design tokens + bevel system | Era A **and** Era B token sets. Zero hex values anywhere outside `tokens.css` |
 | 12 | Window chrome | Title bar, working menus, toolbar, address bar, status bar, 16px scrollbars, `TooSmall` fallback |
 | 13 | Navigation | Real history stack, correctly greyed Back/Forward, title + address sync, **status-bar URL preview on link hover** (§19.3's red-flag delivery mechanism) |
-| 14 | Clock, year spine, time controls | 1.2s/month, hold-to-fast-forward at 4× |
+| 14 | Clock, year spine, time controls | 1.2s/month, hold-to-fast-forward at 4×; effective pause state reflects manual and context-based pauses |
 | 15 | **Presenter tools** (`?dev=1`) | Jump-to-date, time-rate override, reset, instant death card |
 | 16 | Dual money display | One component; the toggle swaps every figure at once (proven by test) |
 | 17 | `/home` | Headline pairing, this-month strip, year spine, fact-checked news ticker |
-| 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view |
-| 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate) |
+| 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested); the list runs normally and an actually visible open message pauses time |
+| 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Offer, fact-sheet and accept routes pause time for investigation and decisions |
 | 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups draggable, capped at 3, positioned by arithmetic on the month index |
-| 23 | `/money` | Sliders always total 100% under proportional redistribution with per-row locks; `[Rebalance Now]` itemises every buy, sell, realised P&L and exit fee before executing |
+| 23 | `/money` | Sliders always total 100% under proportional redistribution with per-row locks; `[Rebalance Now]` itemises every buy, sell, realised P&L and exit fee before executing; time pauses while allocating |
 | 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
 | 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending |
 | 26 | Bands + cause-of-death | `bandFor(status, deathMonth)` takes **no wealth parameter**, so §15's anti-gambling guardrail is structural. Five of six §22.6 lines proven reachable by real runs |
@@ -1185,7 +1189,7 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1). 270 tests green.
+### MVP complete at Step 28 (§26.1). 346 tests green.
 
 Four bugs were found and fixed during integration, all worth knowing about:
 
@@ -1297,6 +1301,13 @@ mobile.
    Nov 1999 job loss, £1,100 killed the cash player in January 2000. §14.1 names
    shocks as the difficulty lever and permits £250–£1,600. Below roughly £635 the
    March 2000 death date is robust.
+5. **Detailed reading and decision surfaces pause time.** The original hybrid-pacing
+   wording treated every offer interaction as non-blocking. Authored Mail and popup
+   arrivals still do not block, and their expiries still create triage pressure, but
+   playtesting showed that leaving the clock running while reading an individual
+   message, comparing a fact sheet, reviewing an offer or allocating in My Money
+   discouraged the careful financial behaviour the game is meant to teach. Home and
+   the Mail inbox remain running surfaces; manual pause intent remains independent.
 
 ---
 ---
@@ -1496,7 +1507,7 @@ Built by agents, fast, in parallel where possible. So this section is not a sche
 | **11** | Bevel primitives + bundled fonts. `.bevel-out`, `.bevel-in`, `.bevel-pressed`. `font-smooth: none` on chrome text. | `src/chrome/bevel.css`, `src/assets/fonts/` | A visual test route renders a button, a sunken field and a pressed button correctly at 1× |
 | **12** | Window chrome. Title bar, menu bar with working dropdowns, toolbar, address bar, status bar, 16px scrollbars. Static — no navigation yet. | `src/chrome/Window.tsx` and children | Renders §18.1 at 1024×768 with no layout shift; menus open and close |
 | **13** | Navigation. URL state, history stack, functional Back/Forward with correct greying, title-bar sync, status-bar URL preview on link hover (§19.3). | `src/chrome/router.tsx` | Back is greyed on first page; navigating three pages and going back twice lands correctly; hover shows target URL |
-| **14** | Left nav + clock + time controls. Date, unread count, year progress spine, `⏸/▶`, hold-to-fast-forward at 4×. | `src/chrome/Nav.tsx` | Time advances at ~1.2s/month; holding fast-forward gives 4×; pause stops it |
+| **14** | Left nav + clock + time controls. Date, unread count, year progress spine, `⏸/▶`, hold-to-fast-forward at 4×. | `src/chrome/Nav.tsx` | Time advances at ~1.2s/month; holding fast-forward gives 4×; the control reflects effective manual/context pause state |
 | **15** | **Presenter tools, early.** Jump-to-date, force-event, time-rate override, reset, state presets. Behind `?dev=1`. | `src/dev/Presenter.tsx` | Jump to Mar 2000 lands in one action |
 
 > **Step 15 is deliberately early.** Every UI step after this is verified by jumping straight to the month that exercises it. Without it, agents are playing eleven minutes of 1997 to check a 2001 dialog.
@@ -1512,11 +1523,11 @@ Built by agents, fast, in parallel where possible. So this section is not a sche
 | **16** ∥ | Dual money display. One component, one global toggle in `View >` and on the `/home` headline. | `src/ui/Money.tsx` | Every figure renders both; toggle swaps primary everywhere at once |
 | **17** ∥ | `/home`. §22.1 — headline, this-month strip, year spine, news ticker. | `src/pages/Home.tsx` | Matches §22.1 at 1024×768; headline toggles dual money on click |
 | **18** ∥ | `/mail`. §22.2 — list, sortable headers, expiry column, row select, open, delete, delete-all. No class indicator on rows. | `src/pages/Mail.tsx` | Junk, legit and scam rows are pixel-identical; the list runs normally and an open message pauses time |
-| **19** ∥ | Offer page template + **fact sheet component**. Fact sheet identical on every page, same position, same size, Times New Roman table. | `src/pages/Offer.tsx`, `src/ui/FactSheet.tsx` | Renders any of the 17 vehicles from Step 6 data; the tracker's sheet and Halcyon's sheet differ only in field values |
+| **19** ∥ | Offer page template + **fact sheet component**. Fact sheet identical on every page, same position, same size, Times New Roman table. | `src/pages/Offer.tsx`, `src/ui/FactSheet.tsx` | Renders any of the 17 vehicles from Step 6 data; offer, fact-sheet and accept routes pause time |
 | **20** ∥ | Dialog system. §20.1 — blocking, dims the page, pauses time, no dismiss, max two buttons. | `src/chrome/Dialog.tsx` | Time is frozen while open; there is no code path that closes one without a choice |
 | **21** ∥ | Popup system. §20.2 — random-free positioning, draggable, real `✕`, chromeless, up to 3 concurrent, auto-close after 45 sim days. | `src/chrome/Popup.tsx` | Three open at once in May 1999; closing does not delete the inbox copy |
 | **22** ∥ | Inbox badge tier. §20.3 — counter increment, 200ms flash, status-bar line, no content occlusion. | `src/chrome/Nav.tsx`, `src/chrome/StatusBar.tsx` | New mail never covers content and never steals focus |
-| **23** | `/money`. §22.5 — slider rows, lock toggles, live £ preview, 100% enforcement, `[Reset]`, `[Rebalance Now]` with itemised confirm dialog. | `src/pages/Money.tsx` | Sliders always total 100%; confirm itemises every buy, sell, realised P&L and exit fee before executing |
+| **23** | `/money`. §22.5 — slider rows, lock toggles, live £ preview, 100% enforcement, `[Reset]`, `[Rebalance Now]` with itemised confirm dialog. | `src/pages/Money.tsx` | Time pauses while allocating; sliders always total 100%; confirm itemises every buy, sell, realised P&L and exit fee before executing |
 | **24** | Wire the script to the UI. Events fire on their §14.2 dates into the right channel. | `src/sim/scheduler.ts` | Jump to any date in the timeline and the correct event fires in the correct tier |
 | **25** | Forced-sale flow. §12.3 — shortfall detection, what-will-be-sold dialog with loss in both money terms, `[Sell something else]`. | `src/ui/ForcedSale.tsx` | Sep 2001 with £120 cash and a £900 shock produces the §12.3 dialog |
 
