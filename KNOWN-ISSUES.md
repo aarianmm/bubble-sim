@@ -307,3 +307,100 @@ indexed to 100 at January 1996. The headless runner returns that state instead o
 maintaining a second implementation. Unit coverage drives the live tick path and
 asserts one chronological point per month, while the existing strategy suite
 confirms that moving this bookkeeping did not alter any calibrated death date.
+
+---
+
+## 17. Draft reconciliation could move pinned Cash or discard the whole draft — §12.2, §22.5
+
+**Status:** fixed on 25 Aug 2026 after correctness review.
+
+When a new or suspended holding caused `reconcileDraftRows()` to rebuild the
+row set, it always rewrote Cash to the residual percentage while preserving its
+`locked` flag. A pinned 50% Cash row could therefore display as both pinned and
+100%. If the reconciled non-Cash total overflowed 100%, the defensive branch
+returned the complete actual allocation and erased every in-progress target.
+
+Reconciliation now repairs only malformed rows, preserves valid targets and
+pins, lets unpinned Cash absorb normal drift, and redistributes around pinned
+Cash when another editable holding exists. If state constraints make a pin
+mathematically impossible, the affected row is unpinned at the same moment it
+changes. Regressions cover pinned-Cash suspension slack and a single malformed
+overflowing row without losing the rest of the draft.
+
+---
+
+## 18. The 2000 milestone hid the popup-blocker count — §18.1, §18.2
+
+**Status:** fixed on 25 Aug 2026 after correctness review.
+
+The status-bar blocker slot remains mounted at every milestone, but the final
+2000 token block set `--popup-blocker-display: none`. That contradicted Era B's
+required visible blocker count and silently removed the readout at the final
+interface milestone. The 2000 token is now `flex`, with a regression reading
+the exact milestone block so a later theme edit cannot hide it again.
+
+---
+
+## 19. BUILD STATUS claimed a bundle assertion that did not exist — §25.4
+
+**Status:** fixed on 25 Aug 2026 after documentation review.
+
+Deviation 6 said the generated bundle was checked for the absence of
+`Presenter Tools`, but the suite only mounts the production `<App/>` with
+`?dev=1` and asserts that no Presenter UI appears. The documentation now states
+that exact coverage and explicitly says the bundle is not scanned, avoiding a
+false assurance while retaining the useful production-render regression.
+
+---
+
+## 20. Toolbar Mail's accessible name omitted unread and arrival text — §19.3, §20.3
+
+**Status:** fixed on 25 Aug 2026 after accessibility review.
+
+Every toolbar button forced `aria-label={btn.label}`. On Mail this overrode the
+visible descendant badge and live `New Mail` notice, leaving its accessible
+name as only “Mail.” The redundant label has been removed, so the button's
+native name is derived from its visible label, unread count and notice; the
+notice retains its independent polite live-region announcement. A regression
+asserts that the overriding attribute cannot return.
+
+---
+
+## 21. Batched month changes could skip an interface update — §18.2, Step 29–30
+
+**Status:** fixed on 25 Aug 2026 after correctness review.
+
+`evolutionReached()` recognised only the exact Dec→Jan pair at each milestone.
+If React observed a forward month change spanning more than one month, neither
+equality matched and the mandatory system-update interstitial was skipped.
+Forward crossings now use range checks and prefer the latest crossed milestone,
+so a batched landing in 1998 or 2000 still presents the appropriate update.
+Backward/test state loads remain non-interrupting. Pure regressions cover both
+single-boundary and multi-boundary jumps.
+
+---
+
+## 22. The merged pacing harness bypassed persistent draft ownership — §12.2, §22.5
+
+**Status:** fixed on 25 Aug 2026 during the main-branch merge.
+
+`App.pacing.test.tsx` was added on `main` before `MoneyDraftProvider` existed and
+mounted routed page components directly. After merging the money-allocation
+branch, every pacing scenario that visited My Money threw because the harness
+did not reproduce the production provider boundary. The production `AppShell`
+was already correct. The harness now mounts routed content inside the same
+provider, so auto-pause tests exercise the real persistent-draft composition.
+
+---
+
+## 23. Range-based milestone detection initially intercepted deliberate state loads — §18.2, §25.4
+
+**Status:** fixed on 25 Aug 2026 while closing issue 20.
+
+The first batched-crossing fix treated every forward range as continuous play.
+Presenter/test `jumpToMonth()` calls deliberately rebuild the state and are
+specified to apply the destination theme immediately, so they began opening an
+update dialog and broke milestone and Jan 2000 integration scenarios.
+`AppShell` now distinguishes a rebuild through `mailNoticeResetKey`: continuous
+forward crossings still receive an update, while reset and test/presenter loads
+land immediately on their destination milestone.

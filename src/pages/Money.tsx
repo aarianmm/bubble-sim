@@ -149,6 +149,101 @@ export function toggleLock(rows: DraftRow[], id: VehicleId): DraftRow[] {
   return rows.map((r) => (r.id === id ? { ...r, locked: !r.locked } : r));
 }
 
+function savedDraftRow(saved: DraftRow, actual: DraftRow): DraftRow {
+  if (!Number.isFinite(saved.pct) || saved.pct < 0 || saved.pct > 100) {
+    // Repair only the malformed row. Returning buildDraftRows(state) here used
+    // to erase every otherwise-valid target in the player's draft.
+    return { ...actual, locked: false };
+  }
+  return { ...actual, pct: Math.round(saved.pct), locked: saved.locked };
+}
+
+function canGrowAfterReconcile(row: DraftRow, state: GameState): boolean {
+  return row.id === 'cash' || !state.holdings[row.id]?.collapsed;
+}
+
+function canShrinkAfterReconcile(row: DraftRow, state: GameState): boolean {
+  if (row.id === 'cash' || !state.holdings[row.id]?.collapsed) return true;
+  return VEHICLES[row.id].sellableAfterCollapse;
+}
+
+function scaleRowsToTotal(rows: DraftRow[], indexes: number[], target: number, unlockChanged: boolean): void {
+  if (indexes.length === 0) return;
+  const current = indexes.map((index) => rows[index].pct);
+  const currentTotal = current.reduce((sum, pct) => sum + pct, 0);
+  const raw = currentTotal > 0
+    ? current.map((pct) => (pct / currentTotal) * target)
+    : current.map(() => target / current.length);
+  const scaled = roundToIntegerAllocation(raw, target);
+  indexes.forEach((index, position) => {
+    if (unlockChanged && rows[index].pct !== scaled[position]) rows[index].locked = false;
+    rows[index].pct = scaled[position];
+  });
+}
+
+/** Restore the 100% invariant while changing the smallest possible portion of
+ * a draft. Unpinned Cash absorbs ordinary drift. If Cash is pinned, editable
+ * investments absorb it instead; a pin is removed only when no valid 100%
+ * allocation can preserve that pinned value. */
+function normaliseReconciledDraft(rows: DraftRow[], state: GameState): DraftRow[] {
+  const result = rows.map((row) => ({ ...row }));
+  const cashIndex = result.findIndex((row) => row.id === 'cash');
+  if (cashIndex < 0) return result;
+
+  const total = result.reduce((sum, row) => sum + row.pct, 0);
+  if (total === 100) return result;
+
+  if (total < 100) {
+    const shortfall = 100 - total;
+    if (!result[cashIndex].locked) {
+      result[cashIndex].pct += shortfall;
+      return result;
+    }
+
+    const editable = result
+      .map((row, index) => ({ row, index }))
+      .filter(({ row }) => row.id !== 'cash' && !row.locked && canGrowAfterReconcile(row, state))
+      .map(({ index }) => index);
+    if (editable.length > 0) {
+      const editableTotal = editable.reduce((sum, index) => sum + result[index].pct, 0);
+      scaleRowsToTotal(result, editable, editableTotal + shortfall, false);
+      return result;
+    }
+
+    // There is no editable destination for the slack. Moving Cash is the only
+    // valid result, so remove its pin at the same moment instead of displaying
+    // a false "PINNED 50%" label on a silently changed 100% value.
+    result[cashIndex].pct += shortfall;
+    result[cashIndex].locked = false;
+    return result;
+  }
+
+  let overflow = total - 100;
+  const reduce = (indexes: number[], unlockChanged: boolean) => {
+    if (overflow <= 0 || indexes.length === 0) return;
+    const available = indexes.reduce((sum, index) => sum + result[index].pct, 0);
+    const reduction = Math.min(overflow, available);
+    scaleRowsToTotal(result, indexes, available - reduction, unlockChanged);
+    overflow -= reduction;
+  };
+
+  // Preserve investment targets first: ordinary overflow comes out of
+  // unpinned Cash. Then reduce only editable unpinned rows. Locked rows are a
+  // last resort and are visibly unpinned if the state makes their target
+  // impossible; unsellable suspended holdings are never reduced.
+  if (!result[cashIndex].locked) reduce([cashIndex], false);
+  reduce(result
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) => row.id !== 'cash' && !row.locked && canShrinkAfterReconcile(row, state))
+    .map(({ index }) => index), false);
+  reduce(result
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) => row.id !== 'cash' && row.locked && canShrinkAfterReconcile(row, state))
+    .map(({ index }) => index), true);
+  if (overflow > 0) reduce([cashIndex], true);
+  return result;
+}
+
 /**
  * Keeps an in-progress draft valid when a newly accepted vehicle joins the
  * portfolio. Existing targets and locks survive; a new row starts at 0%, so
@@ -160,20 +255,16 @@ export function reconcileDraftRows(rows: DraftRow[], state: GameState): DraftRow
   const reconciled = actualRows.map((actual) => {
     const saved = existing.get(actual.id);
     if (!saved) return { ...actual, pct: 0 };
-    if (actual.id === 'cash') return { ...actual, pct: saved.pct, locked: saved.locked };
+    if (actual.id === 'cash') return savedDraftRow(saved, actual);
 
     const holding = state.holdings[actual.id];
-    if (!holding?.collapsed) return { ...actual, pct: saved.pct, locked: saved.locked };
+    if (!holding?.collapsed) return savedDraftRow(saved, actual);
     const pct = VEHICLES[actual.id].sellableAfterCollapse
-      ? Math.min(saved.pct, actual.pct)
+      ? Math.min(savedDraftRow(saved, actual).pct, actual.pct)
       : actual.pct;
     return { ...actual, pct, locked: false };
   });
-  const cash = reconciled.find((row) => row.id === 'cash');
-  const nonCashTotal = reconciled.reduce((sum, row) => sum + (row.id === 'cash' ? 0 : row.pct), 0);
-  if (!cash || nonCashTotal < 0 || nonCashTotal > 100) return actualRows;
-  cash.pct = 100 - nonCashTotal;
-  return reconciled;
+  return normaliseReconciledDraft(reconciled, state);
 }
 
 export interface AllocationConstraint {

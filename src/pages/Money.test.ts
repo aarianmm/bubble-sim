@@ -136,6 +136,48 @@ describe('persistent draft reconciliation and suspended constraints', () => {
     ]);
   });
 
+  it('preserves a pinned Cash target by moving suspension slack into an editable investment', () => {
+    const base = createInitialState();
+    const state: GameState = {
+      ...base,
+      cash: 50,
+      unlocked: ['fenwick-index', 'meridian-guaranteed'],
+      holdings: {
+        'fenwick-index': fixtureHolding({ vehicleId: 'fenwick-index', value: 50 }),
+        'meridian-guaranteed': fixtureHolding({
+          vehicleId: 'meridian-guaranteed', value: 0, collapsed: true,
+        }),
+      },
+    };
+    const reconciled = reconcileDraftRows([
+      { id: 'cash', label: 'Cash', pct: 50, locked: true },
+      { id: 'fenwick-index', label: 'Tracker', pct: 0, locked: false },
+      { id: 'meridian-guaranteed', label: 'Meridian', pct: 50, locked: true },
+    ], state);
+
+    expect(reconciled.map((row) => [row.id, row.pct, row.locked])).toEqual([
+      ['cash', 50, true],
+      ['fenwick-index', 50, false],
+      ['meridian-guaranteed', 0, false],
+    ]);
+    expect(reconciled.reduce((sum, row) => sum + row.pct, 0)).toBe(100);
+  });
+
+  it('repairs only an invalid overflowing row instead of discarding the whole draft', () => {
+    const reconciled = reconcileDraftRows([
+      { id: 'cash', label: 'Cash', pct: 10, locked: true },
+      { id: 'fenwick-index', label: 'Tracker', pct: 110, locked: true },
+      { id: 'technova-growth', label: 'Mediocre', pct: 40, locked: true },
+    ], fixtureState());
+
+    expect(reconciled.map((row) => [row.id, row.pct, row.locked])).toEqual([
+      ['cash', 10, true],
+      ['fenwick-index', 50, false],
+      ['technova-growth', 40, true],
+    ]);
+    expect(reconciled.reduce((sum, row) => sum + row.pct, 0)).toBe(100);
+  });
+
   it('disables a worthless suspension, caps an exitable suspension, and freezes Vertex', () => {
     const base = createInitialState();
     const state: GameState = {

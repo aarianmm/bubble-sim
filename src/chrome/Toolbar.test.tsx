@@ -29,6 +29,10 @@ describe('Toolbar Mail notice', () => {
     );
     expect(mailButton?.querySelector('.comet-toolbar__badge')?.textContent).toBe('3');
     expect(mailButton?.querySelector('.comet-toolbar__mail-notice')?.textContent).toBe('New Mail — 3 messages');
+    expect(mailButton?.hasAttribute('aria-label')).toBe(false);
+    expect(mailButton?.textContent).toContain('Mail');
+    expect(mailButton?.textContent).toContain('3');
+    expect(mailButton?.textContent).toContain('New Mail — 3 messages');
   });
 
   it('does not render a notice when no new arrival is being announced', () => {

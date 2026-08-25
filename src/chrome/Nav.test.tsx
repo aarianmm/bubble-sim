@@ -7,7 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { UNREAD_FLASH_MS, useUnreadNotice, YearSpine } from './Nav';
+import { TimeControls, UNREAD_FLASH_MS, useUnreadNotice, YearSpine } from './Nav';
 import { EngineContext, type Engine } from '../ui/engine';
 import type { GameState, MailItem } from '../sim/types';
 import { monthIndex } from '../sim/month';
@@ -27,15 +27,22 @@ function mail(id: string, status: MailItem['status'] = 'unread'): MailItem {
   };
 }
 
-function engineWith(inbox: MailItem[], month = 0, mailNoticeResetKey = 0): Engine {
+function engineWith(
+  inbox: MailItem[],
+  month = 0,
+  mailNoticeResetKey = 0,
+  overrides: Partial<Engine> = {},
+): Engine {
   return {
     state: { inbox, month } as unknown as GameState,
     paused: false,
+    autoPaused: false,
     timeRate: 1,
     popupPresentation: { active: null, pending: [], phase: 'showing' },
     mailNoticeResetKey,
     dispatch: () => undefined,
     setPaused: () => undefined,
+    setAutoPaused: () => undefined,
     setEvolutionPaused: () => undefined,
     setTimeRate: () => undefined,
     closePresentedPopup: () => undefined,
@@ -47,6 +54,7 @@ function engineWith(inbox: MailItem[], month = 0, mailNoticeResetKey = 0): Engin
     loadPreset: () => undefined,
     showDeathCard: () => undefined,
     reset: () => undefined,
+    ...overrides,
   };
 }
 
@@ -210,6 +218,55 @@ describe('the inbox badge (§20.3)', () => {
     expect(seen.bannerText).toBeNull();
   });
 
+});
+
+describe('effective pause control state', () => {
+  function renderControls(overrides: Partial<Engine> = {}) {
+    const setPaused = vi.fn();
+    act(() => {
+      root.render(
+        <EngineContext.Provider value={engineWith([], 0, 0, { setPaused, ...overrides })}>
+          <TimeControls />
+        </EngineContext.Provider>,
+      );
+    });
+    const button = container.querySelector<HTMLButtonElement>(
+      '.comet-nav__time-btn:not([aria-label="Hold to fast-forward"])',
+    )!;
+    return { button, setPaused };
+  }
+
+  it('offers Pause and is not pressed while manually running', () => {
+    const { button } = renderControls({ paused: false, autoPaused: false, timeRate: 1 });
+    expect(button.getAttribute('aria-pressed')).toBe('false');
+    expect(button.getAttribute('aria-label')).toBe('Pause');
+    expect(button.textContent).toBe('⏸');
+  });
+
+  it('offers Play and is pressed while manually paused', () => {
+    const { button } = renderControls({ paused: true, autoPaused: false, timeRate: 0 });
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe('Play');
+    expect(button.textContent).toBe('▶');
+  });
+
+  it('reports effective pause without clearing auto-pause when only context-paused', () => {
+    const { button, setPaused } = renderControls({ paused: false, autoPaused: true, timeRate: 0 });
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe('Keep paused after reviewing');
+    expect(button.textContent).toBe('⏸');
+    act(() => button.click());
+    expect(setPaused).toHaveBeenCalledWith(true);
+  });
+
+  it('allows manual pause intent to be cleared while context pause remains active', () => {
+    const { button, setPaused } = renderControls({ paused: true, autoPaused: true, timeRate: 0 });
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe('Resume after reviewing');
+    expect(button.textContent).toBe('▶');
+    act(() => button.click());
+    expect(setPaused).toHaveBeenCalledWith(false);
+  });
 });
 
 describe('the year timeline (§22.1)', () => {

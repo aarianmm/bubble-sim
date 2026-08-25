@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  *
  * Step 18 done-condition (§26.2): "Junk, legit and scam rows are
- * pixel-identical; time runs at 0.4x while open."
+ * pixel-identical; the inbox runs normally and an open message auto-pauses."
  *
  * No `@testing-library/react` in this repo (see package.json) — this file
  * renders with `react-dom/client` + `react-dom/test-utils`'s `act`
@@ -27,7 +27,7 @@ import { describe, expect, it, vi, afterEach } from 'vitest';
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 import { Mail } from './Mail';
-import { EngineContext, RATE_INBOX, RATE_NORMAL, type Engine } from '../ui/engine';
+import { EngineContext, RATE_NORMAL, type Engine } from '../ui/engine';
 import { RouterProvider } from '../chrome/router';
 import { monthIndex } from '../sim/month';
 import type { GameState, MailItem, RunFlags, RunStats, Decision } from '../sim/types';
@@ -109,10 +109,12 @@ function makeEngine(state: GameState, dispatch: (d: Decision) => void = vi.fn())
   return {
     state,
     paused: false,
+    autoPaused: false,
     timeRate: RATE_NORMAL,
     popupPresentation: { active: null, pending: [], phase: 'showing' },
     dispatch,
     setPaused: vi.fn(),
+    setAutoPaused: vi.fn(),
     setEvolutionPaused: vi.fn(),
     setTimeRate: vi.fn(),
     closePresentedPopup: vi.fn(),
@@ -373,22 +375,19 @@ describe('actions', () => {
   });
 });
 
-/* ------------------------------------------------------------------ *
- * §10.3 — the 0.4x rate, set on mount and guaranteed to unstick on unmount
- * ------------------------------------------------------------------ */
-
-describe('triage-pressure time rate (§10.3)', () => {
-  it('sets RATE_INBOX on mount and restores RATE_NORMAL on unmount, even mid-read', () => {
+describe('Mail reading auto-pause', () => {
+  it('leaves the inbox running and pauses only while an individual message is open', () => {
     const state = makeState({ inbox: [makeMail({ id: 'm1' })] });
     const { engine } = mount(state);
-    expect(engine.setTimeRate).toHaveBeenCalledWith(RATE_INBOX);
+    expect(engine.setAutoPaused).toHaveBeenLastCalledWith('mail-message', false);
 
-    // simulate "navigating away mid-read": open a message, then unmount
-    // without ever clicking Back.
     const row = container!.querySelector('[data-testid="mail-row-m1"]') as HTMLTableRowElement;
     act(() => row.dispatchEvent(new MouseEvent('dblclick', { bubbles: true })));
+    expect(engine.setAutoPaused).toHaveBeenLastCalledWith('mail-message', true);
 
-    act(() => root!.unmount());
-    expect(engine.setTimeRate).toHaveBeenLastCalledWith(RATE_NORMAL);
+    const back = Array.from(container!.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('[ Back ]'))!;
+    act(() => back.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(engine.setAutoPaused).toHaveBeenLastCalledWith('mail-message', false);
   });
 });

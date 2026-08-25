@@ -30,7 +30,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { App, AppShell } from './App';
+import { App, AppShell, evolutionReached } from './App';
 import { OFFER_PAGES } from './content/offerpages';
 import { Presenter } from './dev/Presenter';
 import { RouterProvider } from './chrome/router';
@@ -200,6 +200,13 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
     expect(container!.querySelector('.comet-addressbar__url')?.textContent).toBe('http://www.bubble.net/home');
   });
 
+  it('does not skip a required interface update when month changes are batched', () => {
+    expect(evolutionReached(DEC_1997, JAN_1998 + 2)).toEqual({ era: 'a', year: '1998' });
+    expect(evolutionReached(DEC_1999, MAR_2000)).toEqual({ era: 'b', year: '2000' });
+    expect(evolutionReached(DEC_1997, MAR_2000)).toEqual({ era: 'b', year: '2000' });
+    expect(evolutionReached(MAR_2000, JAN_1998)).toBeNull();
+  });
+
   it('does not expose retired Presenter Tools through the legacy ?dev=1 URL', () => {
     mountProductionApp('/?dev=1');
     expect(document.body.textContent).not.toContain('Presenter Tools');
@@ -250,7 +257,7 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
       }));
 
     const initialChrome = chromeSignature();
-    expect(initialChrome.map((button) => button.accessibleLabel)).toEqual([
+    expect(initialChrome.map((button) => button.label)).toEqual([
       'Back',
       'Forward',
       'Stop',
@@ -260,6 +267,7 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
       "Fav'ts",
       'Mail',
     ]);
+    expect(initialChrome.every((button) => button.accessibleLabel === null)).toBe(true);
     expect(initialChrome.every((button) => button.icons === 1)).toBe(true);
     expect(initialChrome.every((button) => button.legacyArt === 1)).toBe(true);
     expect(initialChrome.every((button) => button.millenniumArt === 1)).toBe(true);

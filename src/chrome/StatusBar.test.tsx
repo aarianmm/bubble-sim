@@ -1,8 +1,12 @@
 // @vitest-environment jsdom
 import { act } from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { StatusBar } from './StatusBar';
+
+const tokensCss = readFileSync(resolve(process.cwd(), 'src/chrome/tokens.css'), 'utf8');
 
 let container: HTMLDivElement;
 let root: Root;
@@ -40,5 +44,9 @@ describe('the evolving status bar (§18.1)', () => {
       'ONLINE',
     );
     expect(container.querySelectorAll('.comet-statusbar__signal span')).toHaveLength(3);
+    const millenniumStart = tokensCss.indexOf(":root[data-era='b'][data-ui-year='2000'] {");
+    const millenniumEnd = tokensCss.indexOf('\n}', millenniumStart);
+    const millenniumTokens = tokensCss.slice(millenniumStart, millenniumEnd);
+    expect(millenniumTokens).toContain('--popup-blocker-display: flex;');
   });
 });

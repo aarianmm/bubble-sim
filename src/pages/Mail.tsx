@@ -14,8 +14,8 @@
  * No preview pane (Era A, §22.2 — "preview pane appears in Era B", out of
  * MVP scope). List <-> single open message, nothing else.
  */
-import { useEffect, useMemo, useState } from 'react';
-import { useEngine, RATE_INBOX, RATE_NORMAL } from '../ui/engine';
+import { useLayoutEffect, useMemo, useState } from 'react';
+import { useEngine } from '../ui/engine';
 import { GameLink } from '../chrome/router';
 import { visibleInbox, unreadCount } from '../sim/selectors';
 import type { MailItem } from '../sim/types';
@@ -83,22 +83,21 @@ export function Mail() {
   const inbox = visibleInbox(state);
   const unread = unreadCount(state);
 
-  // §10.3 — "Time runs at 0.4x while the inbox is open." Set once on mount,
-  // restored once on unmount. The restore is an effect cleanup, which React
-  // guarantees runs even if the player navigates away mid-read (the router
-  // swaps this component out for another page's), so the rate can never be
-  // left stuck at 0.4x. `engine.setTimeRate` is a stable callback identity
-  // (see ui/engine.ts / EngineProvider), so this genuinely only fires on
-  // mount and unmount, not on every render.
-  useEffect(() => {
-    engine.setTimeRate(RATE_INBOX);
-    return () => engine.setTimeRate(RATE_NORMAL);
-  }, [engine.setTimeRate]);
-
   const [sortKey, setSortKey] = useState<SortKey>('expires');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const openItem = openId ? inbox.find((m) => m.id === openId) ?? null : null;
+  const hasVisibleOpenItem = openId !== null && openItem !== null;
+
+  useLayoutEffect(() => {
+    engine.setAutoPaused('mail-message', hasVisibleOpenItem);
+    return () => engine.setAutoPaused('mail-message', false);
+  }, [engine.setAutoPaused, hasVisibleOpenItem]);
+
+  useLayoutEffect(() => {
+    if (openId !== null && openItem === null) setOpenId(null);
+  }, [openId, openItem]);
 
   const sorted = useMemo(() => {
     const rows = [...inbox];
@@ -142,8 +141,6 @@ export function Mail() {
     setOpenId(null);
     setSelectedId(null);
   }
-
-  const openItem = openId ? inbox.find((m) => m.id === openId) ?? null : null;
 
   if (openItem) {
     const body = MAIL_MESSAGES[openItem.contentId]?.body ?? [];
