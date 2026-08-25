@@ -153,7 +153,7 @@ export function VisualGallery() {
         <div className="gallery-window-frame">
           <Window
             titleBar={{ title: 'BUBBLE — Bubble Navigator' }}
-            menuBar={{ moneyBaseIs1996: false, soundsOn: true }}
+            menuBar={{ moneyBaseIs2026: false, soundsOn: true }}
             toolbar={{ unreadCount: 3 }}
             addressBar={{
               url: 'http://www.bubble.net/home',

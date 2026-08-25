@@ -243,3 +243,208 @@ security-alert sender was updated too because it imitates the browser chrome.
 Internal `comet-*` CSS selectors remain unchanged: they are invisible stable
 implementation identifiers, and renaming them would add risk without changing
 anything a player sees.
+
+---
+
+## 14. Money allocation drafts disappeared on navigation — §12.2, §22.5
+
+**Status:** fixed on 23 Aug 2026.
+
+Dragging an allocation slider updated only `MoneyPage`'s local React state.
+Navigating to Home or Inbox unmounted that routed page, so returning to My Money
+silently rebuilt the sliders from the still-unmodified portfolio—usually 100%
+cash. The rebalance simulation and explicit confirmation path were correct, but
+the disappearing draft made the interface look as though a visible allocation
+had already failed and gave no clear indication that money had not moved yet.
+
+The draft now belongs to a provider mounted above the router's page-remount
+boundary, is reconciled when a newly accepted vehicle adds a row, and is cleared
+only by Reset, a new/test-loaded run, or successful confirmation. The footer
+distinguishes a pending draft from the currently applied allocation. A jsdom
+regression drives the real `AppShell` and `EngineProvider` through the reported
+journey, then confirms the rebalance and verifies both cash and holding values
+survive a second navigation.
+
+---
+
+## 15. Suspended funds accepted new money and rebalances trusted malformed totals — §11.4, §12.1
+
+**Status:** fixed on 23 Aug 2026.
+
+The allocation UI rendered a normal enabled slider after an instrument had
+collapsed, and the simulation's rebalance executor accepted arbitrary target
+maps without checking IDs, finite ranges, or the required 100% total. A player
+could therefore allocate new money into a suspended fund; a replay or test
+fixture could also submit an over-allocated decision. Post-collapse market rows
+use a multiplier of 1, so money incorrectly added after suspension could remain
+there instead of being lost or rejected.
+
+Suspended rows are now reconciled as soon as collapse state changes. Worthless
+funds are disabled, sellable residual holdings can only be reduced, and
+unsellable Vertex holdings are frozen. Proportional redistribution treats every
+other suspended row as a calculation-only pin so dragging Cash or an active fund
+cannot increase it indirectly. The pure tick boundary independently rejects
+unknown IDs, non-finite/out-of-range values, and allocations that do not total
+100%, then refuses collapsed buys even for a forged but otherwise valid
+decision. Regression tests cover all of these paths and the six-strategy
+calibration fixture now emits valid 100% decisions.
+
+---
+
+## 16. Live gameplay did not record wealth or market history — §22.1, §22.6, §25.2
+
+**Status:** fixed on 23 Aug 2026 during the graph/reporting expansion.
+
+`run.ts` appended `wealthHistory` and `marketHistory` after calling `tick()`, but
+the mounted `EngineProvider` advances the game by calling `tick()` directly.
+Consequently a real browser run never populated either array and the ending
+graph had no live points. Any new Home chart built on those fields would also
+have stayed blank even though headless verification appeared healthy.
+
+History recording now belongs to the pure monthly tick boundary. Each committed
+month replaces or appends exactly one net-worth point and one NASDAQ point,
+indexed to 100 at January 1996. The headless runner returns that state instead of
+maintaining a second implementation. Unit coverage drives the live tick path and
+asserts one chronological point per month, while the existing strategy suite
+confirms that moving this bookkeeping did not alter any calibrated death date.
+
+---
+
+## 17. Draft reconciliation could move pinned Cash or discard the whole draft — §12.2, §22.5
+
+**Status:** fixed on 25 Aug 2026 after correctness review.
+
+When a new or suspended holding caused `reconcileDraftRows()` to rebuild the
+row set, it always rewrote Cash to the residual percentage while preserving its
+`locked` flag. A pinned 50% Cash row could therefore display as both pinned and
+100%. If the reconciled non-Cash total overflowed 100%, the defensive branch
+returned the complete actual allocation and erased every in-progress target.
+
+Reconciliation now repairs only malformed rows, preserves valid targets and
+pins, lets unpinned Cash absorb normal drift, and redistributes around pinned
+Cash when another editable holding exists. If state constraints make a pin
+mathematically impossible, the affected row is unpinned at the same moment it
+changes. Regressions cover pinned-Cash suspension slack and a single malformed
+overflowing row without losing the rest of the draft.
+
+---
+
+## 18. The 2000 milestone hid the popup-blocker count — §18.1, §18.2
+
+**Status:** fixed on 25 Aug 2026 after correctness review.
+
+The status-bar blocker slot remains mounted at every milestone, but the final
+2000 token block set `--popup-blocker-display: none`. That contradicted Era B's
+required visible blocker count and silently removed the readout at the final
+interface milestone. The 2000 token is now `flex`, with a regression reading
+the exact milestone block so a later theme edit cannot hide it again.
+
+---
+
+## 19. BUILD STATUS claimed a bundle assertion that did not exist — §25.4
+
+**Status:** fixed on 25 Aug 2026 after documentation review.
+
+Deviation 6 said the generated bundle was checked for the absence of
+`Presenter Tools`, but the suite only mounts the production `<App/>` with
+`?dev=1` and asserts that no Presenter UI appears. The documentation now states
+that exact coverage and explicitly says the bundle is not scanned, avoiding a
+false assurance while retaining the useful production-render regression.
+
+---
+
+## 20. Toolbar Mail's accessible name omitted unread and arrival text — §19.3, §20.3
+
+**Status:** fixed on 25 Aug 2026 after accessibility review.
+
+Every toolbar button forced `aria-label={btn.label}`. On Mail this overrode the
+visible descendant badge and live `New Mail` notice, leaving its accessible
+name as only “Mail.” The redundant label has been removed, so the button's
+native name is derived from its visible label, unread count and notice; the
+notice retains its independent polite live-region announcement. A regression
+asserts that the overriding attribute cannot return.
+
+---
+
+## 21. Batched month changes could skip an interface update — §18.2, Step 29–30
+
+**Status:** fixed on 25 Aug 2026 after correctness review.
+
+`evolutionReached()` recognised only the exact Dec→Jan pair at each milestone.
+If React observed a forward month change spanning more than one month, neither
+equality matched and the mandatory system-update interstitial was skipped.
+Forward crossings now use range checks and prefer the latest crossed milestone,
+so a batched landing in 1998 or 2000 still presents the appropriate update.
+Backward/test state loads remain non-interrupting. Pure regressions cover both
+single-boundary and multi-boundary jumps.
+
+---
+
+## 22. The merged pacing harness bypassed persistent draft ownership — §12.2, §22.5
+
+**Status:** fixed on 25 Aug 2026 during the main-branch merge.
+
+`App.pacing.test.tsx` was added on `main` before `MoneyDraftProvider` existed and
+mounted routed page components directly. After merging the money-allocation
+branch, every pacing scenario that visited My Money threw because the harness
+did not reproduce the production provider boundary. The production `AppShell`
+was already correct. The harness now mounts routed content inside the same
+provider, so auto-pause tests exercise the real persistent-draft composition.
+
+---
+
+## 23. Range-based milestone detection initially intercepted deliberate state loads — §18.2, §25.4
+
+**Status:** fixed on 25 Aug 2026 while closing issue 20.
+
+The first batched-crossing fix treated every forward range as continuous play.
+Presenter/test `jumpToMonth()` calls deliberately rebuild the state and are
+specified to apply the destination theme immediately, so they began opening an
+update dialog and broke milestone and Jan 2000 integration scenarios.
+`AppShell` now distinguishes a rebuild through `mailNoticeResetKey`: continuous
+forward crossings still receive an update, while reset and test/presenter loads
+land immediately on their destination milestone.
+
+---
+
+## 24. Market-history recording silently rebaselines on a missing prior point — §22.1, §25.2
+
+**Status:** open. Flagged, not fixed.
+
+`src/sim/tick.ts:569` computes `priorMarketLevel = next.marketHistory[next.month
+- 1] ?? 100`. This relies on an unenforced invariant: every caller ticks exactly
+one month at a time, with `marketHistory` already `month` entries long. Nothing
+in `tick()` checks that. If a caller ever advances more than one month at once,
+ticks out of order, or replays from a partially-rebuilt state, the array read
+misses and the comparator silently resets to the 100 baseline instead of
+failing loudly — the NASDAQ line on `/home` and the death-card chart would just
+be visibly wrong, with no error to point at the cause. §25.2 asks the tick
+pipeline to be deterministic and traceable; a silent fallback here trades a
+loud bug for a quiet one.
+
+**The fix, when it is wanted:** replace the `?? 100` fallback with an explicit
+assertion (or an invariant check earlier in `tick()`) that `next.month - 1` is
+either `0` (in which case `100` is the correct documented baseline) or already
+present in history. That turns a skipped/out-of-order tick into a thrown error
+during development instead of a mispainted chart in production.
+
+---
+
+## 25. Chart year-axis math duplicates `monthIndex` instead of importing it — §25.1
+
+**Status:** open. Flagged, not fixed; currently produces correct output.
+
+`src/ui/PerformanceChart.tsx:106` and `:145` compute `(year - 1996) * 12` inline
+to place year gridlines and axis labels, instead of calling the shared
+`monthIndex(year, 1)` helper from `src/sim/month.ts` — which the file already
+imports `MONTH_COUNT` and `monthLabelTitle` from, and which every other date
+calculation in the app (e.g. `DeathCard.tsx`) uses. Today the two are
+numerically identical, so nothing is visibly broken. The risk is drift: `1996`
+is `month.ts`'s `START_YEAR`, defined in one place specifically so it can
+change without hunting down every hardcoded copy. If `START_YEAR` ever moves,
+these two call sites will not, and the chart's year gridlines/labels will
+silently misalign against every other date in the app.
+
+**The fix, when it is wanted:** replace both inline expressions with
+`monthIndex(year, 1)` and import it alongside the other `month.ts` symbols
+already used in this file.

@@ -17,14 +17,16 @@
 import { useEngine } from '../ui/engine';
 import { useRouter } from '../chrome/router';
 import { Money, formatPounds } from '../ui/Money';
-import { netWorth, to1996, totalFeesPaid } from '../sim/selectors';
+import { netWorth, to2026, totalFeesPaid } from '../sim/selectors';
 import { bandFor, causeIdFor } from '../sim/bands';
 import { DEATH_LINES } from '../content/deathlines';
 import { FACT_SHEETS } from '../content/factsheets';
-import { monthLabelTitle, MONTH_COUNT, type MonthIndex } from '../sim/month';
+import { monthIndex, monthLabelTitle, MONTH_COUNT, type MonthIndex } from '../sim/month';
 import { HOME_URL } from './registry';
-import type { Band, FactSheet, RedFlag } from '../sim/types';
+import type { Band, FactSheet, GameState, RedFlag } from '../sim/types';
 import type { VehicleId } from '../sim/ids';
+import { PerformanceChart } from '../ui/PerformanceChart';
+import { useExperienceNavigation } from '../launch/experience';
 import './deathcard.css';
 
 /* ------------------------------------------------------------------ *
@@ -76,62 +78,76 @@ function quotedFlag(flag: RedFlag, sheet: FactSheet): string {
  * easing — the whole line is present the instant this mounts.
  * ------------------------------------------------------------------ */
 
-const GRAPH_WIDTH = 640;
-const GRAPH_HEIGHT = 140;
-const GRAPH_PAD = 8;
-
-function pathFor(series: readonly number[], width: number, height: number, pad: number): string {
-  if (series.length === 0) return '';
-  if (series.length === 1) return `M${pad},${height / 2} L${width - pad},${height / 2}`;
-  const min = Math.min(...series);
-  const max = Math.max(...series);
-  const range = max - min || 1;
-  // Fixed x-domain of the full 132-month decade — a run that ended early
-  // simply stops drawing partway across, which is the point (§22.6's own
-  // mock-up shows exactly this: the axis is the decade, not the run).
-  const stepX = (width - pad * 2) / (MONTH_COUNT - 1);
-  const points = series.map((v, i) => {
-    const x = pad + i * stepX;
-    const y = height - pad - ((v - min) / range) * (height - pad * 2);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-  return `M${points.join(' L')}`;
-}
-
-const YEAR_LABELS = Array.from({ length: 11 }, (_, i) => 1996 + i);
-
 function DecadeGraph({ wealthHistory, marketHistory }: { wealthHistory: readonly number[]; marketHistory: readonly number[] }) {
-  const playerPath = pathFor(wealthHistory, GRAPH_WIDTH, GRAPH_HEIGHT, GRAPH_PAD);
-  const marketPath = pathFor(marketHistory, GRAPH_WIDTH, GRAPH_HEIGHT, GRAPH_PAD);
-  const stepX = (GRAPH_WIDTH - GRAPH_PAD * 2) / (MONTH_COUNT - 1);
   return (
     <div className="deathcard-graph bevel-in sunken-field">
-      <div className="deathcard-graph__legend">
-        <span className="deathcard-graph__legend-item deathcard-graph__legend-item--player">your money</span>
-        <span className="deathcard-graph__legend-item deathcard-graph__legend-item--market">the market</span>
-      </div>
-      <svg
-        viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT + 16}`}
-        width="100%"
-        height={GRAPH_HEIGHT + 16}
-        role="img"
-        aria-label="Your net worth against the market, January 1996 to the end of the run"
-      >
-        {marketPath && <path d={marketPath} className="deathcard-graph__line deathcard-graph__line--market" />}
-        {playerPath && <path d={playerPath} className="deathcard-graph__line deathcard-graph__line--player" />}
-        {YEAR_LABELS.map((year, i) => (
-          <text
-            key={year}
-            x={GRAPH_PAD + i * 12 * stepX}
-            y={GRAPH_HEIGHT + 12}
-            className="deathcard-graph__year"
-          >
-            {String(year).slice(2)}
-          </text>
-        ))}
-      </svg>
+      <div className="deathcard-graph__heading"><span>RUN TIMELINE</span><b>Your money vs the NASDAQ bubble</b></div>
+      <PerformanceChart
+        series={[
+          { id: 'report-market', label: 'NASDAQ', values: marketHistory, tone: 'market' },
+          { id: 'report-player', label: 'your money', values: wealthHistory, tone: 'player' },
+        ]}
+        height={148}
+        scale="independent"
+        annotations={[{ month: monthIndex(2000, 3), label: 'BUBBLE PEAK' }]}
+        ariaLabel="Shape comparison of your net worth and the NASDAQ Composite from January 1996 to the end of the run; each line uses its own scale"
+      />
+      <p className="deathcard-graph__note">Shape comparison · each line uses its own scale so timing remains readable.</p>
     </div>
   );
+}
+
+export interface PlayerReport {
+  strengths: string[];
+  nextSteps: string[];
+  activity: {
+    decisions: number;
+    rebalances: number;
+    factSheets: number;
+    offersAccepted: number;
+  };
+}
+
+/** Turns the replay log and outcome into specific, non-scoring feedback. The
+ * report describes observable behaviour only; it never invents intent or uses
+ * final wealth to manufacture a leaderboard-style grade (§15). */
+export function buildPlayerReport(state: GameState): PlayerReport {
+  const rebalances = state.decisions.filter((decision) => decision.type === 'rebalance').length;
+  const factSheets = state.decisions.filter((decision) => decision.type === 'open-fact-sheet').length;
+  const offersAccepted = state.decisions.filter((decision) => decision.type === 'accept-offer').length;
+  const feesPaid = totalFeesPaid(state);
+  const strengths: string[] = [];
+  const nextSteps: string[] = [];
+
+  if (state.status === 'survived') strengths.push('You stayed solvent through the entire historical run.');
+  if (state.flags.everOpenedFactSheet || factSheets > 0) strengths.push('You opened evidence before relying on presentation alone.');
+  if (state.stats.scamsFunded === 0) strengths.push('No recorded scam received any of your investment money.');
+  if (state.stats.forcedSales === 0) strengths.push('You avoided a forced sale at a price chosen by the calendar.');
+  if (rebalances > 0) strengths.push(`You deliberately reviewed your allocation ${rebalances} time${rebalances === 1 ? '' : 's'}.`);
+  if (strengths.length === 0) strengths.push(`You kept making decisions until ${monthLabelTitle(state.deathMonth ?? state.month)}.`);
+
+  if (!state.flags.everOpenedInbox) nextSteps.push('Open the inbox: legitimate offers, warnings and windfalls all arrive through the same noisy channel.');
+  if (!state.flags.everOpenedFactSheet && factSheets === 0) nextSteps.push('Open every fact sheet and check regulation, fees, holdings and guaranteed-return language.');
+  if (state.stats.scamsFunded > 0) nextSteps.push('Treat guarantees, missing regulators and introducer commissions as evidence—not small print.');
+  if (state.stats.forcedSales > 0) nextSteps.push('Keep a larger cash buffer so the next shock does not force a sale during a falling market.');
+  if (feesPaid > state.stats.trackerCounterfactualFees + 10) nextSteps.push('Compare total fee drag with the low-cost tracker before allocating to an exciting fund.');
+  if (rebalances === 0) nextSteps.push('Use My Money to set a complete 100% target and confirm it; moving a slider alone is only a draft.');
+
+  const universal = [
+    'Diversify rather than letting one persuasive offer determine the whole outcome.',
+    'Separate the product from its website: polished and ugly pages can both describe legitimate or dangerous choices.',
+    'Watch purchasing power as well as the larger nominal pound figure.',
+  ];
+  for (const tip of universal) {
+    if (nextSteps.length >= 3) break;
+    nextSteps.push(tip);
+  }
+
+  return {
+    strengths: strengths.slice(0, 3),
+    nextSteps: nextSteps.slice(0, 3),
+    activity: { decisions: state.decisions.length, rebalances, factSheets, offersAccepted },
+  };
 }
 
 /* ------------------------------------------------------------------ *
@@ -166,6 +182,7 @@ export function DeathCard() {
   const engine = useEngine();
   const { state } = engine;
   const router = useRouter();
+  const experienceNavigation = useExperienceNavigation();
 
   const survived = state.status === 'survived';
   const band: Band = bandFor(state.status, state.deathMonth);
@@ -178,6 +195,7 @@ export function DeathCard() {
   const peak = peakWealthInfo(state.wealthHistory);
   const feesPaid = totalFeesPaid(state);
   const trackerFees = state.stats.trackerCounterfactualFees;
+  const report = buildPlayerReport(state);
 
   const missedScamId: VehicleId | undefined = state.stats.scamsFundedIds.at(-1);
   const missedSheet = missedScamId ? FACT_SHEETS[missedScamId] : null;
@@ -196,12 +214,25 @@ export function DeathCard() {
         <span className="deathcard-banner__rule" />
       </div>
 
+      <div className="deathcard-report-label">YOUR RUN REPORT · DECISIONS, CONSEQUENCES, NEXT STEPS</div>
+
       <div className="deathcard-month">{monthLabelTitle(headlineMonth).toUpperCase()}</div>
 
       <p className="deathcard-cause">{lines.headline}</p>
       <p className="deathcard-detail">{lines.detail}</p>
 
       <DecadeGraph wealthHistory={state.wealthHistory} marketHistory={state.marketHistory} />
+
+      <div className="deathcard-coaching">
+        <section className="deathcard-coaching__panel deathcard-coaching__panel--worked">
+          <h2>WHAT YOUR CHOICES SHOW</h2>
+          <ul>{report.strengths.map((item) => <li key={item}>{item}</li>)}</ul>
+        </section>
+        <section className="deathcard-coaching__panel deathcard-coaching__panel--next">
+          <h2>WHAT TO TRY NEXT</h2>
+          <ol>{report.nextSteps.map((item) => <li key={item}>{item}</li>)}</ol>
+        </section>
+      </div>
 
       {causeId === 'funded-a-scam' && missedSheet && (
         <div className="deathcard-flags bevel-out">
@@ -247,20 +278,30 @@ export function DeathCard() {
           <span className="deathcard-stats__value">{state.stats.scamsFunded}</span>
         </div>
         <div className="deathcard-stats__row">
-          <span className="deathcard-stats__label">In 1996 money</span>
-          {/* The peak figure's own purchasing power — not `<Money>` itself
-              (which always treats its `amount` as period money and would
-              double-convert an already-1996 figure), but built from the
-              same `formatPounds` every `<Money>` renders through, so the
-              typography and £ formatting rule are identical (see
-              src/ui/Money.tsx's own doc comment on why it exports this). */}
+          <span className="deathcard-stats__label">Peak in 2026 money</span>
           <span className="money money--table-cell deathcard-stats__value">
-            <span className="money__primary">{formatPounds(to1996(peak.value, peak.month))}</span>
+            <span className="money__primary">{formatPounds(to2026(peak.value, peak.month))}</span>
           </span>
         </div>
         <div className="deathcard-stats__row">
           <span className="deathcard-stats__label">Forced sales</span>
           <span className="deathcard-stats__value">{state.stats.forcedSales}</span>
+        </div>
+        <div className="deathcard-stats__row">
+          <span className="deathcard-stats__label">Decisions recorded</span>
+          <span className="deathcard-stats__value">{report.activity.decisions}</span>
+        </div>
+        <div className="deathcard-stats__row">
+          <span className="deathcard-stats__label">Fact sheets opened</span>
+          <span className="deathcard-stats__value">{report.activity.factSheets}</span>
+        </div>
+        <div className="deathcard-stats__row">
+          <span className="deathcard-stats__label">Rebalances applied</span>
+          <span className="deathcard-stats__value">{report.activity.rebalances}</span>
+        </div>
+        <div className="deathcard-stats__row">
+          <span className="deathcard-stats__label">Offers accepted</span>
+          <span className="deathcard-stats__value">{report.activity.offersAccepted}</span>
         </div>
       </div>
 
@@ -269,6 +310,11 @@ export function DeathCard() {
       </div>
 
       <div className="deathcard-actions">
+        {experienceNavigation && (
+          <button type="button" className="bevel-out deathcard-actions__button" onClick={experienceNavigation.returnToLibrary}>
+            [ Decade library ]
+          </button>
+        )}
         <button
           type="button"
           className="bevel-out deathcard-actions__button"

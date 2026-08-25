@@ -222,7 +222,6 @@ export function Toolbar({
           type="button"
           key={btn.key}
           className="bevel-out comet-toolbar__btn"
-          aria-label={btn.label}
           disabled={btn.disabled}
           onClick={btn.onClick}
         >

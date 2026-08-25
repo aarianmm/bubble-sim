@@ -95,14 +95,20 @@ const OFFER_CLASSES = new Set(['legit', 'mediocre', 'scam', 'credit', 'life-admi
  */
 function acceptEverything(): Decision[] {
   const decisions: Decision[] = [];
-  const targets: Partial<Record<VehicleId, number>> = {};
+  const desiredTargets: Partial<Record<VehicleId, number>> = {};
   for (const e of TIMELINE) {
     if (e.mvpDeferred) continue;
     if (e.channel === 'MAIL') decisions.push({ type: 'open-mail', month: e.month, mailId: e.id });
     if (e.vehicleId && OFFER_CLASSES.has(e.cls)) {
       decisions.push({ type: 'accept-offer', month: e.month, vehicleId: e.vehicleId, source: e.id });
-      targets[e.vehicleId] = SCAM_VEHICLE_IDS.has(e.vehicleId) ? 55 : 8;
-      decisions.push({ type: 'rebalance', month: e.month, targets: { ...targets }, cashPct: 0 });
+      desiredTargets[e.vehicleId] = SCAM_VEHICLE_IDS.has(e.vehicleId) ? 55 : 8;
+      const desiredTotal = Object.values(desiredTargets).reduce<number>((sum, pct) => sum + (pct ?? 0), 0);
+      const scale = desiredTotal > 100 ? 100 / desiredTotal : 1;
+      const targets = Object.fromEntries(
+        Object.entries(desiredTargets).map(([id, pct]) => [id, (pct ?? 0) * scale]),
+      ) as Partial<Record<VehicleId, number>>;
+      const investedPct = Object.values(targets).reduce<number>((sum, pct) => sum + (pct ?? 0), 0);
+      decisions.push({ type: 'rebalance', month: e.month, targets, cashPct: 100 - investedPct });
     }
   }
   return decisions;

@@ -15,6 +15,7 @@ import {
 import { EngineProvider } from './ui/EngineProvider';
 import { MS_PER_MONTH, RATE_FAST, RATE_NORMAL, RATE_PRESENTER, useEngine, type Engine } from './ui/engine';
 import { Notifications } from './ui/Notifications';
+import { MoneyDraftProvider } from './pages/Money';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -42,7 +43,9 @@ function Surface() {
     <>
       <SimulationRoutePause />
       <Probe />
-      <Page />
+      <MoneyDraftProvider>
+        <Page />
+      </MoneyDraftProvider>
       <Notifications />
     </>
   );

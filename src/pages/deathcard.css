@@ -14,13 +14,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 20px 28px 32px;
+  gap: 6px;
+  padding: 20px 28px 38px;
   background: var(--field);
   color: var(--text);
   font-family: var(--font-body-institutional);
   font-size: var(--font-body-institutional-size);
   text-align: center;
+}
+
+.deathcard-report-label {
+  color: var(--chart-axis);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
 }
 
 /* ------------------------------------------------------------------ *
@@ -81,10 +88,32 @@
 
 .deathcard-graph {
   width: 100%;
-  max-width: 640px;
-  padding: 10px 12px 6px;
+  max-width: 920px;
+  padding: 10px 14px 7px;
   margin: 4px 0 12px;
+  border-radius: var(--chart-card-radius);
+  background: var(--chart-card-surface);
+  box-shadow: var(--chart-card-shadow);
 }
+
+.deathcard-graph__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 3px;
+  text-align: left;
+}
+
+.deathcard-graph__heading span {
+  color: var(--chart-axis);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.deathcard-graph__heading b { font-size: 13px; }
+.deathcard-graph__note { margin: 0; color: var(--chart-axis); font-family: var(--font-mono); font-size: 8px; text-align: right; }
 
 .deathcard-graph__legend {
   display: flex;
@@ -141,6 +170,30 @@
   text-anchor: middle;
 }
 
+.deathcard-coaching {
+  width: 100%;
+  max-width: 920px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.deathcard-coaching__panel {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--chart-grid);
+  background: var(--chart-panel);
+}
+
+.deathcard-coaching__panel--worked { border-left: 5px solid var(--chart-real); }
+.deathcard-coaching__panel--next { border-left: 5px solid var(--chart-market); }
+.deathcard-coaching__panel h2 { margin: 0 0 7px; color: var(--chart-axis); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.07em; }
+.deathcard-coaching__panel ul,
+.deathcard-coaching__panel ol { margin: 0; padding-left: 19px; font-size: 12px; line-height: 1.45; }
+.deathcard-coaching__panel li + li { margin-top: 3px; }
+
 /* ------------------------------------------------------------------ *
  * §11.2 rule 5 — the flags missed, quoted from the sheet.
  * ------------------------------------------------------------------ */
@@ -192,7 +245,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 6px 32px;
   width: 100%;
-  max-width: 460px;
+  max-width: 680px;
   padding: 14px 24px;
   margin-bottom: 14px;
   text-align: left;
@@ -236,6 +289,8 @@
 
 .deathcard-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 16px;
 }
 
@@ -273,4 +328,9 @@
   filter: grayscale(1) contrast(0.6);
   opacity: 0.5;
   pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .deathcard-coaching { grid-template-columns: 1fr; }
+  .deathcard-stats { grid-template-columns: 1fr; }
 }

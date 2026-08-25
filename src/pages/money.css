@@ -23,6 +23,7 @@
   font-family: var(--font-body-institutional);
   font-size: var(--font-body-institutional-size);
   color: var(--text);
+  background: var(--money-page-surface);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -55,9 +56,132 @@
   font-weight: 700;
 }
 
+.money-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 34%);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.money-summary__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.money-allocation-chart {
+  min-width: 0;
+  min-height: 88px;
+  padding: 6px 8px;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--money-panel-border);
+  border-radius: var(--money-radius);
+  background: var(--chart-card-surface);
+  box-shadow: var(--chart-card-shadow);
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+}
+
+.money-allocation-chart__graphic {
+  position: relative;
+  width: 76px;
+  height: 76px;
+}
+
+.money-allocation-chart svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  filter: var(--chart-ring-filter);
+}
+.money-allocation-chart circle {
+  fill: none;
+  stroke-width: var(--chart-ring-width);
+  stroke-linecap: var(--chart-ring-cap);
+}
+.money-allocation-chart__orbit {
+  stroke: var(--chart-marker);
+  stroke-width: 1.5px !important;
+  stroke-dasharray: 2 5;
+  opacity: var(--chart-orbit-opacity);
+}
+.money-allocation-chart__track { stroke: var(--chart-grid); }
+.money-allocation-chart__segment { transform-origin: center; }
+.money-allocation-chart__segment--1 { stroke: var(--chart-segment-1); }
+.money-allocation-chart__segment--2 { stroke: var(--chart-segment-2); }
+.money-allocation-chart__segment--3 { stroke: var(--chart-segment-3); }
+.money-allocation-chart__segment--4 { stroke: var(--chart-segment-4); }
+.money-allocation-chart__segment--5 { stroke: var(--chart-segment-5); }
+
+.money-allocation-chart__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inset: 16px;
+  border: 1px solid var(--chart-center-border);
+  border-radius: var(--chart-center-radius);
+  background: var(--chart-center-surface);
+  box-shadow: var(--chart-center-shadow);
+  font-family: var(--font-mono);
+}
+
+.money-allocation-chart__center b { font-size: 11px; }
+.money-allocation-chart__center small { color: var(--money-state-text); font-size: 7px; }
+.money-allocation-chart__eyebrow { color: var(--money-state-text); font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.08em; }
+.money-allocation-chart__legend { margin-top: 5px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; }
+.money-allocation-chart__legend span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.money-allocation-chart__legend b { font-family: var(--font-mono); }
+.money-allocation-chart__key { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border: 1px solid var(--money-pin-border); }
+.money-allocation-chart__key--1 { background: var(--chart-segment-1); }
+.money-allocation-chart__key--2 { background: var(--chart-segment-2); }
+.money-allocation-chart__key--3 { background: var(--chart-segment-3); }
+.money-allocation-chart__key--4 { background: var(--chart-segment-4); }
+.money-allocation-chart__key--5 { background: var(--chart-segment-5); }
+
+.money-guide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 5px 8px;
+  border: 1px solid var(--money-guide-border);
+  border-radius: var(--money-radius);
+  background: var(--money-guide-surface);
+  color: var(--money-guide-text);
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+  box-shadow: inset 0 1px 0 var(--hilite);
+}
+
+.money-guide span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.money-guide b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  border: 1px solid var(--money-guide-border);
+  border-radius: var(--money-radius);
+  background: var(--money-primary-surface);
+  color: var(--money-primary-text);
+  font-family: var(--font-mono);
+}
+
 /* ------------------------------------------------------------------ *
- * Dual-money figure — SEAM stand-in for src/ui/Money.tsx (see Money.tsx
- * header). §19.4: period money primary (larger, on top); 1996 money
+ * Dual-money figure — rendered by the shared src/ui/Money.tsx component.
+ * Period money is primary (larger, on top); 2026 purchasing power is
  * secondary (smaller, beneath, --disabled grey via .disabled-text).
  * ------------------------------------------------------------------ */
 
@@ -94,19 +218,45 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  background: var(--field);
+  padding: var(--money-panel-padding);
+  gap: var(--money-panel-gap);
+  background: var(--money-panel-surface);
+  border-color: var(--money-panel-border);
+  box-shadow: var(--money-panel-shadow);
+  display: flex;
+  flex-direction: column;
 }
 
 .money-row {
   padding: 8px 10px;
-  border-bottom: 1px solid var(--shadow);
+  border: 1px solid transparent;
+  border-bottom-color: var(--money-row-border);
+  border-radius: var(--money-radius);
+  background: var(--money-row-surface);
+  box-shadow: var(--money-row-shadow);
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
 .money-row:last-child {
-  border-bottom: none;
+  border-bottom-color: transparent;
+}
+
+.money-row--draft {
+  background: var(--money-row-draft-surface);
+  border-color: var(--money-status-border);
+  animation: money-draft-signal 180ms steps(2, end) 1;
+}
+
+.money-row--pinned {
+  background: var(--money-row-pinned-surface);
+  border-color: var(--money-pin-border);
+  animation: money-pin-signal 180ms steps(2, end) 1;
+}
+
+.money-row--suspended {
+  background: var(--money-row-suspended-surface);
 }
 
 .money-row__top {
@@ -126,8 +276,28 @@
 }
 
 .money-row__suspended {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 4px;
+  border: 1px solid var(--money-status-border);
+  border-radius: var(--money-radius);
   color: var(--disabled);
-  font-weight: 400;
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+  font-weight: 700;
+}
+
+.money-row__pin-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border: 1px solid var(--money-pin-border);
+  border-radius: var(--money-radius);
+  background: var(--money-pin-active-surface);
+  color: var(--money-pin-active-text);
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+  font-weight: 700;
 }
 
 .money-row__value {
@@ -140,6 +310,19 @@
   text-align: right;
   font-family: var(--font-mono);
   font-weight: 700;
+  padding: 2px 5px;
+  border: 1px solid var(--money-status-border);
+  border-radius: var(--money-radius);
+  background: var(--money-status-applied-surface);
+}
+
+.money-row--draft .money-row__pct {
+  background: var(--money-status-draft-surface);
+}
+
+.money-row--pinned .money-row__pct {
+  background: var(--money-pin-active-surface);
+  color: var(--money-pin-active-text);
 }
 
 .money-row__fee {
@@ -168,16 +351,114 @@
 
 .money-row__lock {
   flex: 0 0 auto;
-  width: 22px;
-  height: 20px;
-  padding: 0;
+  width: auto;
+  min-width: 84px;
+  height: 24px;
+  padding: 1px 6px;
   line-height: 1;
-  font-size: 11px;
+  font-size: var(--font-chrome-size);
   cursor: default;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-color: var(--money-pin-border);
+  border-radius: var(--money-radius);
+  background: var(--money-pin-surface);
+  color: var(--money-pin-text);
+  font-weight: 700;
+}
+
+.money-row__lock--active {
+  background: var(--money-pin-active-surface);
+  color: var(--money-pin-active-text);
+  box-shadow: inset 1px 1px 2px var(--money-pin-border);
+}
+
+.money-row__lock:focus-visible,
+.money-row__range:focus-visible,
+.money-action:focus-visible {
+  outline: 2px solid var(--selection-bg);
+  outline-offset: 2px;
+}
+
+.money-row__pin-light {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--money-pin-border);
+  border-radius: var(--money-radius);
+  background: var(--money-pin-light);
+  box-shadow: inset 1px 1px 0 var(--hilite);
+}
+
+.money-row__lock--active .money-row__pin-light {
+  background: var(--money-pin-light-active);
+  animation: money-pin-light 420ms steps(2, end) 2;
 }
 
 .money-row__range {
   flex: 1 1 auto;
+}
+
+.money-page .money-row__range::-webkit-slider-runnable-track {
+  height: 7px;
+  border-color: var(--money-slider-thumb-border);
+  border-radius: var(--money-radius);
+  background: linear-gradient(
+    90deg,
+    var(--money-slider-fill) 0,
+    var(--money-slider-fill) var(--money-pct),
+    var(--money-slider-track) var(--money-pct),
+    var(--money-slider-track) 100%
+  );
+}
+
+.money-page .money-row__range::-webkit-slider-thumb {
+  width: 15px;
+  height: 22px;
+  margin-top: -8px;
+  border-color: var(--money-slider-thumb-border);
+  border-radius: var(--money-radius);
+  background: var(--money-slider-thumb);
+}
+
+.money-page .money-row__range::-moz-range-track {
+  height: 7px;
+  border-color: var(--money-slider-thumb-border);
+  border-radius: var(--money-radius);
+  background: var(--money-slider-track);
+}
+
+.money-page .money-row__range::-moz-range-progress {
+  height: 7px;
+  border-radius: var(--money-radius);
+  background: var(--money-slider-fill);
+}
+
+.money-page .money-row__range::-moz-range-thumb {
+  width: 15px;
+  height: 22px;
+  border-color: var(--money-slider-thumb-border);
+  border-radius: var(--money-radius);
+  background: var(--money-slider-thumb);
+}
+
+.money-row__range:disabled {
+  filter: grayscale(0.7);
+  opacity: 0.62;
+}
+
+.money-row__state {
+  min-height: 14px;
+  padding-left: 90px;
+  color: var(--money-state-text);
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+}
+
+.money-row--pinned .money-row__state {
+  color: var(--money-state-pinned-text);
+  font-weight: 700;
 }
 
 /* ------------------------------------------------------------------ *
@@ -187,8 +468,46 @@
 .money-footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 16px;
+}
+
+.money-footer__status {
+  margin: 0 auto 0 0;
+  padding: 5px 8px;
+  border: 1px solid var(--money-status-border);
+  border-radius: var(--money-radius);
+  font-family: var(--font-chrome);
+  font-size: var(--font-chrome-size);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.money-footer__status--pending {
+  background: var(--money-status-draft-surface);
+  color: var(--text);
+  font-weight: 700;
+  animation: money-draft-signal 300ms steps(3, end) 1;
+}
+
+.money-footer__status--applied {
+  background: var(--money-status-applied-surface);
+  color: var(--text);
+  animation: money-apply-signal 420ms steps(3, end) 1;
+}
+
+.money-footer__status-light {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--money-status-border);
+  border-radius: var(--money-radius);
+  background: var(--money-status-applied-light);
+}
+
+.money-footer__status--pending .money-footer__status-light {
+  background: var(--money-status-draft-light);
+  animation: money-pin-light 480ms steps(2, end) infinite;
 }
 
 .money-footer__total {
@@ -212,11 +531,16 @@
   cursor: default;
 }
 
+.money-action--rebalance:not(:disabled) {
+  background: var(--money-primary-surface);
+  color: var(--money-primary-text);
+  font-weight: 700;
+  animation: money-ready-signal 520ms steps(2, end) 2;
+}
+
 /* ------------------------------------------------------------------ *
- * Confirm step — a page-level panel, not a real dialog (src/chrome/
- * Dialog.tsx is being built in parallel and doesn't exist on this
- * branch). Structured to be lifted wholesale: a title strip, a
- * scrollable itemised body, an action row.
+ * Confirm step — a page-level review panel rather than a blocking system
+ * dialog: a title strip, scrollable itemised body and explicit action row.
  * ------------------------------------------------------------------ */
 
 .money-confirm {
@@ -235,6 +559,9 @@
   display: flex;
   flex-direction: column;
   padding: 0;
+  border-radius: var(--money-radius);
+  background: var(--money-panel-surface);
+  box-shadow: var(--money-panel-shadow);
 }
 
 .money-confirm__titlebar {
@@ -242,6 +569,7 @@
   background: var(--title);
   color: var(--title-text);
   font-weight: 700;
+  border-radius: var(--money-radius) var(--money-radius) 0 0;
 }
 
 .money-confirm__body {
@@ -277,4 +605,53 @@
 
 .money-confirm__actions button {
   cursor: default;
+}
+
+.money-confirm__actions button:last-child {
+  background: var(--money-primary-surface);
+  color: var(--money-primary-text);
+  font-weight: 700;
+}
+
+@keyframes money-draft-signal {
+  0%, 49% { filter: brightness(1); }
+  50%, 100% { filter: brightness(1.08); }
+}
+
+@keyframes money-pin-signal {
+  0%, 49% { transform: translate(0, 0); }
+  50%, 100% { transform: translate(1px, 1px); }
+}
+
+@keyframes money-pin-light {
+  0%, 49% { opacity: 0.35; }
+  50%, 100% { opacity: 1; }
+}
+
+@keyframes money-apply-signal {
+  0%, 32% { filter: brightness(1); }
+  33%, 65% { filter: brightness(1.14); }
+  66%, 100% { filter: brightness(1); }
+}
+
+@keyframes money-ready-signal {
+  0%, 49% { box-shadow: inset 1px 1px 0 var(--hilite); }
+  50%, 100% { box-shadow: inset -1px -1px 0 var(--money-pin-border); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .money-row--draft,
+  .money-row--pinned,
+  .money-row__lock--active .money-row__pin-light,
+  .money-footer__status--pending,
+  .money-footer__status--applied,
+  .money-footer__status--pending .money-footer__status-light,
+  .money-action--rebalance:not(:disabled) {
+    animation: none;
+  }
+}
+
+@media (max-width: 1120px) {
+  .money-summary { grid-template-columns: 1fr; }
+  .money-allocation-chart { grid-template-columns: 70px minmax(0, 1fr); }
 }

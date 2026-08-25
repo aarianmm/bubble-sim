@@ -35,7 +35,10 @@ import {
   MONEY_URL,
   shouldAutoPauseSimulationUrl,
 } from './pages/registry';
+import { MoneyDraftProvider } from './pages/Money';
 import { monthIndex, type MonthIndex } from './sim/month';
+import { LaunchExperience, type LaunchScreen } from './launch/LaunchExperience';
+import { ExperienceNavigationContext } from './launch/experience';
 
 type VisualMilestone = {
   era: 'a' | 'b';
@@ -58,12 +61,16 @@ function visualMilestoneFor(month: MonthIndex): VisualMilestone {
 
 /** Evolution beats only interrupt continuous play. Non-continuous state loads
  * remain immediate so tests do not manufacture a chain of missed years. */
-function evolutionReached(previous: MonthIndex, current: MonthIndex): VisualMilestone | null {
-  if (previous === monthIndex(1997, 12) && current === monthIndex(1998, 1)) {
-    return { era: 'a', year: '1998' };
-  }
-  if (previous === monthIndex(1999, 12) && current === monthIndex(2000, 1)) {
+export function evolutionReached(previous: MonthIndex, current: MonthIndex): VisualMilestone | null {
+  if (current <= previous) return null;
+  // Prefer the newest crossed boundary when several monthly updates are
+  // batched into one render. The player must still see an installation beat
+  // for the interface they actually land on rather than silently skipping it.
+  if (previous < monthIndex(2000, 1) && current >= monthIndex(2000, 1)) {
     return { era: 'b', year: '2000' };
+  }
+  if (previous < monthIndex(1998, 1) && current >= monthIndex(1998, 1)) {
+    return { era: 'a', year: '1998' };
   }
   return null;
 }
@@ -114,6 +121,7 @@ export function AppShell() {
   );
   const [evolution, setEvolution] = useState<EvolutionState | null>(null);
   const previousMonthRef = useRef(engine.state.month);
+  const previousResetKeyRef = useRef(engine.mailNoticeResetKey ?? 0);
   const evolutionLoadStartedRef = useRef(false);
 
   // The root changes only after the milestone's Continue -> loading sequence.
@@ -143,8 +151,23 @@ export function AppShell() {
   useLayoutEffect(() => {
     const current = engine.state.month;
     const previous = previousMonthRef.current;
-    if (current === previous) return;
+    const resetKey = engine.mailNoticeResetKey ?? 0;
+    const stateWasRebuilt = resetKey !== previousResetKeyRef.current;
     previousMonthRef.current = current;
+    previousResetKeyRef.current = resetKey;
+
+    // Reset and presenter/test state loads deliberately rebuild the timeline.
+    // They must land immediately on the matching visual state rather than
+    // manufacturing update dialogs for every crossed year.
+    if (stateWasRebuilt) {
+      engine.setEvolutionPaused(false);
+      evolutionLoadStartedRef.current = false;
+      setEvolution(null);
+      setAppliedMilestone(visualMilestoneFor(current));
+      return;
+    }
+
+    if (current === previous) return;
 
     const target = evolutionReached(previous, current);
     if (target) {
@@ -162,7 +185,7 @@ export function AppShell() {
     evolutionLoadStartedRef.current = false;
     setEvolution(null);
     setAppliedMilestone(visualMilestoneFor(current));
-  }, [engine.setEvolutionPaused, engine.state.dialogs.length, engine.state.month]);
+  }, [engine.mailNoticeResetKey, engine.setEvolutionPaused, engine.state.dialogs.length, engine.state.month]);
 
   useEffect(() => {
     if (evolution?.phase !== 'queued' || engine.state.dialogs.length > 0) return;
@@ -238,7 +261,7 @@ export function AppShell() {
           onQuit: newRun,
           onToggleMoneyBase: () =>
             engine.dispatch({ type: 'toggle-money-base', month: engine.state.month }),
-          moneyBaseIs1996: engine.state.flags.moneyBase === '1996',
+          moneyBaseIs2026: engine.state.flags.moneyBase === '2026',
           onToggleSounds: () => setSoundsOn((v) => !v),
           soundsOn,
           onAbout: handleAbout,
@@ -280,7 +303,9 @@ export function AppShell() {
           yearSpineSlot: <YearSpine />,
         }}
       >
-        <PageComponent key={router.contentKey} />
+        <MoneyDraftProvider>
+          <PageComponent key={router.contentKey} />
+        </MoneyDraftProvider>
       </Window>
       {evolution?.phase !== 'loading' && evolution?.phase !== 'complete' && <Notifications />}
       {evolution?.phase === 'welcome' && (
@@ -316,9 +341,21 @@ export function AppShell() {
 
 export function App() {
   const tooSmall = useIsViewportTooSmall();
+  const [experience, setExperience] = useState<'hub' | 'library' | 'play'>(() =>
+    new URLSearchParams(window.location.search).get('play') === '1' ? 'play' : 'hub',
+  );
 
   if (isVisualRoute()) {
     return <VisualGallery />;
+  }
+
+  if (experience !== 'play') {
+    return (
+      <LaunchExperience
+        initialScreen={experience as LaunchScreen}
+        onLaunch={() => setExperience('play')}
+      />
+    );
   }
 
   if (tooSmall) {
@@ -326,10 +363,12 @@ export function App() {
   }
 
   return (
-    <EngineProvider>
-      <RouterProvider initialUrl={HOME_URL}>
-        <AppShell />
-      </RouterProvider>
-    </EngineProvider>
+    <ExperienceNavigationContext.Provider value={{ returnToLibrary: () => setExperience('library') }}>
+      <EngineProvider>
+        <RouterProvider initialUrl={HOME_URL}>
+          <AppShell />
+        </RouterProvider>
+      </EngineProvider>
+    </ExperienceNavigationContext.Provider>
   );
 }

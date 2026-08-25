@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { EngineProvider } from './EngineProvider';
 import { Money, formatPounds } from './Money';
 import { monthIndex } from '../sim/month';
+import { CPI_1996, CPI_JULY_2026, to2026 } from '../sim/selectors';
 
 // React 18's act() checks this global rather than inferring a test renderer.
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -72,7 +73,7 @@ describe('<Money> — the global dual-money toggle (§19.4)', () => {
     });
 
     const after = primaries();
-    // Every figure — not only the one clicked — swapped to its 1996 value.
+    // Every figure — not only the one clicked — swapped to its 2026 value.
     expect(after[0]).not.toBe(before[0]);
     expect(after[1]).not.toBe(before[1]);
     expect(after[2]).not.toBe(before[2]);
@@ -96,5 +97,9 @@ describe('<Money> — the global dual-money toggle (§19.4)', () => {
     mount(<Money amount={115} variant="inline" paired={false} interactive={false} />);
     expect(container.querySelector('.money__primary')).not.toBeNull();
     expect(container.querySelector('.money__secondary')).toBeNull();
+  });
+
+  it('uses the fixed ONS July 2026 CPI reference without a runtime fetch', () => {
+    expect(to2026(CPI_1996, monthIndex(1996, 1))).toBeCloseTo(CPI_JULY_2026, 6);
   });
 });

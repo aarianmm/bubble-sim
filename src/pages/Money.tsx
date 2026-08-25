@@ -12,25 +12,24 @@
  *  - a locked row never moves until unlocked;
  *  - the whole row set always sums to exactly 100 (integer percentage
  *    points, largest-remainder rounding — never a fencepost 99 or 101);
- *  - nothing here touches `GameState` — sliders are a draft until
+ *  - slider targets are a persistent UI draft until
  *    `[ Rebalance Now ]` is confirmed, at which point exactly one
  *    `{ type: 'rebalance' }` Decision is dispatched (§25.2 replay log).
  *    Executing the buys/sells is the sim's job (Step 24, `src/sim/tick.ts`)
- *    — this page only *previews* what they would be, for the confirm step.
- *
- * SEAM: the scheduler that unlocks vehicles (Step 24) isn't merged into
- * this worktree, so `state.holdings` is empty at every date in the real
- * app right now — this page renders correctly with just a 100%-cash row,
- * and `Money.test.ts` exercises the slider maths against fixture holdings
- * instead (see that file's header).
- *
- * SEAM: `src/chrome/Dialog.tsx` (Step 20) is being built in parallel and
- * does not exist on this branch either. `RebalanceConfirmPanel` is a
- * page-level panel, not a real dialog — styled with the bevel primitives
- * and structured (title strip / scrollable body / action row) so it can be
- * lifted into `Dialog.tsx` wholesale once that lands.
+ *    — this page only *previews* what they would be, for the confirm step;
+ *  - `MoneyDraftProvider` lives above the router's remounted page content,
+ *    so navigating away cannot silently discard an unconfirmed draft.
  */
-import { useEffect, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type CSSProperties,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from 'react';
 import { useEngine } from '../ui/engine';
 import { Money } from '../ui/Money';
 import { GameLink } from '../chrome/router';
@@ -148,6 +147,231 @@ export function redistribute(rows: DraftRow[], draggedId: VehicleId, rawPct: num
 
 export function toggleLock(rows: DraftRow[], id: VehicleId): DraftRow[] {
   return rows.map((r) => (r.id === id ? { ...r, locked: !r.locked } : r));
+}
+
+function savedDraftRow(saved: DraftRow, actual: DraftRow): DraftRow {
+  if (!Number.isFinite(saved.pct) || saved.pct < 0 || saved.pct > 100) {
+    // Repair only the malformed row. Returning buildDraftRows(state) here used
+    // to erase every otherwise-valid target in the player's draft.
+    return { ...actual, locked: false };
+  }
+  return { ...actual, pct: Math.round(saved.pct), locked: saved.locked };
+}
+
+function canGrowAfterReconcile(row: DraftRow, state: GameState): boolean {
+  return row.id === 'cash' || !state.holdings[row.id]?.collapsed;
+}
+
+function canShrinkAfterReconcile(row: DraftRow, state: GameState): boolean {
+  if (row.id === 'cash' || !state.holdings[row.id]?.collapsed) return true;
+  return VEHICLES[row.id].sellableAfterCollapse;
+}
+
+function scaleRowsToTotal(rows: DraftRow[], indexes: number[], target: number, unlockChanged: boolean): void {
+  if (indexes.length === 0) return;
+  const current = indexes.map((index) => rows[index].pct);
+  const currentTotal = current.reduce((sum, pct) => sum + pct, 0);
+  const raw = currentTotal > 0
+    ? current.map((pct) => (pct / currentTotal) * target)
+    : current.map(() => target / current.length);
+  const scaled = roundToIntegerAllocation(raw, target);
+  indexes.forEach((index, position) => {
+    if (unlockChanged && rows[index].pct !== scaled[position]) rows[index].locked = false;
+    rows[index].pct = scaled[position];
+  });
+}
+
+/** Restore the 100% invariant while changing the smallest possible portion of
+ * a draft. Unpinned Cash absorbs ordinary drift. If Cash is pinned, editable
+ * investments absorb it instead; a pin is removed only when no valid 100%
+ * allocation can preserve that pinned value. */
+function normaliseReconciledDraft(rows: DraftRow[], state: GameState): DraftRow[] {
+  const result = rows.map((row) => ({ ...row }));
+  const cashIndex = result.findIndex((row) => row.id === 'cash');
+  if (cashIndex < 0) return result;
+
+  const total = result.reduce((sum, row) => sum + row.pct, 0);
+  if (total === 100) return result;
+
+  if (total < 100) {
+    const shortfall = 100 - total;
+    if (!result[cashIndex].locked) {
+      result[cashIndex].pct += shortfall;
+      return result;
+    }
+
+    const editable = result
+      .map((row, index) => ({ row, index }))
+      .filter(({ row }) => row.id !== 'cash' && !row.locked && canGrowAfterReconcile(row, state))
+      .map(({ index }) => index);
+    if (editable.length > 0) {
+      const editableTotal = editable.reduce((sum, index) => sum + result[index].pct, 0);
+      scaleRowsToTotal(result, editable, editableTotal + shortfall, false);
+      return result;
+    }
+
+    // There is no editable destination for the slack. Moving Cash is the only
+    // valid result, so remove its pin at the same moment instead of displaying
+    // a false "PINNED 50%" label on a silently changed 100% value.
+    result[cashIndex].pct += shortfall;
+    result[cashIndex].locked = false;
+    return result;
+  }
+
+  let overflow = total - 100;
+  const reduce = (indexes: number[], unlockChanged: boolean) => {
+    if (overflow <= 0 || indexes.length === 0) return;
+    const available = indexes.reduce((sum, index) => sum + result[index].pct, 0);
+    const reduction = Math.min(overflow, available);
+    scaleRowsToTotal(result, indexes, available - reduction, unlockChanged);
+    overflow -= reduction;
+  };
+
+  // Preserve investment targets first: ordinary overflow comes out of
+  // unpinned Cash. Then reduce only editable unpinned rows. Locked rows are a
+  // last resort and are visibly unpinned if the state makes their target
+  // impossible; unsellable suspended holdings are never reduced.
+  if (!result[cashIndex].locked) reduce([cashIndex], false);
+  reduce(result
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) => row.id !== 'cash' && !row.locked && canShrinkAfterReconcile(row, state))
+    .map(({ index }) => index), false);
+  reduce(result
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) => row.id !== 'cash' && row.locked && canShrinkAfterReconcile(row, state))
+    .map(({ index }) => index), true);
+  if (overflow > 0) reduce([cashIndex], true);
+  return result;
+}
+
+/**
+ * Keeps an in-progress draft valid when a newly accepted vehicle joins the
+ * portfolio. Existing targets and locks survive; a new row starts at 0%, so
+ * the invariant remains 100% without silently changing the player's draft.
+ */
+export function reconcileDraftRows(rows: DraftRow[], state: GameState): DraftRow[] {
+  const actualRows = buildDraftRows(state);
+  const existing = new Map(rows.map((row) => [row.id, row]));
+  const reconciled = actualRows.map((actual) => {
+    const saved = existing.get(actual.id);
+    if (!saved) return { ...actual, pct: 0 };
+    if (actual.id === 'cash') return savedDraftRow(saved, actual);
+
+    const holding = state.holdings[actual.id];
+    if (!holding?.collapsed) return savedDraftRow(saved, actual);
+    const pct = VEHICLES[actual.id].sellableAfterCollapse
+      ? Math.min(savedDraftRow(saved, actual).pct, actual.pct)
+      : actual.pct;
+    return { ...actual, pct, locked: false };
+  });
+  return normaliseReconciledDraft(reconciled, state);
+}
+
+export interface AllocationConstraint {
+  maxPct: number;
+  disabled: boolean;
+  message: string | null;
+}
+
+/**
+ * Suspended investments cannot accept new money. A sellable suspended holding
+ * may only move left as the player exits it; an unsellable one is frozen at its
+ * current allocation. The pure simulation enforces the same rule in tick.ts.
+ */
+export function allocationConstraint(state: GameState, row: DraftRow): AllocationConstraint {
+  if (row.id === 'cash') return { maxPct: 100, disabled: false, message: null };
+  const holding = state.holdings[row.id];
+  if (!holding?.collapsed) return { maxPct: 100, disabled: false, message: null };
+
+  const currentPct = buildDraftRows(state).find((actual) => actual.id === row.id)?.pct ?? 0;
+  const vehicle = VEHICLES[row.id];
+  if (!vehicle.sellableAfterCollapse) {
+    return {
+      maxPct: currentPct,
+      disabled: true,
+      message: `Frozen at ${currentPct}% — this suspended holding cannot be bought or sold.`,
+    };
+  }
+  if (currentPct <= 0) {
+    return {
+      maxPct: 0,
+      disabled: true,
+      message: 'Suspended — new allocations are unavailable.',
+    };
+  }
+  return {
+    maxPct: currentPct,
+    disabled: false,
+    message: `Suspended — you may reduce this holding, but cannot increase it above ${currentPct}%.`,
+  };
+}
+
+/**
+ * Applies the ordinary proportional slider rule without allowing that
+ * redistribution to increase a suspended row behind the player's back.
+ * Temporary locks are calculation-only; the visible editor pins are restored
+ * unchanged in the returned rows.
+ */
+export function redistributeForState(
+  state: GameState,
+  rows: DraftRow[],
+  draggedId: VehicleId,
+  rawPct: number,
+): DraftRow[] {
+  const dragged = rows.find((row) => row.id === draggedId);
+  if (!dragged) return rows;
+  const draggedConstraint = allocationConstraint(state, dragged);
+  if (draggedConstraint.disabled) return rows;
+
+  const calculationRows = rows.map((row) => {
+    if (row.id === draggedId || row.locked) return row;
+    return allocationConstraint(state, row).maxPct < 100 ? { ...row, locked: true } : row;
+  });
+  const redistributed = redistribute(
+    calculationRows,
+    draggedId,
+    Math.min(rawPct, draggedConstraint.maxPct),
+  );
+  const originalLocks = new Map(rows.map((row) => [row.id, row.locked]));
+  return redistributed.map((row) => ({ ...row, locked: originalLocks.get(row.id) ?? false }));
+}
+
+type MoneyDraftContextValue = {
+  draft: DraftRow[] | null;
+  setDraft: Dispatch<SetStateAction<DraftRow[] | null>>;
+};
+
+const MoneyDraftContext = createContext<MoneyDraftContextValue | null>(null);
+
+/**
+ * Route content is remounted whenever the faux browser navigates. Keeping the
+ * draft one level above that content prevents an unconfirmed allocation from
+ * silently reverting to 100% cash, while GameState remains untouched until the
+ * explicit confirm step.
+ */
+export function MoneyDraftProvider({ children }: { children: ReactNode }) {
+  const engine = useEngine();
+  const [draft, setDraft] = useState<DraftRow[] | null>(null);
+  const resetKey = engine.mailNoticeResetKey ?? 0;
+  const portfolioKey = engine.state.unlocked
+    .map((id) => `${id}:${engine.state.holdings[id]?.collapsed ? 'suspended' : 'open'}`)
+    .join(',');
+
+  useEffect(() => setDraft(null), [resetKey]);
+  useEffect(() => {
+    setDraft((current) => (current ? reconcileDraftRows(current, engine.state) : null));
+    // Only portfolio membership or a suspension should reconcile a pending
+    // draft. Ordinary monthly price updates must not overwrite targets the
+    // player is reviewing.
+  }, [portfolioKey]);
+
+  return <MoneyDraftContext.Provider value={{ draft, setDraft }}>{children}</MoneyDraftContext.Provider>;
+}
+
+function useMoneyDraft(): MoneyDraftContextValue {
+  const context = useContext(MoneyDraftContext);
+  if (!context) throw new Error('MoneyPage must be rendered inside <MoneyDraftProvider>');
+  return context;
 }
 
 /** §12.4 "return since purchase". Basis = net cash ever put in and not
@@ -270,7 +494,7 @@ function formatGBP(amount: number): string {
 
 /**
  * Adapter over the shared dual-money component (§19.4). Every figure on this
- * page renders in both period and 1996 money, and the global toggle swaps
+ * page renders in both period and 2026 money, and the global toggle swaps
  * which is primary everywhere at once.
  */
 function MoneyFigure({
@@ -299,6 +523,49 @@ function MoneyFigure({
   );
 }
 
+function AllocationGraphic({ rows, isDirty }: { rows: readonly DraftRow[]; isDirty: boolean }) {
+  let offset = 0;
+  const segments = rows.map((row, index) => {
+    const start = offset;
+    offset += row.pct;
+    return { ...row, start, tone: (index % 5) + 1 };
+  });
+  const description = rows.map((row) => `${row.label} ${row.pct}%`).join(', ');
+
+  return (
+    <section className="money-allocation-chart" aria-label={`Target allocation: ${description}`}>
+      <div className="money-allocation-chart__graphic">
+        <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+          <circle className="money-allocation-chart__orbit" cx="50" cy="50" r="47" pathLength="100" />
+          <circle className="money-allocation-chart__track" cx="50" cy="50" r="38" pathLength="100" />
+          {segments.filter((row) => row.pct > 0).map((row) => (
+            <circle
+              key={row.id}
+              className={`money-allocation-chart__segment money-allocation-chart__segment--${row.tone}`}
+              cx="50"
+              cy="50"
+              r="38"
+              pathLength="100"
+              strokeDasharray={`${row.pct} ${100 - row.pct}`}
+              strokeDashoffset={-row.start}
+            />
+          ))}
+        </svg>
+        <span className="money-allocation-chart__center"><b>100%</b><small>{isDirty ? 'DRAFT' : 'APPLIED'}</small></span>
+      </div>
+      <div className="money-allocation-chart__copy">
+        <span className="money-allocation-chart__eyebrow">TARGET MIX</span>
+        <div className="money-allocation-chart__legend">
+          {segments.slice(0, 4).map((row) => (
+            <span key={row.id}><i className={`money-allocation-chart__key money-allocation-chart__key--${row.tone}`} />{row.label} <b>{row.pct}%</b></span>
+          ))}
+          {segments.length > 4 && <span>+ {segments.length - 4} more instruments</span>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ReturnBadge({ holding }: { holding: Holding }) {
   const pct = returnSincePurchase(holding);
   const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '—';
@@ -316,11 +583,13 @@ function ReturnBadge({ holding }: { holding: Holding }) {
 
 function PortfolioRow({
   row,
+  actualPct,
   state,
   onDrag,
   onToggleLock,
 }: {
   row: DraftRow;
+  actualPct: number;
   state: GameState;
   onDrag: (pct: number) => void;
   onToggleLock: () => void;
@@ -329,17 +598,32 @@ function PortfolioRow({
   const holding = isCash ? undefined : state.holdings[row.id];
   const vehicle = VEHICLES[row.id];
   const value = isCash ? state.cash : (holding?.value ?? 0);
+  const constraint = allocationConstraint(state, row);
+  const isDraft = row.pct !== actualPct;
+  const pinUnavailable = constraint.disabled && !row.locked;
+  const stateId = `money-row-state-${row.id}`;
 
   return (
-    <div className="money-row">
+    <div
+      className={[
+        'money-row',
+        row.locked ? 'money-row--pinned' : '',
+        isDraft ? 'money-row--draft' : '',
+        holding?.collapsed ? 'money-row--suspended' : '',
+      ].filter(Boolean).join(' ')}
+      data-allocation-state={holding?.collapsed ? 'suspended' : row.locked ? 'pinned' : isDraft ? 'draft' : 'applied'}
+    >
       <div className="money-row__top">
         <span className="money-row__name">
           {row.label}
           {holding && <ReturnBadge holding={holding} />}
-          {holding?.collapsed && <span className="money-row__suspended"> (suspended)</span>}
+          {holding?.collapsed && <span className="money-row__suspended"> SUSPENDED</span>}
+          {row.locked && <span className="money-row__pin-badge">PINNED {row.pct}%</span>}
         </span>
         <MoneyFigure amount={value} month={state.month} className="money-row__value" />
-        <span className="money-row__pct">{row.pct}%</span>
+        <span className="money-row__pct" aria-label={`${row.label} target ${row.pct} percent`}>
+          {row.pct}%
+        </span>
       </div>
 
       {holding && (
@@ -359,28 +643,40 @@ function PortfolioRow({
       <div className="money-row__slider">
         <button
           type="button"
-          className="bevel-out chrome money-row__lock"
+          className={`bevel-out chrome money-row__lock${row.locked ? ' money-row__lock--active' : ''}`}
           onClick={onToggleLock}
-          aria-label={row.locked ? `Unlock ${row.label}` : `Lock ${row.label}`}
+          disabled={pinUnavailable}
+          aria-pressed={row.locked}
+          aria-label={row.locked ? `Unpin ${row.label} at ${row.pct} percent` : `Pin ${row.label} at ${row.pct} percent`}
+          aria-describedby={stateId}
           title={
             row.locked
-              ? 'Locked — pinned while other rows redistribute'
-              : 'Unlocked — redistributes when other rows are dragged'
+              ? `Pinned at ${row.pct}% while you edit other targets. This does not auto-rebalance future months.`
+              : `Pin ${row.pct}% while editing other targets. This does not auto-rebalance future months.`
           }
         >
-          {row.locked ? '\u{1F512}' : '\u{1F513}'}
+          <span className="money-row__pin-light" aria-hidden="true" />
+          {row.locked ? `PINNED ${row.pct}%` : `PIN ${row.pct}%`}
         </button>
         <input
           type="range"
           className="win-slider money-row__range"
           min={0}
-          max={100}
+          max={constraint.maxPct}
           step={1}
           value={row.pct}
-          disabled={row.locked}
+          disabled={row.locked || constraint.disabled}
           onChange={(e) => onDrag(Number(e.target.value))}
           aria-label={`${row.label} target allocation, percent`}
+          aria-valuetext={`${row.pct}% target allocation`}
+          aria-describedby={stateId}
+          style={{ '--money-pct': `${row.pct}%` } as CSSProperties}
         />
+      </div>
+      <div id={stateId} className="money-row__state" aria-live="polite">
+        {constraint.message ?? (row.locked
+          ? `Pinned at ${row.pct}% while editing. Other sliders rebalance around this target.`
+          : `Adjustable. Pin ${row.pct}% to keep it fixed while editing another target.`)}
       </div>
     </div>
   );
@@ -478,41 +774,32 @@ function RebalanceConfirmPanel({
 export function MoneyPage() {
   const engine = useEngine();
   const { state } = engine;
-
-  const [draft, setDraft] = useState<DraftRow[]>(() => buildDraftRows(state));
+  const { draft: persistedDraft, setDraft } = useMoneyDraft();
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  // Resync the row *set* (not in-progress edits) when a vehicle unlocks or
-  // is fully exited — a live drag never changes state.unlocked, so this
-  // can't clobber a mid-drag draft. SEAM: unreachable in the real app
-  // today (Step 24 not merged, state.unlocked always []); exercised via
-  // fixtures in Money.test.ts instead.
-  const unlockedKey = state.unlocked.join(',');
-  useEffect(() => {
-    setDraft(buildDraftRows(state));
-    // Deliberately keyed only on the row-membership signature (below) — see
-    // comment above. `state` itself changes every tick (price/date), which
-    // must NOT reset an in-progress draft, so it is intentionally left out
-    // of the dependency array. No react-hooks lint plugin is configured in
-    // this repo (eslint.config.js), so this needs no disable comment.
-  }, [unlockedKey]);
+  const [appliedRevision, setAppliedRevision] = useState(0);
 
   const netWorthNow = netWorth(state);
-  const totalPct = draft.reduce((sum, r) => sum + r.pct, 0);
   const actualRows = buildDraftRows(state);
+  const actualPctById = new Map(actualRows.map((row) => [row.id, row.pct]));
+  const draft = persistedDraft ?? actualRows;
+  const totalPct = draft.reduce((sum, r) => sum + r.pct, 0);
   const isDirty =
     draft.length !== actualRows.length || draft.some((r, i) => r.pct !== actualRows[i]?.pct);
   const canRebalance = isDirty && totalPct === 100;
 
   function handleReset() {
-    setDraft(buildDraftRows(state));
+    setDraft(null);
+    setConfirmOpen(false);
+    setAppliedRevision(0);
   }
 
   function handleConfirm() {
     // §25.2: the rebalance decision joins the replay log here. Execution —
     // actually moving state.cash/state.holdings — is Step 24's tick.ts.
     engine.dispatch(buildRebalanceDecision(state, draft));
+    setDraft(null);
     setConfirmOpen(false);
+    setAppliedRevision((revision) => revision + 1);
   }
 
   const preview = confirmOpen ? buildRebalancePreview(state, draft) : null;
@@ -524,13 +811,24 @@ export function MoneyPage() {
         <span className="money-date">{monthLabel(state.month)}</span>
       </div>
 
-      <div className="money-total">
-        <span className="money-total__label">Total</span>
-        <MoneyFigure
-          amount={netWorthNow}
-          month={state.month}
-          suffix=" in 1996 money"
-        />
+      <div className="money-summary">
+        <div className="money-summary__copy">
+          <div className="money-total">
+            <span className="money-total__label">Total</span>
+            <MoneyFigure
+              amount={netWorthNow}
+              month={state.month}
+              suffix=" in 2026 money"
+            />
+          </div>
+
+          <div className="money-guide" aria-label="How allocation editing works">
+            <span><b>1</b> Set targets</span>
+            <span><b>2</b> Pin a percentage only if it must stay fixed while editing</span>
+            <span><b>3</b> Rebalance Now, then confirm to move money</span>
+          </div>
+        </div>
+        <AllocationGraphic rows={draft} isDirty={isDirty} />
       </div>
 
       <div className="money-rows bevel-in">
@@ -538,24 +836,45 @@ export function MoneyPage() {
           <PortfolioRow
             key={row.id}
             row={row}
+            actualPct={actualPctById.get(row.id) ?? 0}
             state={state}
-            onDrag={(pct) => setDraft((rows) => redistribute(rows, row.id, pct))}
-            onToggleLock={() => setDraft((rows) => toggleLock(rows, row.id))}
+            onDrag={(pct) => {
+              setAppliedRevision(0);
+              setDraft((rows) => redistributeForState(state, rows ?? buildDraftRows(state), row.id, pct));
+            }}
+            onToggleLock={() =>
+              setDraft((rows) => toggleLock(rows ?? buildDraftRows(state), row.id))
+            }
           />
         ))}
       </div>
 
       <div className="money-footer">
+        <p
+          key={isDirty ? 'draft' : `applied-${appliedRevision}`}
+          className={`money-footer__status ${isDirty ? 'money-footer__status--pending' : 'money-footer__status--applied'}`}
+          role="status"
+          data-state={isDirty ? 'draft' : 'applied'}
+        >
+          <span className="money-footer__status-light" aria-hidden="true" />
+          {isDirty ? (
+            <>DRAFT ONLY — no money has moved. Select Rebalance Now and confirm.</>
+          ) : appliedRevision > 0 ? (
+            <>ALLOCATION APPLIED — cash and holdings are updated.</>
+          ) : (
+            <>CURRENT ALLOCATION — these percentages are applied.</>
+          )}
+        </p>
         <span className={`money-footer__total ${totalPct === 100 ? '' : 'money-footer__total--bad'}`}>
           Total {totalPct}%
         </span>
         <div className="money-footer__actions">
-          <button type="button" className="bevel-out chrome" onClick={handleReset}>
+          <button type="button" className="bevel-out chrome money-action money-action--reset" onClick={handleReset}>
             [ Reset ]
           </button>
           <button
             type="button"
-            className="bevel-out chrome"
+            className="bevel-out chrome money-action money-action--rebalance"
             disabled={!canRebalance}
             title={!isDirty ? 'No changes to apply' : totalPct !== 100 ? 'Allocation must total 100%' : undefined}
             onClick={() => setConfirmOpen(true)}

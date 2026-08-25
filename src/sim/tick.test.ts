@@ -11,6 +11,7 @@ import {
   marketMove,
   interestAndFees,
   fireScheduledEvents,
+  isValidRebalanceDecision,
   solvencyCheck,
   tick,
 } from './tick';
@@ -478,6 +479,82 @@ describe('fireScheduledEvents (§7.3.5)', () => {
     expect(next.holdings['fenwick-index']!.value).toBeCloseTo(1000 * 0.99, 6); // the buyer receives net of the seller's exit fee
   });
 
+  it('rejects malformed rebalance totals, ranges, non-finite values and locked-out vehicle ids', () => {
+    const month = monthIndex(2000, 1);
+    const state = makeState({
+      month,
+      cash: 1000,
+      unlocked: ['fenwick-index'],
+      holdings: { 'fenwick-index': makeHolding('fenwick-index') },
+    });
+    const invalid = [
+      { type: 'rebalance', month, targets: { 'fenwick-index': 80 }, cashPct: 10 },
+      { type: 'rebalance', month, targets: { 'fenwick-index': -10 }, cashPct: 110 },
+      { type: 'rebalance', month, targets: { 'fenwick-index': Number.NaN }, cashPct: 100 },
+      { type: 'rebalance', month, targets: { 'northmoor-bond': 50 }, cashPct: 50 },
+    ] as Decision[];
+
+    for (const decision of invalid) {
+      expect(isValidRebalanceDecision(state, decision as Extract<Decision, { type: 'rebalance' }>)).toBe(false);
+      const next = fireScheduledEvents(state, [], [decision]);
+      expect(next.cash).toBe(1000);
+      expect(next.holdings['fenwick-index']!.value).toBe(0);
+    }
+  });
+
+  it('accepts an exact 100% allocation with omitted holdings treated as 0%', () => {
+    const month = monthIndex(2000, 1);
+    const state = makeState({
+      month,
+      cash: 1000,
+      unlocked: ['fenwick-index', 'northmoor-bond'],
+      holdings: {
+        'fenwick-index': makeHolding('fenwick-index'),
+        'northmoor-bond': makeHolding('northmoor-bond'),
+      },
+    });
+    const decision: Extract<Decision, { type: 'rebalance' }> = {
+      type: 'rebalance', month, targets: { 'fenwick-index': 70 }, cashPct: 30,
+    };
+    expect(isValidRebalanceDecision(state, decision)).toBe(true);
+  });
+
+  it('never buys into a suspended fund, even when a valid forged decision asks it to', () => {
+    const month = monthIndex(1999, 3);
+    const state = makeState({
+      month,
+      cash: 1000,
+      unlocked: ['meridian-guaranteed'],
+      holdings: {
+        'meridian-guaranteed': makeHolding('meridian-guaranteed', { value: 0, collapsed: true }),
+      },
+    });
+    const decision: Decision = {
+      type: 'rebalance', month, targets: { 'meridian-guaranteed': 50 }, cashPct: 50,
+    };
+    const next = fireScheduledEvents(state, [], [decision]);
+    expect(next.cash).toBe(1000);
+    expect(next.holdings['meridian-guaranteed']!.value).toBe(0);
+    expect(next.holdings['meridian-guaranteed']!.targetPct).toBe(0);
+  });
+
+  it('allows a sellable suspended fund to be exited but never increased', () => {
+    const month = monthIndex(1999, 3);
+    const state = makeState({
+      month,
+      cash: 900,
+      unlocked: ['meridian-guaranteed'],
+      holdings: {
+        'meridian-guaranteed': makeHolding('meridian-guaranteed', { value: 100, collapsed: true }),
+      },
+    });
+    const next = fireScheduledEvents(state, [], [{
+      type: 'rebalance', month, targets: { 'meridian-guaranteed': 0 }, cashPct: 100,
+    }]);
+    expect(next.cash).toBe(1000);
+    expect(next.holdings['meridian-guaranteed']!.value).toBe(0);
+  });
+
   it('refuses to sell Vertex after its collapse — unsellable, not just worthless (§11.5)', () => {
     const month = monthIndex(1999, 10);
     const state = makeState({
@@ -576,6 +653,19 @@ describe('solvencyCheck (§7.3.6, §12.3)', () => {
  * ------------------------------------------------------------------ */
 
 describe('tick (§7.3) — composition and order', () => {
+  it('records live wealth and NASDAQ history once per committed month', () => {
+    const january = tick(makeState({ month: 0, cash: 0 }), [], []);
+    expect(january.wealthHistory).toEqual([january.cash]);
+    expect(january.marketHistory).toEqual([100]);
+
+    const februaryMonth = monthIndex(1996, 2);
+    const february = tick({ ...january, month: februaryMonth }, [], []);
+    const nasdaqMove = SERIES.rows[februaryMonth].values['idx-nasdaq' as never] as number;
+    expect(february.wealthHistory).toHaveLength(2);
+    expect(february.marketHistory).toHaveLength(2);
+    expect(february.marketHistory[1]).toBeCloseTo(100 * nasdaqMove, 6);
+  });
+
   it('runs sub-steps in the exact §7.3 order: pay-in and expenses land before a same-month shock', () => {
     // A cash-only month with no shock: pay in, then expenses out.
     const month = monthIndex(1996, 6);

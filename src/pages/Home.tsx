@@ -4,7 +4,7 @@
  * "The headline number is the emotional core of the screen." Everything
  * else here — the masthead, the THIS MONTH panel, the ticker — is built
  * around giving that pairing room: a growing nominal figure over a
- * shrinking 1996 one is the game's thesis (§4, §19.4) rendered as
+ * changing 2026 purchasing-power figure is the game's thesis rendered as
  * typography, not explained in a sentence.
  *
  * Pure presentation over selectors — no game logic lives here. `netWorth`
@@ -13,11 +13,12 @@
  */
 import type { ComponentType, HTMLAttributes } from 'react';
 import { useEngine } from '../ui/engine';
-import { Money } from '../ui/Money';
-import { netWorth, monthSummary } from '../sim/selectors';
+import { Money, formatPounds } from '../ui/Money';
+import { netWorth, monthSummary, to2026 } from '../sim/selectors';
 import { monthLabel, monthIndex, yearOf, type MonthIndex } from '../sim/month';
 import { MONTHLY_PAY } from '../sim/types';
 import { tickerTextForMonth } from '../content/ticker';
+import { PerformanceChart } from '../ui/PerformanceChart';
 import './home.css';
 
 interface MarqueeProps extends HTMLAttributes<HTMLElement> {
@@ -55,7 +56,7 @@ function TrendArrow({ trend }: { trend: Trend }) {
  * `monthSummary().wasLeftOver` (src/sim/selectors.ts) is struck at, clamped
  * to month 0 exactly as that selector clamps it. Recomputed here only to
  * know *which month* the figure belongs to, so <Money> can convert it to
- * 1996 pounds correctly — the pound value itself still comes from the
+ * 2026 pounds correctly — the pound value itself still comes from the
  * selector, never recalculated. */
 function priorYearReferenceMonth(month: MonthIndex): MonthIndex {
   const firstOfThisYear = monthIndex(yearOf(month), 1);
@@ -74,6 +75,9 @@ export function Home() {
   const payTrend = trendOf(summary.payIn, MONTHLY_PAY);
   const outTrend = trendOf(summary.out, wasOut);
   const leftOverTrend = trendOf(summary.leftOver, summary.wasLeftOver);
+  const marketLevel = state.marketHistory.at(-1) ?? 100;
+  const marketChange = marketLevel - 100;
+  const realWealthHistory = state.wealthHistory.map((value, month) => to2026(value, month));
 
   return (
     <div className="home-page">
@@ -88,59 +92,91 @@ export function Home() {
         <Money amount={worth} variant="headline" className="home-headline__figure" />
       </div>
 
-      <section className="home-month bevel-out" aria-label="This month">
-        <h2 className="home-month__title">THIS MONTH</h2>
+      <div className="home-dashboard">
+        <section className="home-month bevel-out" aria-label="This month">
+          <h2 className="home-month__title">THIS MONTH</h2>
 
-        <div className="home-month__row">
-          <span className="home-month__label">Pay in</span>
-          <Money
-            amount={summary.payIn}
-            variant="inline"
-            paired={false}
-            interactive={false}
-            className="home-month__value"
-          />
-          <TrendArrow trend={payTrend} />
+          <div className="home-month__row">
+            <span className="home-month__label">Pay in</span>
+            <Money
+              amount={summary.payIn}
+              variant="inline"
+              paired={false}
+              interactive={false}
+              className="home-month__value"
+            />
+            <TrendArrow trend={payTrend} />
+          </div>
+
+          <div className="home-month__row">
+            <span className="home-month__label">Out</span>
+            <Money
+              amount={-summary.out}
+              variant="inline"
+              paired={false}
+              interactive={false}
+              className="home-month__value"
+            />
+            <TrendArrow trend={outTrend} />
+          </div>
+
+          <hr className="home-month__divider" />
+
+          <div className="home-month__row">
+            <span className="home-month__label">Left over</span>
+            <Money
+              amount={summary.leftOver}
+              variant="inline"
+              paired={false}
+              interactive={false}
+              className="home-month__value"
+            />
+            <TrendArrow trend={leftOverTrend} />
+          </div>
+
+          <div className="home-month__was">
+            was{' '}
+            <Money
+              amount={summary.wasLeftOver}
+              month={wasMonth}
+              variant="inline"
+              paired={false}
+              interactive={false}
+              className="home-month__was-value"
+            />
+          </div>
+        </section>
+
+        <div className="home-charts">
+          <section className="home-chart bevel-in" aria-labelledby="home-market-title">
+            <div className="home-chart__header">
+              <div><span>MARKET</span><h2 id="home-market-title">NASDAQ COMPOSITE</h2></div>
+              <strong>{marketLevel.toFixed(1)} <small>{marketChange >= 0 ? '+' : ''}{marketChange.toFixed(1)}%</small></strong>
+            </div>
+            <PerformanceChart
+              series={[{ id: 'nasdaq', label: 'NASDAQ · Jan 1996 = 100', values: state.marketHistory, tone: 'market' }]}
+              height={104}
+              annotations={[{ month: monthIndex(2000, 3), label: 'MAR 00 PEAK' }]}
+              ariaLabel={`NASDAQ Composite path through ${monthLabel(state.month)}, currently indexed at ${marketLevel.toFixed(1)} against 100 in January 1996`}
+            />
+          </section>
+
+          <section className="home-chart bevel-in" aria-labelledby="home-wealth-title">
+            <div className="home-chart__header">
+              <div><span>PERSONAL</span><h2 id="home-wealth-title">YOUR WEALTH PATH</h2></div>
+              <strong>{formatPounds(worth)} <small>{formatPounds(to2026(worth, state.month))} in 2026</small></strong>
+            </div>
+            <PerformanceChart
+              series={[
+                { id: 'wealth-period', label: 'period £', values: state.wealthHistory, tone: 'player' },
+                { id: 'wealth-real', label: '2026 £', values: realWealthHistory, tone: 'real' },
+              ]}
+              height={104}
+              ariaLabel={`Your wealth path through ${monthLabel(state.month)}: ${formatPounds(worth)} in period money, worth ${formatPounds(to2026(worth, state.month))} in 2026 money`}
+            />
+          </section>
         </div>
-
-        <div className="home-month__row">
-          <span className="home-month__label">Out</span>
-          <Money
-            amount={-summary.out}
-            variant="inline"
-            paired={false}
-            interactive={false}
-            className="home-month__value"
-          />
-          <TrendArrow trend={outTrend} />
-        </div>
-
-        <hr className="home-month__divider" />
-
-        <div className="home-month__row">
-          <span className="home-month__label">Left over</span>
-          <Money
-            amount={summary.leftOver}
-            variant="inline"
-            paired={false}
-            interactive={false}
-            className="home-month__value"
-          />
-          <TrendArrow trend={leftOverTrend} />
-        </div>
-
-        <div className="home-month__was">
-          was{' '}
-          <Money
-            amount={summary.wasLeftOver}
-            month={wasMonth}
-            variant="inline"
-            paired={false}
-            interactive={false}
-            className="home-month__was-value"
-          />
-        </div>
-      </section>
+      </div>
 
       <footer className="home-ticker">
         <Marquee className="home-ticker__marquee" behavior="scroll" scrollamount={3}>
