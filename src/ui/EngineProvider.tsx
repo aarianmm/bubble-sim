@@ -57,7 +57,7 @@ import {
 } from './engine';
 import type { Band, Decision, DialogAction, DeathCauseId, EventId, GameState, PopupItem, RunFlags, RunStats, ScriptEvent } from '../sim/types';
 import { isValidMonth, monthIndex, MONTH_COUNT, type MonthIndex } from '../sim/month';
-import { tick, fireScheduledEvents } from '../sim/tick';
+import { CASH_SETTLEMENT_EPSILON, tick, fireScheduledEvents } from '../sim/tick';
 import { EVENTS_BY_ID, eventsForMonth, materializeDialog, materializePopups } from '../sim/scheduler';
 import { TIMELINE } from '../script/timeline';
 import { VEHICLES } from '../sim/vehicles';
@@ -138,6 +138,53 @@ interface PendingForcedSale {
   shortfall: number;
   alternatives: ForcedSaleAlternative[];
   nothingLeft: boolean;
+  settlementId: string;
+  attempts: number;
+}
+
+interface ForcedSaleChain {
+  settlementId: string;
+  attempts: number;
+}
+
+export const MAX_FORCED_SALE_ATTEMPTS = 3;
+
+function settlementIdFor(month: MonthIndex, decisions: readonly Decision[]): string {
+  const paymentIds = decisions
+    .filter((decision): decision is Extract<Decision, { type: 'resolve-dialog' }> => decision.type === 'resolve-dialog')
+    .map((decision) => decision.dialogId);
+  return paymentIds.length > 0 ? paymentIds.join('+') : `month-${month}`;
+}
+
+export interface ForcedSaleSafeguardDetails {
+  settlementId: string;
+  attempts: number;
+  shortfall: number;
+  fees: number;
+  cashBefore: number;
+  cashAfter: number;
+}
+
+export function shouldRecoverForcedSaleChain(trial: GameState, attempts: number): boolean {
+  return attempts >= MAX_FORCED_SALE_ATTEMPTS
+    && trial.status !== 'running'
+    && trial.cash < -CASH_SETTLEMENT_EPSILON;
+}
+
+/** Last-resort protection for a malformed retry chain. Ordinary insolvency
+ * still commits through the forced-sale confirmation path and remains fatal. */
+export function recoverForcedSaleChain(
+  trial: GameState,
+  details: ForcedSaleSafeguardDetails,
+): GameState {
+  console.warn('[forced-sale] settlement retry limit reached; residual written off', details);
+  return {
+    ...trial,
+    cash: Math.max(0, trial.cash),
+    status: 'running',
+    deathMonth: null,
+    deathCauseId: null,
+  };
 }
 
 /** Everything still sellable that the default plan didn't already touch —
@@ -340,7 +387,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
    * `before` must already have `dialogs: []` (any preview dialog cleared).
    * ---------------------------------------------------------------- */
   const attemptCommit = useCallback(
-    (before: GameState, month: MonthIndex, decisions: Decision[]) => {
+    (before: GameState, month: MonthIndex, decisions: Decision[], chain?: ForcedSaleChain) => {
       const events = eventsForMonth(month);
       const trial = tick({ ...before, month }, events, decisions);
       if (trial.status === 'running') capturePopupEvents(events, month);
@@ -358,8 +405,35 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       const alternatives = computeAlternatives(before, soldIds);
       const shortfall = items.reduce((sum, i) => sum + i.soldAmount - i.exitFee, 0) + Math.max(0, -trial.cash);
       const nothingLeft = items.length === 0 && alternatives.length === 0;
+      const settlementId = chain?.settlementId ?? settlementIdFor(month, decisions);
+      const attempts = chain?.attempts ?? 1;
+      if (shouldRecoverForcedSaleChain(trial, attempts)) {
+        const recovered = recoverForcedSaleChain(trial, {
+          settlementId,
+          attempts,
+          shortfall: Math.max(0, -trial.cash),
+          fees: items.reduce((sum, item) => sum + item.exitFee, 0),
+          cashBefore: before.cash,
+          cashAfter: trial.cash,
+        });
+        processedRef.current = month;
+        forcedSaleTrialRef.current = null;
+        setForcedSale(null);
+        commitState({ ...recovered, decisions: [...recovered.decisions, ...decisions] });
+        return;
+      }
       forcedSaleTrialRef.current = trial;
-      setForcedSale({ before, month, decisions, items, shortfall, alternatives, nothingLeft });
+      setForcedSale({
+        before,
+        month,
+        decisions,
+        items,
+        shortfall,
+        alternatives,
+        nothingLeft,
+        settlementId,
+        attempts,
+      });
     },
     [capturePopupEvents, clearPopupPresentation, commitState],
   );
@@ -698,7 +772,12 @@ export function EngineProvider({ children }: { children: ReactNode }) {
         else targets[id] = pct;
       }
       const sellDecision: Decision = { type: 'rebalance', month: forcedSale.month, targets, cashPct };
-      attemptCommit(forcedSale.before, forcedSale.month, [sellDecision, ...forcedSale.decisions]);
+      attemptCommit(
+        forcedSale.before,
+        forcedSale.month,
+        [sellDecision, ...forcedSale.decisions],
+        { settlementId: forcedSale.settlementId, attempts: forcedSale.attempts + 1 },
+      );
     },
     [forcedSale, attemptCommit],
   );

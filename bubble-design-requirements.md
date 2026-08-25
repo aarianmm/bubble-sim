@@ -475,6 +475,14 @@ When a £900 boiler lands in September 2001 and cash is £120, the player must r
 
 On a shortfall the game raises a **forced-sale dialog** listing what will be sold and at what loss, in both money terms. The death card remembers every forced sale: *"You sold at the bottom three times."*
 
+Forced liquidation is one atomic settlement: the engine grosses up the sale so
+the proceeds **after any exit fee** cover the cash shortfall, records that fee
+once, and then rechecks solvency. A sub-penny arithmetic residue is treated as
+settled rather than as a new obligation. As a defensive UI failsafe, three
+unresolved retries tied to the same payment chain write off only the remaining
+residual and emit a diagnostic; normal insufficient-assets insolvency still
+ends the run when the player confirms it.
+
 ### 12.4 The portfolio row
 
 Each unlocked vehicle displays: name and period-appropriate logo; current value (period money) with today's money beneath; return since purchase; fee as annual % **and as £ paid to date**; allocation slider; and a link that reopens the fact sheet, always, forever. You can re-read what you agreed to.
@@ -1182,7 +1190,7 @@ perfect play         2005-02    KNOWN GAP
 | 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups are draggable, capped at 3, positioned by arithmetic on the month index and pinned to Home; leaving Home defers the active snapshot so Inbox and My Money stay clear without losing the offer |
 | 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. A live target-allocation donut makes draft versus applied state visible without changing the allocator's mechanics. Allocation controls and graph retain the original flat 1996 treatment, change to a square cyan/blue console with a subtle orbit in 1998, and become a glossy rounded aqua/lime instrument with depth and stronger segment caps in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Time pauses while allocating. Real-engine route regressions prove the lifecycle, auto-pause and milestone switching |
 | 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
-| 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending |
+| 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending. Liquidation nets exit fees atomically, ignores sub-penny residue and caps a malformed same-payment retry chain at three attempts without weakening ordinary insolvency |
 | 26 | Bands + cause-of-death | `bandFor(status, deathMonth)` takes **no wealth parameter**, so §15's anti-gambling guardrail is structural. Five of six §22.6 lines proven reachable by real runs |
 | 27 | Death card | Full-page, chrome retained, **every toolbar button greyed except Home**. The shared accessible decade chart compares the player's money with the NASDAQ. A deterministic personal report summarises the player's decisions, fact-sheet reading, rebalances, scam exposure and forced sales, then gives specific next-run guidance. Missed red flags are still quoted from the fact sheet the player could have read (§11.2 rule 5) |
 | 28 | **One-click replay** | `engine.reset()`, no menu, no confirmation |
@@ -1191,7 +1199,7 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 379 tests green.
+### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 386 tests green.
 
 Seven bugs were found and fixed during integration, all worth knowing about:
 

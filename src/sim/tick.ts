@@ -517,9 +517,17 @@ function liquidate(state: GameState, shortfall: number): GameState {
   return next;
 }
 
+// Settlement arithmetic is carried at full precision, but a grossed-up sale
+// can still leave a sub-penny negative residue after its exit fee is netted.
+// That is accounting noise, not a new obligation (§12.3).
+export const CASH_SETTLEMENT_EPSILON = 0.005;
+
 export function solvencyCheck(state: GameState): GameState {
   if (state.cash >= 0 || state.status !== 'running') return state;
   const next = liquidate(state, -state.cash);
+  if (next.cash >= -CASH_SETTLEMENT_EPSILON) {
+    return next.cash < 0 ? { ...next, cash: 0 } : next;
+  }
   if (next.cash < 0) {
     // §13/§26.1 — no card is ever unlocked in the MVP, so there is never
     // credit here; this is the seam Step 31 fills in.
