@@ -1168,7 +1168,7 @@ perfect play         2005-02    KNOWN GAP
 | 4 | Expense basket | Reproduces §8.3 to within £1 every year; **year-2000 surplus is −£0.45** — break-even, as designed. The blended rate is an output of the basket, never an input |
 | 5 | The script | **47 events.** The implemented delivery mix, popup-density reduction and late-game pacing additions are documented under *Deviations* below |
 | 6 | Fact sheets | All 17 vehicles, ten fields each, `— none —` never blank. Every scam carries ≥2 red flags (tested) |
-| 7–8 | Month tick + headless runner | §7.3's six sub-steps in exact order; full decade runs in <50ms |
+| 7–8 | Month tick + headless runner | §7.3's six sub-steps in exact order; full decade runs in <50ms. The shared tick boundary records chart histories and rejects missing/non-finite prior-month prefixes instead of silently misaligning or rebaselining a series |
 | 9 | **Verification gate** | Six scripted strategies asserting exact death dates. In CI |
 | 10–11 | Design tokens + bevel system | Three deliberately stark milestone layers built entirely from root CSS tokens: the untouched flat Windows 95 grey in 1996; a taller, sectional IE4/Windows 98 channel-and-rebar shell in 1998; then an owner-directed glossy blue/aqua/lime millennium shell in 2000. Later milestones change bar metrics, spacing, tool orientation, framing, labels and scrollbar paint—not only colour. The 2000 art direction draws on the Frutiger Aero Archive's glass, saturated sky/water blue and optimistic green references while retaining the same functional browser inventory and shaded icon image list. Zero hex values anywhere outside `tokens.css` |
 | 12 | Window chrome | Bubble Navigator title bar, working menus, toolbar, address bar, status bar, 16px scrollbars, `TooSmall` fallback. The 1996 bars remain original. 1998 adds visible coolbar grippers, Channel Bar/Internet Zone labels, a BUBBLE-branded toolbar panel, wider navigation rail, modem footer, connection/activity panes and a conventional size grip. 2000 reflows the same tools into hot-tracked horizontal glass pills, reveals IE5's Go control, adds a trusted-zone capsule, visible popup-blocker count, luminous broadband tray and glossy scrollbar |
@@ -1191,7 +1191,7 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 377 tests green.
+### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 379 tests green.
 
 Seven bugs were found and fixed during integration, all worth knowing about:
 
@@ -1252,6 +1252,19 @@ The 25 Aug correctness review then closed four more implementation issues:
   select the destination milestone; state-rebuild keys retain immediate
   presenter/test landing. The inaccurate bundle-check claim in Deviation 6 was
   corrected to describe the production-render test that actually exists.
+
+The graph merge review then closed two more issues while this popup branch was
+updated from `main`:
+
+- **Missing chart-history prefixes failed silently.** `tick()` now rejects
+  incomplete or non-finite wealth and NASDAQ history before applying a month,
+  while January alone uses the documented market baseline of 100.
+- **Chart axis dates duplicated calendar arithmetic.** Both year-grid and label
+  positions now use the shared `monthIndex(year, 1)` helper, so they cannot
+  drift from `START_YEAR`.
+- **The isolated forced-sale fixture carried impossible empty histories into
+  September 2001.** It now supplies valid prior-month prefixes before invoking
+  the real tick; the production engine was already chronological.
 
 Two §25.5 details worth knowing before rehearsing:
 

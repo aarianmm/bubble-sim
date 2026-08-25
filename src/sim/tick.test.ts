@@ -77,6 +77,15 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
   };
 }
 
+function makeTickState(overrides: Partial<GameState> = {}): GameState {
+  const state = makeState(overrides);
+  return {
+    ...state,
+    wealthHistory: overrides.wealthHistory ?? Array(state.month).fill(0),
+    marketHistory: overrides.marketHistory ?? Array(state.month).fill(100),
+  };
+}
+
 function makeHolding(vehicleId: Holding['vehicleId'], overrides: Partial<Holding> = {}): Holding {
   return {
     vehicleId,
@@ -669,8 +678,16 @@ describe('tick (§7.3) — composition and order', () => {
   it('runs sub-steps in the exact §7.3 order: pay-in and expenses land before a same-month shock', () => {
     // A cash-only month with no shock: pay in, then expenses out.
     const month = monthIndex(1996, 6);
-    const next = tick(makeState({ month, cash: 0 }), [], []);
+    const next = tick(makeTickState({ month, cash: 0 }), [], []);
     expect(next.cash).toBeCloseTo(MONTHLY_PAY - expensesFor(month).total, 6);
+  });
+
+  it.each([
+    ['wealthHistory', { wealthHistory: [], marketHistory: [100] }],
+    ['marketHistory', { wealthHistory: [0], marketHistory: [] }],
+  ])('rejects an out-of-order tick with a missing %s point', (historyName, histories) => {
+    expect(() => tick(makeState({ month: 1, ...histories }), [], []))
+      .toThrow(`${historyName} must contain one finite point for every month before 1`);
   });
 
   it('is a no-op once the run has ended', () => {
@@ -689,7 +706,7 @@ describe('tick (§7.3) — composition and order', () => {
       amount: 900,
       blocksTime: true,
     };
-    const next = tick(makeState({ month: shockEvent.month, cash: 300 }), [shockEvent], []);
+    const next = tick(makeTickState({ month: shockEvent.month, cash: 300 }), [shockEvent], []);
     expect(next.status).toBe('dead');
   });
 });

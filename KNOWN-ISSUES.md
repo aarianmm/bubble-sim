@@ -422,3 +422,59 @@ arrivals also wait there. Inbox, My Money, offer, ending and unknown routes stay
 clear, while returning Home presents the preserved popup without dismissing it
 or losing its CTA. Unit and real-engine route regressions cover both requested
 portal pages, the queue, the timer hold and the return to Home.
+
+---
+
+## 25. History recording silently accepted a missing prior point — §22.1, §25.2
+
+**Status:** fixed on 25 Aug 2026 while updating the popup branch from main.
+
+The market recorder read `marketHistory[month - 1] ?? 100`, relying on an
+unenforced invariant that every caller had already recorded every prior month.
+An out-of-order or partially rebuilt state therefore silently reset the NASDAQ
+comparator to 100. The adjacent wealth recorder also appended after slicing an
+incomplete array, which could place the current value under the wrong month.
+Both charts could become visibly wrong with no error identifying the cause.
+
+January retains the documented 100 market baseline. Every tick now requires a
+finite prefix for both history arrays through the preceding month and throws a
+month-specific invariant error if either is missing or malformed. Regressions
+prove that out-of-order wealth and market histories fail loudly.
+
+---
+
+## 26. Chart year-axis math duplicated `monthIndex` instead of importing it — §25.1
+
+**Status:** fixed on 25 Aug 2026 while updating the popup branch from main.
+
+`src/ui/PerformanceChart.tsx:106` and `:145` compute `(year - 1996) * 12` inline
+to place year gridlines and axis labels, instead of calling the shared
+`monthIndex(year, 1)` helper from `src/sim/month.ts` — which the file already
+imports `MONTH_COUNT` and `monthLabelTitle` from, and which every other date
+calculation in the app (e.g. `DeathCard.tsx`) uses. Today the two are
+numerically identical, so nothing is visibly broken. The risk is drift: `1996`
+is `month.ts`'s `START_YEAR`, defined in one place specifically so it can
+change without hunting down every hardcoded copy. If `START_YEAR` ever moves,
+these two call sites will not, and the chart's year gridlines/labels will
+silently misalign against every other date in the app.
+
+Both gridline and label positions now call `monthIndex(year, 1)`, imported from
+the shared calendar module alongside the chart's existing month helpers. The
+axis therefore follows `START_YEAR` instead of maintaining a hidden duplicate.
+
+---
+
+## 27. The forced-sale harness jumped to 2001 with empty histories — §12.3, §25.2
+
+**Status:** fixed on 25 Aug 2026 while closing issue 25.
+
+`ForcedSale.test.tsx` constructed its September 2001 state directly but left
+both chart histories empty. That was tolerated while `tick()` silently accepted
+partial history, then correctly failed once the invariant became explicit. The
+production engine always reaches this state through chronological monthly
+ticks; only the isolated harness was invalid.
+
+The fixture now supplies finite prior-month wealth and market points before
+calling the real tick. Its forced-sale assertions remain unchanged, so the test
+still exercises the intended shock/liquidation behavior rather than weakening
+the new history guard.
