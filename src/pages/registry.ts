@@ -39,6 +39,12 @@ export function isPopupPresentationNeutralUrl(url: string): boolean {
   return url === HOME_URL || url === MAIL_URL || url === MONEY_URL;
 }
 
+/** Home is the only normal running surface. Every other current or future
+ * route pauses safely by default. */
+export function shouldAutoPauseSimulationUrl(url: string): boolean {
+  return url !== HOME_URL;
+}
+
 /** Any URL not in PORTAL_ROUTES is an external offer site (§17.1, §22.3). */
 export const OFFER_PAGE: PageDef = { title: '', component: Offer };
 

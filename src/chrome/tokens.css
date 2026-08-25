@@ -1021,7 +1021,7 @@
   /* Same visible controls in every stage; only their styling changes. */
   --toolbar-label-display: block;
   --go-button-display: flex;
-  --popup-blocker-display: none;
+  --popup-blocker-display: flex;
 }
 
 /* ------------------------------------------------------------------ *

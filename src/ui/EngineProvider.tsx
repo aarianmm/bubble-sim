@@ -223,6 +223,9 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(createInitialState);
   const [mailNoticeResetKey, setMailNoticeResetKey] = useState(0);
   const [paused, setPausedState] = useState(false);
+  const [autoPauseReasons, setAutoPauseReasons] = useState<Set<'route' | 'mail-message'>>(
+    () => new Set(),
+  );
   const [evolutionPaused, setEvolutionPausedState] = useState(false);
   const [rateOverride, setRateOverride] = useState<number>(RATE_NORMAL);
   const [forcedSale, setForcedSale] = useState<PendingForcedSale | null>(null);
@@ -319,11 +322,13 @@ export function EngineProvider({ children }: { children: ReactNode }) {
 
   // §20.1: a blocking dialog freezes time; a pending forced-sale choice
   // does too (it's the same "time paused until a choice is made" contract,
-  // §12.3). The Jan 1998/2000 interface evolution owns a separate hold so
-  // the player's Pause button cannot release its prompt, installer or final
-  // welcome early; the run ending freezes the clock for good.
+  // §12.3). Reading and decision routes own reason-based holds, while the
+  // Jan 1998/2000 interface evolution owns a separate hold so the player's
+  // Pause button cannot release its prompt, installer or final welcome early;
+  // the run ending freezes the clock for good.
+  const autoPaused = autoPauseReasons.size > 0;
   const frozen =
-    paused || evolutionPaused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
+    paused || autoPaused || evolutionPaused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
   const timeRate = frozen ? 0 : rateOverride;
 
   const rafRef = useRef<number | null>(null);
@@ -448,6 +453,15 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   }, [timeRate, beginMonth]);
 
   const setPaused = useCallback((p: boolean) => setPausedState(p), []);
+  const setAutoPaused = useCallback((reason: 'route' | 'mail-message', active: boolean) => {
+    setAutoPauseReasons((current) => {
+      if (active === current.has(reason)) return current;
+      const next = new Set(current);
+      if (active) next.add(reason);
+      else next.delete(reason);
+      return next;
+    });
+  }, []);
   const setEvolutionPaused = useCallback((p: boolean) => setEvolutionPausedState(p), []);
   const setTimeRate = useCallback((rate: number) => setRateOverride(rate), []);
 
@@ -536,6 +550,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
           accumulatorRef.current = 0;
           commitState(createInitialState());
           setPausedState(false);
+          setAutoPauseReasons(new Set());
           setEvolutionPausedState(false);
           setRateOverride(RATE_NORMAL);
           return;
@@ -692,11 +707,13 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       paused,
+      autoPaused,
       timeRate,
       popupPresentation,
       mailNoticeResetKey,
       dispatch,
       setPaused,
+      setAutoPaused,
       setEvolutionPaused,
       setTimeRate,
       closePresentedPopup,
@@ -712,11 +729,13 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     [
       state,
       paused,
+      autoPaused,
       timeRate,
       popupPresentation,
       mailNoticeResetKey,
       dispatch,
       setPaused,
+      setAutoPaused,
       setEvolutionPaused,
       setTimeRate,
       closePresentedPopup,

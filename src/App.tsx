@@ -27,7 +27,14 @@ import {
   EraUpdateCompletePage,
   EraWelcomeDialog,
 } from './chrome/EraTransition';
-import { resolveRoute, GAME_OVER_URL, HOME_URL, MAIL_URL, MONEY_URL } from './pages/registry';
+import {
+  resolveRoute,
+  GAME_OVER_URL,
+  HOME_URL,
+  MAIL_URL,
+  MONEY_URL,
+  shouldAutoPauseSimulationUrl,
+} from './pages/registry';
 import { MoneyDraftProvider } from './pages/Money';
 import { monthIndex, type MonthIndex } from './sim/month';
 
@@ -52,12 +59,16 @@ function visualMilestoneFor(month: MonthIndex): VisualMilestone {
 
 /** Evolution beats only interrupt continuous play. Non-continuous state loads
  * remain immediate so tests do not manufacture a chain of missed years. */
-function evolutionReached(previous: MonthIndex, current: MonthIndex): VisualMilestone | null {
-  if (previous === monthIndex(1997, 12) && current === monthIndex(1998, 1)) {
-    return { era: 'a', year: '1998' };
-  }
-  if (previous === monthIndex(1999, 12) && current === monthIndex(2000, 1)) {
+export function evolutionReached(previous: MonthIndex, current: MonthIndex): VisualMilestone | null {
+  if (current <= previous) return null;
+  // Prefer the newest crossed boundary when several monthly updates are
+  // batched into one render. The player must still see an installation beat
+  // for the interface they actually land on rather than silently skipping it.
+  if (previous < monthIndex(2000, 1) && current >= monthIndex(2000, 1)) {
     return { era: 'b', year: '2000' };
+  }
+  if (previous < monthIndex(1998, 1) && current >= monthIndex(1998, 1)) {
+    return { era: 'a', year: '1998' };
   }
   return null;
 }
@@ -84,6 +95,19 @@ function urlForSection(section: NavSection): string {
   }
 }
 
+export function SimulationRoutePause() {
+  const engine = useEngine();
+  const router = useRouter();
+  const autoPause = shouldAutoPauseSimulationUrl(router.url);
+
+  useLayoutEffect(() => {
+    engine.setAutoPaused('route', autoPause);
+    return () => engine.setAutoPaused('route', false);
+  }, [autoPause, engine.setAutoPaused]);
+
+  return null;
+}
+
 export function AppShell() {
   const engine = useEngine();
   const router = useRouter();
@@ -95,6 +119,7 @@ export function AppShell() {
   );
   const [evolution, setEvolution] = useState<EvolutionState | null>(null);
   const previousMonthRef = useRef(engine.state.month);
+  const previousResetKeyRef = useRef(engine.mailNoticeResetKey ?? 0);
   const evolutionLoadStartedRef = useRef(false);
 
   // The root changes only after the milestone's Continue -> loading sequence.
@@ -124,8 +149,23 @@ export function AppShell() {
   useLayoutEffect(() => {
     const current = engine.state.month;
     const previous = previousMonthRef.current;
-    if (current === previous) return;
+    const resetKey = engine.mailNoticeResetKey ?? 0;
+    const stateWasRebuilt = resetKey !== previousResetKeyRef.current;
     previousMonthRef.current = current;
+    previousResetKeyRef.current = resetKey;
+
+    // Reset and presenter/test state loads deliberately rebuild the timeline.
+    // They must land immediately on the matching visual state rather than
+    // manufacturing update dialogs for every crossed year.
+    if (stateWasRebuilt) {
+      engine.setEvolutionPaused(false);
+      evolutionLoadStartedRef.current = false;
+      setEvolution(null);
+      setAppliedMilestone(visualMilestoneFor(current));
+      return;
+    }
+
+    if (current === previous) return;
 
     const target = evolutionReached(previous, current);
     if (target) {
@@ -143,7 +183,7 @@ export function AppShell() {
     evolutionLoadStartedRef.current = false;
     setEvolution(null);
     setAppliedMilestone(visualMilestoneFor(current));
-  }, [engine.setEvolutionPaused, engine.state.dialogs.length, engine.state.month]);
+  }, [engine.mailNoticeResetKey, engine.setEvolutionPaused, engine.state.dialogs.length, engine.state.month]);
 
   useEffect(() => {
     if (evolution?.phase !== 'queued' || engine.state.dialogs.length > 0) return;
@@ -211,6 +251,7 @@ export function AppShell() {
 
   return (
     <div className={onDeathCard ? 'app-shell app-shell--death' : 'app-shell'}>
+      <SimulationRoutePause />
       <Window
         titleBar={{ title: router.title, onCloseConfirmed: newRun }}
         menuBar={{
