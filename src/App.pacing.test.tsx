@@ -118,31 +118,27 @@ describe('context-aware reading and decision pause', () => {
     expect(RATE_PRESENTER).toBe(20);
   });
 
-  it('pauses the Mail inbox and an open message, then resumes only on Home', () => {
-    forceNorthmoorMail();
+  it('runs the Mail inbox so events accumulate, pauses an open message, then resumes in the inbox', () => {
     navigate(MAIL_URL);
-    const pausedMonth = engine!.state.month;
-    expect(engine!.autoPaused).toBe(true);
-    expect(engine!.timeRate).toBe(0);
-    advance(MS_PER_MONTH * 2 + 100);
-    expect(engine!.state.month).toBe(pausedMonth);
+    expect(engine!.autoPaused).toBe(false);
+    expect(engine!.timeRate).toBe(RATE_NORMAL);
+    advance(MS_PER_MONTH * 5 + 100);
+    const runningMonth = engine!.state.month;
+    expect(runningMonth).toBeGreaterThan(0);
+    expect(engine!.state.inbox.some((item) => item.eventId === 'ev.1996-04.northmoor-bond')).toBe(true);
 
     openNorthmoorMail();
     expect(engine!.autoPaused).toBe(true);
     expect(engine!.timeRate).toBe(0);
     advance(MS_PER_MONTH * 4);
-    expect(engine!.state.month).toBe(pausedMonth);
+    expect(engine!.state.month).toBe(runningMonth);
 
     click(Array.from(container!.querySelectorAll('button')).find((button) =>
       button.textContent?.includes('[ Back ]')) ?? null);
-    expect(engine!.autoPaused).toBe(true);
-    expect(engine!.timeRate).toBe(0);
-
-    navigate(HOME_URL);
     expect(engine!.autoPaused).toBe(false);
     expect(engine!.timeRate).toBe(RATE_NORMAL);
     advance(MS_PER_MONTH * 2 + 100);
-    expect(engine!.state.month).toBeGreaterThan(pausedMonth);
+    expect(engine!.state.month).toBeGreaterThan(runningMonth);
   });
 
   it('keeps manual pause authoritative across Mail reading and the inbox', () => {
@@ -153,8 +149,6 @@ describe('context-aware reading and decision pause', () => {
     expect(engine!.autoPaused).toBe(true);
     click(Array.from(container!.querySelectorAll('button')).find((button) =>
       button.textContent?.includes('[ Back ]')) ?? null);
-    expect(engine!.autoPaused).toBe(true);
-    navigate(HOME_URL);
     expect(engine!.autoPaused).toBe(false);
     expect(engine!.paused).toBe(true);
     expect(engine!.timeRate).toBe(0);
@@ -172,9 +166,6 @@ describe('context-aware reading and decision pause', () => {
 
     expect(container!.querySelector('.mail-message')).toBeNull();
     expect(container!.querySelector('.mail-table')).not.toBeNull();
-    expect(engine!.autoPaused).toBe(true);
-    expect(engine!.timeRate).toBe(0);
-    navigate(HOME_URL);
     expect(engine!.autoPaused).toBe(false);
     expect(engine!.timeRate).toBe(RATE_NORMAL);
   });
@@ -236,13 +227,13 @@ describe('context-aware reading and decision pause', () => {
 
   it.each([
     ['Home', HOME_URL, false, true],
-    ['Mail inbox', MAIL_URL, true, false],
+    ['Mail inbox', MAIL_URL, false, false],
     ['My Money', MONEY_URL, true, false],
     ['offer/company page', OFFER_PAGES['northmoor-bond'].url, true, false],
     ['fact sheet', `${OFFER_PAGES['northmoor-bond'].url}/factsheet`, true, false],
     ['accept decision', `${OFFER_PAGES['northmoor-bond'].url}/accept`, true, false],
     ['unknown route', 'http://unknown.example/future-screen', true, false],
-  ])('%s follows the Home-only running and popup policies', (_label, url, paused, presentsPopups) => {
+  ])('%s follows the route timing and popup policies', (_label, url, paused, presentsPopups) => {
     expect(shouldAutoPauseSimulationUrl(url)).toBe(paused);
     expect(shouldPresentPopupUrl(url)).toBe(presentsPopups);
   });
@@ -255,12 +246,12 @@ describe('context-aware reading and decision pause', () => {
     advance(4000);
 
     navigate(MAIL_URL);
-    expect(engine!.autoPaused).toBe(true);
+    expect(engine!.autoPaused).toBe(false);
     expect(engine!.popupPresentation.active).toBeNull();
     expect(engine!.popupPresentation.pending[0]?.id).toBe(popupId);
     expect(engine!.popupPresentation.phase).toBe('gap');
     expect(document.querySelector('.comet-popup')).toBeNull();
-    advance(20000);
+    advance(1000);
     expect(engine!.popupPresentation.pending[0]?.id).toBe(popupId);
     expect(document.querySelector('.comet-popup')).toBeNull();
 
