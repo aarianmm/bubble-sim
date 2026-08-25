@@ -826,6 +826,9 @@ Unsolicited offers and ads. Time keeps running.
 - Auto-closes after ~45 simulated days if ignored, exactly like an expiring inbox message.
 - Sound: a short modem chirp, or nothing. Never a system chord — that sound is reserved for Tier 1, and the reservation is what makes Tier 1 mean something.
 - Clicking the CTA navigates the main window to the offer's site and files a copy in the inbox.
+- Popup windows render only on Home. Navigating to Inbox, My Money or another
+  route returns the active popup to its presentation queue; it resumes after
+  the player returns Home rather than following them across the interface.
 
 ### 20.3 Tier 3 — Inbox badge (quietest)
 
@@ -1176,7 +1179,7 @@ perfect play         2005-02    KNOWN GAP
 | 17 | `/home` | Headline pairing, this-month strip, year spine and fact-checked ticker, plus live accessible NASDAQ and player-wealth charts. Both charts are fed by the same pure monthly tick history used by the ending report. Their invariant SVG structure participates in the UI evolution: flat sparse plots in 1996, framed area/data-console treatment in 1998, then rounded layered fills, stronger grids, endpoint halos and luminous depth in 2000—all through milestone tokens |
 | 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view; the inbox and open messages pause time |
 | 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate). Offer, fact-sheet and accept routes pause time for investigation and decisions |
-| 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups draggable, capped at 3, positioned by arithmetic on the month index |
+| 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups are draggable, capped at 3, positioned by arithmetic on the month index and pinned to Home; leaving Home defers the active snapshot so Inbox and My Money stay clear without losing the offer |
 | 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. A live target-allocation donut makes draft versus applied state visible without changing the allocator's mechanics. Allocation controls and graph retain the original flat 1996 treatment, change to a square cyan/blue console with a subtle orbit in 1998, and become a glossy rounded aqua/lime instrument with depth and stronger segment caps in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Time pauses while allocating. Real-engine route regressions prove the lifecycle, auto-pause and milestone switching |
 | 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
 | 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending |
@@ -1188,7 +1191,7 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 382 tests green.
+### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 377 tests green.
 
 Seven bugs were found and fixed during integration, all worth knowing about:
 
@@ -1420,6 +1423,14 @@ mobile.
    message, comparing a fact sheet, reviewing an offer or allocating in My Money
    discouraged the careful financial behaviour the game is meant to teach. Home is
    the only normal running surface; manual pause intent remains independent.
+12. **Popup presentation is pinned to Home.** §20.2 originally described a popup
+   over the browser content area without restricting which page could sit beneath
+   it, and the first route-aware implementation treated Inbox and My Money as
+   presentation surfaces. The project owner asked that those focused reading and
+   allocation pages remain uncluttered. Leaving Home now returns the active popup
+   snapshot to the existing queue and holds its gap timer; returning Home resumes
+   it without generating a dismissal decision, dropping the CTA or changing the
+   authored simulation event.
 
 ---
 ---

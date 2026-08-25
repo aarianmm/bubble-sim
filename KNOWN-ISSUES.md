@@ -404,3 +404,21 @@ update dialog and broke milestone and Jan 2000 integration scenarios.
 `AppShell` now distinguishes a rebuild through `mailNoticeResetKey`: continuous
 forward crossings still receive an update, while reset and test/presenter loads
 land immediately on their destination milestone.
+
+---
+
+## 24. Popups followed the player into Inbox and My Money — §20.2, §22.2, §22.5
+
+**Status:** fixed on 25 Aug 2026 at the project owner's request.
+
+Popup routing treated Home, Inbox and My Money as equally neutral presentation
+surfaces. Because popup windows portal above the browser shell, an active popup
+therefore stayed over the inbox or allocation editor and obscured the content
+the player was trying to read or change.
+
+Home is now the only popup presentation surface. Leaving it immediately returns
+the active snapshot to the existing queue and pauses the inter-popup gap; new
+arrivals also wait there. Inbox, My Money, offer, ending and unknown routes stay
+clear, while returning Home presents the preserved popup without dismissing it
+or losing its CTA. Unit and real-engine route regressions cover both requested
+portal pages, the queue, the timer hold and the return to Home.
