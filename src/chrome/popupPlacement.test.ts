@@ -41,10 +41,67 @@ describe('popupOffset (§20.2 / §25.1 — derived from the month index, never M
     }
   });
 
+  it('places stable popup identities across the safe Mail region within the content area', () => {
+    const distinct = new Set<string>();
+    for (let month = 0; month < 132; month++) {
+      for (let slot = 0; slot < 3; slot++) {
+        const identity = `ev.${month}.popup.${slot}|${month}|${slot}`;
+        const position = popupOffset(
+          month,
+          slot,
+          CONTENT_W,
+          CONTENT_H,
+          POPUP_W,
+          POPUP_H,
+          'mail-lower',
+          identity,
+        );
+        distinct.add(`${position.x},${position.y}`);
+        const maxX = CONTENT_W - POPUP_W;
+        const maxY = CONTENT_H - POPUP_H;
+        expect(position.x).toBeGreaterThanOrEqual(Math.round(maxX * 0.05));
+        expect(position.x).toBeLessThanOrEqual(Math.round(maxX * 0.95));
+        expect(position.y).toBeGreaterThanOrEqual(Math.round(maxY * 0.62));
+        expect(position.y).toBeLessThanOrEqual(Math.round(maxY * 0.78));
+        expect(position.x + POPUP_W).toBeLessThanOrEqual(CONTENT_W);
+        expect(position.y + POPUP_H).toBeLessThanOrEqual(CONTENT_H);
+      }
+    }
+    expect(distinct.size).toBeGreaterThan(100);
+  });
+
+  it('is stable for the same identity and varies for different popup ids', () => {
+    const first = popupOffset(40, 0, CONTENT_W, CONTENT_H, POPUP_W, POPUP_H, 'mail-lower', 'vertex|40|0');
+    const repeat = popupOffset(40, 0, CONTENT_W, CONTENT_H, POPUP_W, POPUP_H, 'mail-lower', 'vertex|40|0');
+    const other = popupOffset(40, 0, CONTENT_W, CONTENT_H, POPUP_W, POPUP_H, 'mail-lower', 'halcyon|40|0');
+    expect(repeat).toEqual(first);
+    expect(other).not.toEqual(first);
+  });
+
+  it.each([
+    [300, 250],
+    [468, 280],
+  ])('fully contains a %dx%d Mail popup', (width, height) => {
+    for (let month = 0; month < 132; month++) {
+      const position = popupOffset(month, 1, CONTENT_W, CONTENT_H, width, height, 'mail-lower', `popup-${month}`);
+      expect(position.x).toBeGreaterThanOrEqual(0);
+      expect(position.y).toBeGreaterThanOrEqual(0);
+      expect(position.x + width).toBeLessThanOrEqual(CONTENT_W);
+      expect(position.y + height).toBeLessThanOrEqual(CONTENT_H);
+    }
+  });
+
+  it('leaves default placement unchanged when no region is supplied', () => {
+    expect(popupOffset(41, 2, CONTENT_W, CONTENT_H, POPUP_W, POPUP_H)).toEqual(
+      popupOffset(41, 2, CONTENT_W, CONTENT_H, POPUP_W, POPUP_H, 'default'),
+    );
+  });
+
   it('degrades to (0,0) rather than a negative offset when the popup is bigger than the content area', () => {
     const { x, y } = popupOffset(10, 0, 200, 150, 468, 280);
     expect(x).toBe(0);
     expect(y).toBe(0);
+    expect(popupOffset(10, 0, 200, 150, 468, 280, 'mail-lower')).toEqual({ x: 0, y: 0 });
   });
 });
 

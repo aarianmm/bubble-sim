@@ -150,21 +150,17 @@ describe('popup presentation timing', () => {
     expect(closePresentedPopup).toHaveBeenCalledWith(active.id);
   });
 
-  it.each([
-    ['Mail', MAIL_URL],
-    ['My Money', MONEY_URL],
-  ])('hides and defers an active popup on %s', (_label, url) => {
-    const deferPresentedPopup = vi.fn();
+  it('places an active Mail popup lower than its unchanged default position', () => {
     const active = makePopup();
-    render(
-      makeEngine({
-        popupPresentation: { active, pending: [], phase: 'showing' },
-        deferPresentedPopup,
-      }),
-      url,
-    );
-    expect(document.querySelector('.comet-popup')).toBeNull();
-    expect(deferPresentedPopup).toHaveBeenCalledWith(active.id);
+    render(makeEngine({ popupPresentation: { active, pending: [], phase: 'showing' } }), MAIL_URL);
+    const popup = document.querySelector<HTMLElement>('.comet-popup')!;
+    const defaultPosition = popupOffset(active.openedMonth, 0, 834, 558, active.width, active.height);
+    const identity = `${active.id}|${active.openedMonth}|0`;
+    const mailPosition = popupOffset(active.openedMonth, 0, 834, 558, active.width, active.height, 'mail-lower', identity);
+    expect(Number.parseInt(popup.style.top, 10)).toBe(mailPosition.y);
+    expect(Number.parseInt(popup.style.left, 10)).toBe(mailPosition.x);
+    expect(mailPosition.y).toBeGreaterThan(defaultPosition.y);
+    expect(mailPosition.y + active.height).toBeLessThanOrEqual(558);
   });
 
   it('keeps Home popup placement on the default deterministic path', () => {
@@ -187,8 +183,6 @@ describe('popup presentation timing', () => {
   });
 
   it.each([
-    ['Mail', MAIL_URL],
-    ['My Money', MONEY_URL],
     ['offer', 'http://www.cavendish-am.co.uk/opportunity'],
     ['fact sheet', 'http://www.cavendish-am.co.uk/opportunity/factsheet'],
     ['accept', 'http://www.cavendish-am.co.uk/opportunity/accept'],
@@ -225,7 +219,11 @@ describe('popup presentation timing', () => {
     expect(document.querySelector('.comet-popup')?.textContent).toContain('private reserve');
   });
 
-  it('resumes the remaining popup gap only on Home', () => {
+  it.each([
+    ['Home', HOME_URL],
+    ['Mail', MAIL_URL],
+    ['My Money', MONEY_URL],
+  ])('resumes the remaining popup gap on %s', (_label, neutralUrl) => {
     const finishPopupGap = vi.fn();
     const engine = makeEngine({
       popupPresentation: { active: null, pending: [makePopup()], phase: 'gap' },
@@ -236,7 +234,7 @@ describe('popup presentation timing', () => {
     act(() => routerHandle!.navigate('http://www.cavendish-am.co.uk/opportunity/factsheet'));
     act(() => vi.advanceTimersByTime(5000));
     expect(finishPopupGap).not.toHaveBeenCalled();
-    act(() => routerHandle!.navigate(HOME_URL));
+    act(() => routerHandle!.navigate(neutralUrl));
     act(() => vi.advanceTimersByTime(999));
     expect(finishPopupGap).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(1));
@@ -252,6 +250,24 @@ describe('popup presentation timing', () => {
     act(() => vi.advanceTimersByTime(20000));
     expect(closePresentedPopup).not.toHaveBeenCalled();
     render(engine);
+    act(() => vi.advanceTimersByTime(6999));
+    expect(closePresentedPopup).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1));
+    expect(closePresentedPopup).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves one active popup and its remaining timeout across Mail-message auto-pause', () => {
+    const closePresentedPopup = vi.fn();
+    const running = makeEngine({ closePresentedPopup });
+    render(running, MAIL_URL);
+    act(() => vi.advanceTimersByTime(4000));
+
+    render({ ...running, autoPaused: true, timeRate: 0 }, MAIL_URL);
+    act(() => vi.advanceTimersByTime(20000));
+    expect(document.querySelectorAll('.comet-popup')).toHaveLength(1);
+    expect(closePresentedPopup).not.toHaveBeenCalled();
+
+    render(running, MAIL_URL);
     act(() => vi.advanceTimersByTime(6999));
     expect(closePresentedPopup).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(1));

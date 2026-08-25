@@ -11,11 +11,10 @@ import {
   MONEY_URL,
   resolveRoute,
   shouldAutoPauseSimulationUrl,
-  shouldPresentPopupUrl,
 } from './pages/registry';
 import { EngineProvider } from './ui/EngineProvider';
 import { MS_PER_MONTH, RATE_FAST, RATE_NORMAL, RATE_PRESENTER, useEngine, type Engine } from './ui/engine';
-import { Notifications, POPUP_GAP_MS } from './ui/Notifications';
+import { Notifications } from './ui/Notifications';
 import { MoneyDraftProvider } from './pages/Money';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -235,19 +234,18 @@ describe('context-aware reading and decision pause', () => {
   });
 
   it.each([
-    ['Home', HOME_URL, false, true],
-    ['Mail inbox', MAIL_URL, true, false],
-    ['My Money', MONEY_URL, true, false],
-    ['offer/company page', OFFER_PAGES['northmoor-bond'].url, true, false],
-    ['fact sheet', `${OFFER_PAGES['northmoor-bond'].url}/factsheet`, true, false],
-    ['accept decision', `${OFFER_PAGES['northmoor-bond'].url}/accept`, true, false],
-    ['unknown route', 'http://unknown.example/future-screen', true, false],
-  ])('%s follows the Home-only running and popup policies', (_label, url, paused, presentsPopups) => {
-    expect(shouldAutoPauseSimulationUrl(url)).toBe(paused);
-    expect(shouldPresentPopupUrl(url)).toBe(presentsPopups);
+    ['Home', HOME_URL, false],
+    ['Mail inbox', MAIL_URL, true],
+    ['My Money', MONEY_URL, true],
+    ['offer/company page', OFFER_PAGES['northmoor-bond'].url, true],
+    ['fact sheet', `${OFFER_PAGES['northmoor-bond'].url}/factsheet`, true],
+    ['accept decision', `${OFFER_PAGES['northmoor-bond'].url}/accept`, true],
+    ['unknown route', 'http://unknown.example/future-screen', true],
+  ])('%s follows the Home-only running policy', (_label, url, expected) => {
+    expect(shouldAutoPauseSimulationUrl(url)).toBe(expected);
   });
 
-  it('pins popup presentation to Home while preserving the popup for the return', () => {
+  it('preserves one popup and its remaining timeout across paused routes, then resumes on Home', () => {
     act(() => engine!.forceEvent('ev.1998-03.cavendish'));
     const popupId = engine!.popupPresentation.active?.id;
     expect(popupId).toBeTruthy();
@@ -256,25 +254,21 @@ describe('context-aware reading and decision pause', () => {
 
     navigate(MAIL_URL);
     expect(engine!.autoPaused).toBe(true);
-    expect(engine!.popupPresentation.active).toBeNull();
-    expect(engine!.popupPresentation.pending[0]?.id).toBe(popupId);
-    expect(engine!.popupPresentation.phase).toBe('gap');
-    expect(document.querySelector('.comet-popup')).toBeNull();
     advance(20000);
-    expect(engine!.popupPresentation.pending[0]?.id).toBe(popupId);
-    expect(document.querySelector('.comet-popup')).toBeNull();
+    expect(engine!.popupPresentation.active?.id).toBe(popupId);
+    expect(document.querySelectorAll('.comet-popup')).toHaveLength(1);
 
     navigate(MONEY_URL);
     advance(20000);
-    expect(engine!.popupPresentation.pending[0]?.id).toBe(popupId);
-    expect(document.querySelector('.comet-popup')).toBeNull();
-
-    navigate(HOME_URL);
-    advance(POPUP_GAP_MS - 1);
-    expect(engine!.popupPresentation.active).toBeNull();
-    advance(1);
     expect(engine!.popupPresentation.active?.id).toBe(popupId);
     expect(document.querySelectorAll('.comet-popup')).toHaveLength(1);
+
+    navigate(HOME_URL);
+    advance(6999);
+    expect(engine!.popupPresentation.active?.id).toBe(popupId);
+    advance(1);
+    expect(engine!.popupPresentation.active).toBeNull();
+    expect(document.querySelector('.comet-popup')).toBeNull();
   });
 
   it('retains manual pause after leaving My Money for Home', () => {

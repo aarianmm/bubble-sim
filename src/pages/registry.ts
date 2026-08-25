@@ -33,10 +33,10 @@ export const MAIL_URL = 'http://www.bubble.net/mail';
 export const MONEY_URL = 'http://www.bubble.net/money';
 export const GAME_OVER_URL = 'http://www.bubble.net/over';
 
-/** Popups belong to the running Home surface. Reading, allocation, offer,
- * ending and unknown routes keep arrivals queued until Home is restored. */
-export function shouldPresentPopupUrl(url: string): boolean {
-  return url === HOME_URL;
+/** Popup presentation only resumes on the three ordinary portal surfaces.
+ * Offer flows, the death card, and unknown URLs are deliberately non-neutral. */
+export function isPopupPresentationNeutralUrl(url: string): boolean {
+  return url === HOME_URL || url === MAIL_URL || url === MONEY_URL;
 }
 
 /** Home is the only normal running surface. Every other current or future
