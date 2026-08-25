@@ -404,3 +404,47 @@ update dialog and broke milestone and Jan 2000 integration scenarios.
 `AppShell` now distinguishes a rebuild through `mailNoticeResetKey`: continuous
 forward crossings still receive an update, while reset and test/presenter loads
 land immediately on their destination milestone.
+
+---
+
+## 24. Market-history recording silently rebaselines on a missing prior point — §22.1, §25.2
+
+**Status:** open. Flagged, not fixed.
+
+`src/sim/tick.ts:569` computes `priorMarketLevel = next.marketHistory[next.month
+- 1] ?? 100`. This relies on an unenforced invariant: every caller ticks exactly
+one month at a time, with `marketHistory` already `month` entries long. Nothing
+in `tick()` checks that. If a caller ever advances more than one month at once,
+ticks out of order, or replays from a partially-rebuilt state, the array read
+misses and the comparator silently resets to the 100 baseline instead of
+failing loudly — the NASDAQ line on `/home` and the death-card chart would just
+be visibly wrong, with no error to point at the cause. §25.2 asks the tick
+pipeline to be deterministic and traceable; a silent fallback here trades a
+loud bug for a quiet one.
+
+**The fix, when it is wanted:** replace the `?? 100` fallback with an explicit
+assertion (or an invariant check earlier in `tick()`) that `next.month - 1` is
+either `0` (in which case `100` is the correct documented baseline) or already
+present in history. That turns a skipped/out-of-order tick into a thrown error
+during development instead of a mispainted chart in production.
+
+---
+
+## 25. Chart year-axis math duplicates `monthIndex` instead of importing it — §25.1
+
+**Status:** open. Flagged, not fixed; currently produces correct output.
+
+`src/ui/PerformanceChart.tsx:106` and `:145` compute `(year - 1996) * 12` inline
+to place year gridlines and axis labels, instead of calling the shared
+`monthIndex(year, 1)` helper from `src/sim/month.ts` — which the file already
+imports `MONTH_COUNT` and `monthLabelTitle` from, and which every other date
+calculation in the app (e.g. `DeathCard.tsx`) uses. Today the two are
+numerically identical, so nothing is visibly broken. The risk is drift: `1996`
+is `month.ts`'s `START_YEAR`, defined in one place specifically so it can
+change without hunting down every hardcoded copy. If `START_YEAR` ever moves,
+these two call sites will not, and the chart's year gridlines/labels will
+silently misalign against every other date in the app.
+
+**The fix, when it is wanted:** replace both inline expressions with
+`monthIndex(year, 1)` and import it alongside the other `month.ts` symbols
+already used in this file.
