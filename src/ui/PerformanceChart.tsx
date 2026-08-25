@@ -1,4 +1,4 @@
-import { MONTH_COUNT, monthLabelTitle, type MonthIndex } from '../sim/month';
+import { MONTH_COUNT, monthIndex, monthLabelTitle, type MonthIndex } from '../sim/month';
 import './performance-chart.css';
 
 const WIDTH = 600;
@@ -103,7 +103,7 @@ export function PerformanceChart({
         </g>
         <g className="performance-chart__year-grid" aria-hidden="true">
           {years.map((year) => {
-            const month = (year - 1996) * 12;
+            const month = monthIndex(year, 1);
             const x = PAD_X + (month / (MONTH_COUNT - 1)) * plotWidth;
             return <line key={year} x1={x} x2={x} y1={PAD_Y} y2={height - PAD_Y} />;
           })}
@@ -142,7 +142,7 @@ export function PerformanceChart({
           );
         })}
         {years.map((year) => {
-          const month = (year - 1996) * 12;
+          const month = monthIndex(year, 1);
           const x = PAD_X + (month / (MONTH_COUNT - 1)) * plotWidth;
           return <text key={year} x={x} y={height + 14} className="performance-chart__year">{String(year).slice(2)}</text>;
         })}

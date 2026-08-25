@@ -117,6 +117,8 @@ describe('§12.3 the Sep 2001 forced sale', () => {
     const before = makeState({
       month,
       cash: 120,
+      wealthHistory: Array(month).fill(0),
+      marketHistory: Array(month).fill(100),
       unlocked: ['fenwick-index'],
       holdings: { 'fenwick-index': makeHolding({ value: 3000, contributed: 3000 }) },
     });

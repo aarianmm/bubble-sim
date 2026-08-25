@@ -826,6 +826,9 @@ Unsolicited offers and ads. Time keeps running.
 - Auto-closes after ~45 simulated days if ignored, exactly like an expiring inbox message.
 - Sound: a short modem chirp, or nothing. Never a system chord — that sound is reserved for Tier 1, and the reservation is what makes Tier 1 mean something.
 - Clicking the CTA navigates the main window to the offer's site and files a copy in the inbox.
+- Popup windows render only on Home. Navigating to Inbox, My Money or another
+  route returns the active popup to its presentation queue; it resumes after
+  the player returns Home rather than following them across the interface.
 
 ### 20.3 Tier 3 — Inbox badge (quietest)
 
@@ -1165,7 +1168,7 @@ perfect play         2005-02    KNOWN GAP
 | 4 | Expense basket | Reproduces §8.3 to within £1 every year; **year-2000 surplus is −£0.45** — break-even, as designed. The blended rate is an output of the basket, never an input |
 | 5 | The script | **47 events.** The implemented delivery mix, popup-density reduction and late-game pacing additions are documented under *Deviations* below |
 | 6 | Fact sheets | All 17 vehicles, ten fields each, `— none —` never blank. Every scam carries ≥2 red flags (tested) |
-| 7–8 | Month tick + headless runner | §7.3's six sub-steps in exact order; full decade runs in <50ms |
+| 7–8 | Month tick + headless runner | §7.3's six sub-steps in exact order; full decade runs in <50ms. The shared tick boundary records chart histories and rejects missing/non-finite prior-month prefixes instead of silently misaligning or rebaselining a series |
 | 9 | **Verification gate** | Six scripted strategies asserting exact death dates. In CI |
 | 10–11 | Design tokens + bevel system | Three deliberately stark milestone layers built entirely from root CSS tokens: the untouched flat Windows 95 grey in 1996; a taller, sectional IE4/Windows 98 channel-and-rebar shell in 1998; then an owner-directed glossy blue/aqua/lime millennium shell in 2000. Later milestones change bar metrics, spacing, tool orientation, framing, labels and scrollbar paint—not only colour. The 2000 art direction draws on the Frutiger Aero Archive's glass, saturated sky/water blue and optimistic green references while retaining the same functional browser inventory and shaded icon image list. Zero hex values anywhere outside `tokens.css` |
 | 12 | Window chrome | Bubble Navigator title bar, working menus, toolbar, address bar, status bar, 16px scrollbars, `TooSmall` fallback. The 1996 bars remain original. 1998 adds visible coolbar grippers, Channel Bar/Internet Zone labels, a BUBBLE-branded toolbar panel, wider navigation rail, modem footer, connection/activity panes and a conventional size grip. 2000 reflows the same tools into hot-tracked horizontal glass pills, reveals IE5's Go control, adds a trusted-zone capsule, visible popup-blocker count, luminous broadband tray and glossy scrollbar |
@@ -1176,7 +1179,7 @@ perfect play         2005-02    KNOWN GAP
 | 17 | `/home` | Headline pairing, this-month strip, year spine and fact-checked ticker, plus live accessible NASDAQ and player-wealth charts. Both charts are fed by the same pure monthly tick history used by the ending report. Their invariant SVG structure participates in the UI evolution: flat sparse plots in 1996, framed area/data-console treatment in 1998, then rounded layered fills, stronger grids, endpoint halos and luminous depth in 2000—all through milestone tokens |
 | 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view; the inbox and open messages pause time |
 | 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate). Offer, fact-sheet and accept routes pause time for investigation and decisions |
-| 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups draggable, capped at 3, positioned by arithmetic on the month index |
+| 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups are draggable, capped at 3, positioned by arithmetic on the month index and pinned to Home; leaving Home defers the active snapshot so Inbox and My Money stay clear without losing the offer |
 | 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. A live target-allocation donut makes draft versus applied state visible without changing the allocator's mechanics. Allocation controls and graph retain the original flat 1996 treatment, change to a square cyan/blue console with a subtle orbit in 1998, and become a glossy rounded aqua/lime instrument with depth and stronger segment caps in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Time pauses while allocating. Real-engine route regressions prove the lifecycle, auto-pause and milestone switching |
 | 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
 | 25 | Forced-sale flow | Diffs the sim's own solvency result rather than recomputing liquidation; shows what is sold and at what loss in both money terms, with `[Sell something else]` and a "nothing left to sell" ending |
@@ -1188,7 +1191,7 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 382 tests green.
+### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 379 tests green.
 
 Seven bugs were found and fixed during integration, all worth knowing about:
 
@@ -1249,6 +1252,19 @@ The 25 Aug correctness review then closed four more implementation issues:
   select the destination milestone; state-rebuild keys retain immediate
   presenter/test landing. The inaccurate bundle-check claim in Deviation 6 was
   corrected to describe the production-render test that actually exists.
+
+The graph merge review then closed two more issues while this popup branch was
+updated from `main`:
+
+- **Missing chart-history prefixes failed silently.** `tick()` now rejects
+  incomplete or non-finite wealth and NASDAQ history before applying a month,
+  while January alone uses the documented market baseline of 100.
+- **Chart axis dates duplicated calendar arithmetic.** Both year-grid and label
+  positions now use the shared `monthIndex(year, 1)` helper, so they cannot
+  drift from `START_YEAR`.
+- **The isolated forced-sale fixture carried impossible empty histories into
+  September 2001.** It now supplies valid prior-month prefixes before invoking
+  the real tick; the production engine was already chronological.
 
 Two §25.5 details worth knowing before rehearsing:
 
@@ -1420,6 +1436,14 @@ mobile.
    message, comparing a fact sheet, reviewing an offer or allocating in My Money
    discouraged the careful financial behaviour the game is meant to teach. Home is
    the only normal running surface; manual pause intent remains independent.
+12. **Popup presentation is pinned to Home.** §20.2 originally described a popup
+   over the browser content area without restricting which page could sit beneath
+   it, and the first route-aware implementation treated Inbox and My Money as
+   presentation surfaces. The project owner asked that those focused reading and
+   allocation pages remain uncluttered. Leaving Home now returns the active popup
+   snapshot to the existing queue and holds its gap timer; returning Home resumes
+   it without generating a dismissal decision, dropping the CTA or changing the
+   authored simulation event.
 
 ---
 ---

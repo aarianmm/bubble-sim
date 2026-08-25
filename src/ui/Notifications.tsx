@@ -20,7 +20,7 @@ import { VEHICLES } from '../sim/vehicles';
 import { OFFER_PAGES } from '../content/offerpages';
 import { useEngine } from './engine';
 import { useRouter } from '../chrome/router';
-import { HOME_URL, isPopupPresentationNeutralUrl, MAIL_URL } from '../pages/registry';
+import { HOME_URL, shouldPresentPopupUrl } from '../pages/registry';
 import type { PopupItem } from '../sim/types';
 import { useEffect, useRef } from 'react';
 
@@ -75,9 +75,9 @@ function ActivePopups() {
     finishPopupGap,
   } = useEngine();
   const router = useRouter();
-  // Simulation time keeps running on external pages; only the presentation
-  // timer waits until the player returns to an ordinary portal surface.
-  const routeBusy = !isPopupPresentationNeutralUrl(router.url);
+  // Popup windows belong to Home. Reading and allocation routes keep their
+  // content clear while retaining the popup snapshot for the player's return.
+  const routeBusy = !shouldPresentPopupUrl(router.url);
   const paused = timeRate === 0 || routeBusy;
   const activeId = popupPresentation.active?.id;
 
@@ -100,8 +100,6 @@ function ActivePopups() {
   const msg = POPUP_MESSAGES[popup.contentId];
   const vehicle = popup.vehicleId ? VEHICLES[popup.vehicleId] : undefined;
   const offerPage = popup.vehicleId ? OFFER_PAGES[popup.vehicleId as Exclude<typeof popup.vehicleId, 'cash'>] : undefined;
-  const placementRegion = router.url === MAIL_URL ? 'mail-lower' : 'default';
-  const placementIdentity = `${popup.id}|${popup.openedMonth}|${slotOf(popup)}`;
   const { x, y } = popupOffset(
     popup.openedMonth,
     slotOf(popup),
@@ -109,8 +107,6 @@ function ActivePopups() {
     CONTENT_H,
     popup.width,
     popup.height,
-    placementRegion,
-    placementIdentity,
   );
   const cta: PopupCta | undefined = vehicle && offerPage ? { label: offerPage.ctaLabel, url: vehicle.url } : undefined;
 

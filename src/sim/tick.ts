@@ -535,8 +535,23 @@ export function solvencyCheck(state: GameState): GameState {
  * The tick (§7.3) — composition, in order. Order matters.
  * ------------------------------------------------------------------ */
 
+function assertHistoryPrefix(state: GameState): void {
+  for (const [name, values] of [
+    ['wealthHistory', state.wealthHistory],
+    ['marketHistory', state.marketHistory],
+  ] as const) {
+    const prefix = values.slice(0, state.month);
+    if (prefix.length !== state.month || prefix.some((value) => !Number.isFinite(value))) {
+      throw new Error(
+        `${name} must contain one finite point for every month before ${state.month}; received ${values.length}`,
+      );
+    }
+  }
+}
+
 export function tick(state: GameState, monthEvents: ScriptEvent[], monthDecisions: Decision[]): GameState {
   if (state.status !== 'running') return state;
+  assertHistoryPrefix(state);
   let next = payIn(state);
   next = expensesOut(next);
   next = marketMove(next);
@@ -566,7 +581,7 @@ export function tick(state: GameState, monthEvents: ScriptEvent[], monthDecision
   // run; previously only run.ts populated these arrays, leaving the shipped
   // end graph empty. NASDAQ is the market comparator because this chapter is
   // specifically about the dot-com bubble and its March 2000 peak.
-  const priorMarketLevel = next.marketHistory[next.month - 1] ?? 100;
+  const priorMarketLevel = next.month === 0 ? 100 : next.marketHistory[next.month - 1];
   const marketMultiplier = seriesRowFor(next.month)['idx-nasdaq'] ?? 1;
   return {
     ...next,
