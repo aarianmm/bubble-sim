@@ -7,10 +7,15 @@
  * "nothing left to sell" edge case (§25: "must handle having nothing
  * sellable left, which ends the run").
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { EngineProvider } from './EngineProvider';
+import {
+  EngineProvider,
+  MAX_FORCED_SALE_ATTEMPTS,
+  recoverForcedSaleChain,
+  shouldRecoverForcedSaleChain,
+} from './EngineProvider';
 import { ForcedSale, diffForcedSale } from './ForcedSale';
 import { tick } from '../sim/tick';
 import { eventsForMonth } from '../sim/scheduler';
@@ -245,5 +250,39 @@ describe('§25 done-condition — nothing left to sell ends the run', () => {
       (buttons[0] as HTMLButtonElement).click();
     });
     expect(confirmed).toBe(true);
+  });
+});
+
+describe('forced-sale settlement retry safeguard', () => {
+  it('terminates a malformed third attempt, writes off only its residual, and logs diagnostics', () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const malformed = makeState({
+      month: monthIndex(2001, 9),
+      cash: -0.75,
+      status: 'dead',
+      deathMonth: monthIndex(2001, 9),
+    });
+    const details = {
+      settlementId: 'ev.test.malformed-bill',
+      attempts: MAX_FORCED_SALE_ATTEMPTS,
+      shortfall: 0.75,
+      fees: 12.5,
+      cashBefore: 120,
+      cashAfter: -0.75,
+    };
+
+    expect(shouldRecoverForcedSaleChain(malformed, MAX_FORCED_SALE_ATTEMPTS - 1)).toBe(false);
+    expect(shouldRecoverForcedSaleChain(malformed, MAX_FORCED_SALE_ATTEMPTS)).toBe(true);
+    const recovered = recoverForcedSaleChain(malformed, details);
+
+    expect(recovered.status).toBe('running');
+    expect(recovered.cash).toBe(0);
+    expect(recovered.deathMonth).toBeNull();
+    expect(recovered.holdings).toBe(malformed.holdings);
+    expect(warning).toHaveBeenCalledWith(
+      '[forced-sale] settlement retry limit reached; residual written off',
+      details,
+    );
+    warning.mockRestore();
   });
 });

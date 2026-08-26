@@ -478,3 +478,25 @@ The fixture now supplies finite prior-month wealth and market points before
 calling the real tick. Its forced-sale assertions remain unchanged, so the test
 still exercises the intended shock/liquidation behavior rather than weakening
 the new history guard.
+
+---
+
+## 28. Forced-sale retries had no settlement-chain hard stop — §12.3
+
+**Status:** fixed on 26 Aug 2026.
+
+The pure liquidation already grossed a sale up and deducted its exit fee from
+the proceeds in the same operation, so it did not create recursive fee bills.
+The live `[ Sell something else ]` retry path, however, reran the same month from
+the same pre-settlement state without identifying or limiting that settlement
+chain. In addition, solvency used an exact zero comparison, allowing floating
+point residue below one penny to be treated as real insolvency.
+
+Forced settlement now explicitly tolerates less than half a penny of arithmetic
+residue. The live retry state carries the authored payment/dialog identity and
+an attempt count; a still-unresolved third attempt clears only the residual,
+restores the run and logs the payment id, shortfall, attempt count, fees and cash
+values. Successful fee-bearing liquidation remains atomic and ordinary
+insufficient-assets insolvency still ends the run. Regressions cover fee and
+no-fee sales, partial and multi-asset liquidation, queued/duplicate bills,
+rounding, voluntary fees, genuine insolvency and the defensive limit.

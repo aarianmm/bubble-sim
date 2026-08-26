@@ -11,6 +11,7 @@ import {
   marketMove,
   interestAndFees,
   fireScheduledEvents,
+  CASH_SETTLEMENT_EPSILON,
   isValidRebalanceDecision,
   solvencyCheck,
   tick,
@@ -636,6 +637,104 @@ describe('solvencyCheck (§7.3.6, §12.3)', () => {
     expect(next.cash).toBeGreaterThanOrEqual(0);
     expect(next.holdings['fenwick-index']!.value).toBeLessThan(500);
     expect(next.stats.forcedSales).toBe(1);
+  });
+
+  it('sells exactly the no-fee shortfall in one atomic liquidation', () => {
+    const state = makeState({
+      cash: -177,
+      unlocked: ['fenwick-index'],
+      holdings: { 'fenwick-index': makeHolding('fenwick-index', { value: 500 }) },
+    });
+    const next = solvencyCheck(state);
+    expect(next.cash).toBeCloseTo(0, 10);
+    expect(next.holdings['fenwick-index']!.value).toBeCloseTo(323, 10);
+    expect(next.holdings['fenwick-index']!.feesPaid).toBe(0);
+    expect(next.stats.forcedSales).toBe(1);
+  });
+
+  it('grosses up an exit-fee sale so its net proceeds cover the shortfall once', () => {
+    const state = makeState({
+      cash: -177,
+      unlocked: ['technova-growth'],
+      holdings: { 'technova-growth': makeHolding('technova-growth', { value: 500 }) },
+    });
+    const next = solvencyCheck(state);
+    const gross = 177 / 0.99;
+    expect(next.status).toBe('running');
+    expect(next.cash).toBeCloseTo(0, 10);
+    expect(next.holdings['technova-growth']!.value).toBeCloseTo(500 - gross, 10);
+    expect(next.holdings['technova-growth']!.feesPaid).toBeCloseTo(gross * 0.01, 10);
+    expect(next.stats.feesPaid).toBeCloseTo(gross * 0.01, 10);
+    expect(next.stats.forcedSales).toBe(1);
+  });
+
+  it('materially grosses up a larger exit-fee shortfall and only partially liquidates', () => {
+    const state = makeState({
+      cash: -990,
+      unlocked: ['technova-growth'],
+      holdings: { 'technova-growth': makeHolding('technova-growth', { value: 2000 }) },
+    });
+    const next = solvencyCheck(state);
+    expect(next.cash).toBeCloseTo(0, 10);
+    expect(next.holdings['technova-growth']!.withdrawn).toBeCloseTo(1000, 10);
+    expect(next.holdings['technova-growth']!.value).toBeCloseTo(1000, 10);
+    expect(next.stats.feesPaid).toBeCloseTo(10, 10);
+  });
+
+  it('uses multiple holdings in stable unlocked order when one cannot cover the bill', () => {
+    const state = makeState({
+      cash: -450,
+      unlocked: ['technova-growth', 'fenwick-index'],
+      holdings: {
+        'technova-growth': makeHolding('technova-growth', { value: 200 }),
+        'fenwick-index': makeHolding('fenwick-index', { value: 500 }),
+      },
+    });
+    const next = solvencyCheck(state);
+    expect(next.status).toBe('running');
+    expect(next.cash).toBeCloseTo(0, 10);
+    expect(next.holdings['technova-growth']!.value).toBe(0);
+    expect(next.holdings['fenwick-index']!.withdrawn).toBeCloseTo(252, 10);
+    expect(next.stats.forcedSales).toBe(1);
+  });
+
+  it('clamps only a sub-penny settlement residue instead of declaring insolvency', () => {
+    const state = makeState({ cash: -CASH_SETTLEMENT_EPSILON / 2 });
+    const next = solvencyCheck(state);
+    expect(next.status).toBe('running');
+    expect(next.cash).toBe(0);
+    expect(next.stats.forcedSales).toBe(0);
+  });
+
+  it('settles multiple queued bills once and ignores a duplicate decision', () => {
+    const month = monthIndex(1998, 8);
+    const events: ScriptEvent[] = [
+      {
+        id: 'ev.test.bill-a', date: '1998-08', month, channel: 'DLG', cls: 'shock',
+        contentId: 'dlg.shock-1998-08', amount: 100, blocksTime: true,
+      },
+      {
+        id: 'ev.test.bill-b', date: '1998-08', month, channel: 'DLG', cls: 'shock',
+        contentId: 'dlg.shock-1998-08', amount: 150, blocksTime: true,
+      },
+    ];
+    const decisions: Decision[] = events.map((event) => ({
+      type: 'resolve-dialog', month, dialogId: event.id, action: 'pay-from-cash',
+    }));
+    const charged = fireScheduledEvents(makeState({
+      month,
+      cash: 100,
+      unlocked: ['fenwick-index'],
+      holdings: { 'fenwick-index': makeHolding('fenwick-index', { value: 500 }) },
+    }), events, decisions);
+    expect(charged.cash).toBe(-150);
+    const settled = solvencyCheck(charged);
+    expect(settled.cash).toBeCloseTo(0, 10);
+    expect(settled.stats.forcedSales).toBe(1);
+    expect(settled.dialogs).toHaveLength(0);
+    const duplicate = fireScheduledEvents(settled, [], [decisions[0]]);
+    expect(duplicate.cash).toBeCloseTo(0, 10);
+    expect(duplicate.dialogs).toHaveLength(0);
   });
 
   it('ends the run when liquidation cannot cover the shortfall and there is no credit (§13/§26.1 MVP)', () => {
