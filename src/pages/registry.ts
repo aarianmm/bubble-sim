@@ -39,10 +39,10 @@ export function shouldPresentPopupUrl(url: string): boolean {
   return url === HOME_URL;
 }
 
-/** Home is the only normal running surface. Every other current or future
- * route pauses safely by default. */
+/** Home and the Mail inbox are normal running surfaces. Opening a message
+ * adds its own pause reason; every other current or future route pauses. */
 export function shouldAutoPauseSimulationUrl(url: string): boolean {
-  return url !== HOME_URL;
+  return url !== HOME_URL && url !== MAIL_URL;
 }
 
 /** Any URL not in PORTAL_ROUTES is an external offer site (§17.1, §22.3). */

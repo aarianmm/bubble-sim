@@ -108,7 +108,7 @@ Everything downstream follows from these seven. They are settled; don't relitiga
 | 2 | **Vehicles only arrive as messages** | Investments come by inbox and popup, never from a shop menu | Triage *is* the game. There is no curated "fund list" screen |
 | 3 | **Accept ≠ invest** | Accepting unlocks a vehicle into the portfolio; it holds £0 until allocated | Two separate skills: what you let in, and what you fund |
 | 4 | **Scams hurt at both tiers** | Accepting costs a little (fees, more scam mail). Allocating costs everything | Sloppy triage bleeds you. Sloppy allocation ends the run |
-| 5 | **Hybrid pacing** | Shocks and life events block. Mail and popups arrive with expiries; Home is the only normal running screen and every other screen auto-pauses | Authored delivery pressure without rushing review, investigation or allocation |
+| 5 | **Hybrid pacing** | Shocks and life events block. Mail and popups arrive with expiries; Home and the Mail inbox run normally, while opened messages and all other screens auto-pause | Authored delivery pressure without rushing reading, investigation or allocation |
 | 6 | **Two-way % allocation sliders, free rebalance** | Player sets target % across cash + every unlocked vehicle; game buys/sells to match | Retreat to cash is always possible — §12.3 explains why the death spiral survives anyway |
 | 7 | **Investing is the only lever** | The player never chooses their rent, food, job or lifestyle | The eagle stays unambiguous. No lifestyle system to build |
 | 8 | **Everything is authored** | One fixed timeline. No RNG anywhere in the run | The demo is reproducible on stage. Content is data, tunable without a rebuild. §14.2 is the script |
@@ -360,7 +360,7 @@ Those counts are the authored manifest, not a probability. The ratio is the *rea
 
 The player must still triage arrivals before they expire, but detailed financial reading and decisions are not speed-reading tests.
 
-- Home is the only normal running screen. The Mail inbox, individual messages, My Money, offer pages, fact sheets, accept/decision routes and every other non-Home route automatically pause simulated time.
+- Home and the Mail inbox are the normal running screens, allowing new Mail and events to accumulate while the inbox is browsed. Individual messages, My Money, offer pages, fact sheets, accept/decision routes and every other route automatically pause simulated time.
 - Popups do **not** slow time. Ignoring them is a real option with a real cost.
 - Junk, legit and scam rows are **visually identical in the inbox list**. Only the message body, the site it links to, and the fact sheet distinguish them.
 
@@ -949,7 +949,7 @@ Webmail of the era. Message list, no preview pane in Era A; preview pane appears
 - Sortable column headers with the correct sunken-on-press bevel.
 - **No visual class indicator.** Junk, legit and scam rows are identical.
 - Row hover = full-row highlight in `--title` with white text, as a period list control does.
-- Time pauses throughout `/mail`, including both the inbox list and individual messages.
+- Time runs normally in the `/mail` inbox list and pauses while an individual message is open.
 - `[ Delete all ]` exists and is a real strategy. It will also delete a windfall.
 
 ### 22.3 An offer page — the external site
@@ -1177,7 +1177,7 @@ perfect play         2005-02    KNOWN GAP
 | 15 | Presenter test driver (retired from deployment) | The original jump/preset/event driver remains test-only so integration coverage can land on authored beats. `App.tsx` has no import, URL unlock, About-click unlock, or render path for it; see Deviation 6 |
 | 16 | Dual money display | One component; the toggle swaps every figure at once (proven by test). The comparison is now 2026 purchasing power, using an offline fixed ONS CPI D7BT reference (1996 68.8; July 2026 142.9) |
 | 17 | `/home` | Headline pairing, this-month strip, year spine and fact-checked ticker, plus live accessible NASDAQ and player-wealth charts. Both charts are fed by the same pure monthly tick history used by the ending report. Their invariant SVG structure participates in the UI evolution: flat sparse plots in 1996, framed area/data-console treatment in 1998, then rounded layered fills, stronger grids, endpoint halos and luminous depth in 2000—all through milestone tokens |
-| 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view; the inbox and open messages pause time |
+| 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view; the inbox runs normally and open messages pause time |
 | 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate). Offer, fact-sheet and accept routes pause time for investigation and decisions |
 | 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups are draggable, capped at 3, positioned by arithmetic on the month index and pinned to Home; leaving Home defers the active snapshot so Inbox and My Money stay clear without losing the offer |
 | 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. A live target-allocation donut makes draft versus applied state visible without changing the allocator's mechanics. Allocation controls and graph retain the original flat 1996 treatment, change to a square cyan/blue console with a subtle orbit in 1998, and become a glossy rounded aqua/lime instrument with depth and stronger segment caps in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Time pauses while allocating. Real-engine route regressions prove the lifecycle, auto-pause and milestone switching |
@@ -1652,7 +1652,7 @@ Built by agents, fast, in parallel where possible. So this section is not a sche
 |---|---|---|---|
 | **16** ∥ | Dual money display. One component, one global toggle in `View >` and on the `/home` headline. | `src/ui/Money.tsx` | Every figure renders both; toggle swaps primary everywhere at once |
 | **17** ∥ | `/home`. §22.1 — headline, this-month strip, year spine, news ticker. | `src/pages/Home.tsx` | Matches §22.1 at 1024×768; headline toggles dual money on click |
-| **18** ∥ | `/mail`. §22.2 — list, sortable headers, expiry column, row select, open, delete, delete-all. No class indicator on rows. | `src/pages/Mail.tsx` | Junk, legit and scam rows are pixel-identical; the inbox and open messages pause time |
+| **18** ∥ | `/mail`. §22.2 — list, sortable headers, expiry column, row select, open, delete, delete-all. No class indicator on rows. | `src/pages/Mail.tsx` | Junk, legit and scam rows are pixel-identical; the inbox runs normally and an open message pauses time |
 | **19** ∥ | Offer page template + **fact sheet component**. Fact sheet identical on every page, same position, same size, Times New Roman table. | `src/pages/Offer.tsx`, `src/ui/FactSheet.tsx` | Renders any of the 17 vehicles from Step 6 data; offer, fact-sheet and accept routes pause time |
 | **20** ∥ | Dialog system. §20.1 — blocking, dims the page, pauses time, no dismiss, max two buttons. | `src/chrome/Dialog.tsx` | Time is frozen while open; there is no code path that closes one without a choice |
 | **21** ∥ | Popup system. §20.2 — random-free positioning, draggable, real `✕`, chromeless, up to 3 concurrent, auto-close after 45 sim days. | `src/chrome/Popup.tsx` | Three open at once in May 1999; closing does not delete the inbox copy |
@@ -1727,7 +1727,7 @@ Fewer of these than there would be in a generated game: decision count, scam fre
 
 **Answer before the script freezes — i.e. before Step 36, after which it is copy edits only and no date changes:**
 
-- **Home-only running policy.** Home runs unless manually paused; the Mail inbox and every other non-Home screen auto-pause so review and decisions are not rushed.
+- **Mail reading pause.** Home and the Mail inbox run unless manually paused; opening a message or any other non-inbox screen auto-pauses so reading and decisions are not rushed.
 - **Popup volume at the 1999 peak.** Three concurrent is the authored cap. Watch for the point where it stops being atmospheric and starts being hated.
 - **Does the Halcyon fact sheet actually get opened?** This is the load-bearing moment of the whole design (§21). If players fund it without ever clicking through, the fact-sheet button is in the wrong place or the wrong size, and that is a UI bug, not a player error.
 - **Does anyone find the Northmoor trap?** If nobody notices that the "safe" 5.2% bond also loses to rent, that lesson isn't landing and needs its own death-card line.
