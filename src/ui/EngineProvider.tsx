@@ -529,7 +529,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     };
   }, [timeRate, beginMonth]);
 
-    const setPaused = useCallback((p: boolean) => {
+  const setPaused = useCallback((p: boolean) => {
     setPausedState(p);
     if (!p) setRoutePauseOverridden(true);
   }, []);
@@ -631,7 +631,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
           accumulatorRef.current = 0;
           commitState(createInitialState());
           setPausedState(false);
-          setAutoPauseReasons(false);
+          setAutoPauseReasons(new Set());
           setEvolutionPausedState(false);
           setRateOverride(RATE_NORMAL);
           return;
