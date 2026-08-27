@@ -396,6 +396,16 @@
   opacity: 0.4;
 }
 
+/* Issue #22: Search and Fav'ts are decorative period-authentic chrome —
+   they intentionally do nothing. Signal that without disabling them. */
+.comet-toolbar__btn--decorative:not(:disabled):hover {
+  cursor: not-allowed;
+}
+
+.comet-toolbar__btn--decorative .comet-toolbar__icon svg {
+  opacity: 0.4;
+}
+
 .comet-toolbar__label {
   display: var(--toolbar-label-display);
   font-size: 10px;
