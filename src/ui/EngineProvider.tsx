@@ -273,6 +273,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   const [autoPauseReasons, setAutoPauseReasons] = useState<Set<'route' | 'mail-message'>>(
     () => new Set(),
   );
+  const [routePauseOverridden, setRoutePauseOverridden] = useState(false);
   const [evolutionPaused, setEvolutionPausedState] = useState(false);
   const [rateOverride, setRateOverride] = useState<number>(RATE_NORMAL);
   const [forcedSale, setForcedSale] = useState<PendingForcedSale | null>(null);
@@ -373,7 +374,9 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   // Jan 1998/2000 interface evolution owns a separate hold so the player's
   // Pause button cannot release its prompt, installer or final welcome early;
   // the run ending freezes the clock for good.
-  const autoPaused = autoPauseReasons.size > 0;
+  const routeReasonHeld = autoPauseReasons.has('route') && !routePauseOverridden;
+  const mailReasonHeld = autoPauseReasons.has('mail-message');
+  const autoPaused = routeReasonHeld || mailReasonHeld;
   const frozen =
     paused || autoPaused || evolutionPaused || state.dialogs.length > 0 || forcedSale !== null || state.status !== 'running';
   const timeRate = frozen ? 0 : rateOverride;
@@ -526,8 +529,12 @@ export function EngineProvider({ children }: { children: ReactNode }) {
     };
   }, [timeRate, beginMonth]);
 
-  const setPaused = useCallback((p: boolean) => setPausedState(p), []);
+    const setPaused = useCallback((p: boolean) => {
+    setPausedState(p);
+    if (!p) setRoutePauseOverridden(true);
+  }, []);
   const setAutoPaused = useCallback((reason: 'route' | 'mail-message', active: boolean) => {
+    if (reason === 'route' && active) setRoutePauseOverridden(false);
     setAutoPauseReasons((current) => {
       if (active === current.has(reason)) return current;
       const next = new Set(current);
@@ -624,7 +631,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
           accumulatorRef.current = 0;
           commitState(createInitialState());
           setPausedState(false);
-          setAutoPauseReasons(new Set());
+          setAutoPauseReasons(false);
           setEvolutionPausedState(false);
           setRateOverride(RATE_NORMAL);
           return;
