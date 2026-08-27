@@ -172,6 +172,7 @@ interface ToolbarButtonSpec {
   icon: ReactNode;
   onClick: () => void;
   disabled?: boolean;
+  decorative?: boolean;
   badge?: number;
   notice?: string | null;
 }
@@ -203,8 +204,8 @@ export function Toolbar({
     { key: 'stop', label: 'Stop', icon: <StopIcon />, onClick: onStop, disabled: !canStop },
     { key: 'refresh', label: 'Refresh', icon: <RefreshIcon />, onClick: onRefresh },
     { key: 'home', label: 'Home', icon: <HomeIcon />, onClick: onHome },
-    { key: 'search', label: 'Search', icon: <SearchIcon />, onClick: onSearch },
-    { key: 'favourites', label: "Fav'ts", icon: <FavouritesIcon />, onClick: onFavourites },
+    { key: 'search', label: 'Search', icon: <SearchIcon />, onClick: onSearch, decorative: true },
+    { key: 'favourites', label: "Fav'ts", icon: <FavouritesIcon />, onClick: onFavourites, decorative: true },
     {
       key: 'mail',
       label: 'Mail',
@@ -221,7 +222,7 @@ export function Toolbar({
         <button
           type="button"
           key={btn.key}
-          className="bevel-out comet-toolbar__btn"
+          className={`bevel-out comet-toolbar__btn${btn.decorative ? ' comet-toolbar__btn--decorative' : ''}`}
           disabled={btn.disabled}
           onClick={btn.onClick}
         >
