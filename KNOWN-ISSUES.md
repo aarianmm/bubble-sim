@@ -522,3 +522,29 @@ calling the existing `onClose` prop — no reshaping needed, and no change to
 `onClose` callback. Left out of C1 to keep the shell's diff to exactly the
 named acceptance surface (button/✕/Escape); worth adding whenever a later
 step next touches `AssistantPanel.tsx` (e.g. C5's chat wiring).
+
+---
+
+## 30. Two authored hints are calendar-paced rather than reactive to the specific behaviour they coach — PLAN-COMET-ASSISTANT.md §4
+
+**Status:** accepted, a plan-authorized substitution for Step C2.
+
+Plan §4's own illustrative hint list includes one triggered "after a
+hover-preview URL mismatch has been on screen" — that signal lives in chrome
+router state (`StatusBarProps.loadState`'s `link-hover` variant), not in
+`GameState`, and plan §1 restricts every `HintDef.when` predicate in
+`src/script/hints.ts` to `(state: GameState) => boolean`. `hint.address-bar-check`
+and `hint.status-bar-hover` substitute a fixed `fromMonth` with an
+always-true predicate instead — general method reminders ("glance at the
+address bar before you click", "hover a link and read the status bar") that
+fire once the calendar reaches them, rather than reactions to a specific
+in-game occurrence. Plan §4 itself calls its example list "placeholders for
+tone... not text to copy verbatim," so this is inside the step's authorized
+latitude, not a spec violation.
+
+**The fix, if ever wanted:** thread a compact chrome/route signal (e.g. "a
+lookalike-domain hover happened this session") into the context the
+assistant already reads, then tighten these two predicates to require it.
+Worth doing only if playtesting shows either hint landing at an unhelpful
+moment — the current, simpler version still teaches the same two checks
+`bubble-design-requirements.md` §19.3 and §17.1 name.

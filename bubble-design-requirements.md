@@ -1135,7 +1135,7 @@ Everything needed, kept deliberately small. All original work.
 # BUILD STATUS
 
 **Live:** https://bubble-sim.pages.dev/ · **Repo:** https://github.com/aarianmm/bubble-sim · **stack:** Vite + React + TS, static, no backend
-**Last updated:** 25 Aug 2026
+**Last updated:** 28 Aug 2026
 
 > Owner-supplied screenshots inform the visual pass, but the controllable local
 > browser was unavailable during automated review. The integration suite drives
@@ -1199,8 +1199,9 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 | C1 | **Comet Assistant — chrome shell** (PLAN-COMET-ASSISTANT.md) | New `--assistant-*` tokens in all three milestone blocks: button size, panel width/height, balloon max-width, hint duration, panel title type, and the comet's own costume colours (the only new hex; every other assistant surface reuses existing chrome tokens). `AssistantButton.tsx` renders one inline pixel-art comet-with-a-face SVG (deliberately one art group, not Toolbar's legacy/millennium pair — the character stays the same across eras, only its tokened colours shift) and owns its own open/closed state, the same uncontrolled pattern AddressBar's URL dropdown and MenuBar's open menu use. `AssistantPanel.tsx` ships the chromeless-popup-style shell only: title, working ✕, an empty transcript placeholder and a disabled input row; closes on ✕ and Escape. `Toolbar.tsx` gained an optional, additive `rightSlot` (`Chrome.types.ts`) with the existing button inventory, labels and handlers unchanged (`Toolbar.test.tsx` untouched and green). Not yet mounted into the real chrome — `?visual=1`'s gallery (button wired through the real `Toolbar`) is the only place it can be seen until a later step wires it into `AppShell`. `AssistantButton.test.tsx` proves byte-identical markup across all three milestones (zero component-level era branching) plus the open/close/Escape contract. The plan text names a "Jan 2002" era switch; the shell instead follows the shipped Deviation 5 milestones (Jan 1998 / Jan 2000) — a plan-vs-build wording slip, not a new deviation |
+| C2 | **Comet Assistant — deterministic hints** (PLAN-COMET-ASSISTANT.md §4) | `src/script/hints.ts` authors eight `HintDef`s (check the inbox, read a fact sheet, idle cash, popups are dismissible for free, address-bar lookalikes, a card's promo rate, the status-bar link preview, concentrated holdings) mirroring `timeline.ts`'s typed-array idiom — dated, predicated, `Math.random()`-free. The pure scheduler `nextHint(state, shown: {id, month}[])` returns the first not-yet-shown, `fromMonth`-eligible, predicate-true hint, gated by a 6-simulated-month minimum gap (computed from the max month in `shown`, not wall time) and suppressed while `dialogs.length > 0` or `status !== 'running'`. Every predicate reads only visible `GameState` — `flags`, `cash`, `unlocked`, `popups`, `debt`, and `sim/selectors.ts`'s `currentAllocation` — never a spoiler field; `hints.test.ts` both drives a 61-month scripted walkthrough asserting the exact fire month of all eight hints and source-scans `hints.ts` for the forbidden identifiers so a later edit can't reintroduce a verdict silently. `src/content/assistant.ts` (new) carries `ASSISTANT_HINT_COPY`, coach-method copy only, with a marked section left for C4's fallback-answer library. `AssistantBalloon.tsx` (+ `assistant.css`) is the presentational balloon — a token-styled `bevel-out` face with a CSS-triangle tail, scoped `pointer-events` so it can never intercept a click meant for the page, dismissible early via ✕. `src/ui/useAssistant.ts` (new) is the scheduling half only: watches `engine.state.month`/`dialogs.length`/`status`, runs `nextHint` against an in-memory `shown` ref, shows the matched hint's copy for `--assistant-hint-duration` (6000ms, mirrored in JS as `ASSISTANT_HINT_DURATION_MS` the same way `Nav.tsx` mirrors `--duration-unread-flash`), and clears its bookkeeping on `engine.mailNoticeResetKey` changing — the same reset signal `AppShell` already uses. Chat/transcript/send (plan §8's other half) is explicitly left to C5; a section comment marks the seam. Neither the balloon nor the hook is mounted into `AppShell` yet — C5 owns real mounting, same sequencing as C1's panel. `?visual=1`'s gallery gained a standalone balloon sample (sample copy, no live engine) so a reviewer can eyeball it before C5 wires it in |
 
-### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 386 tests green.
+### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 398 tests green.
 
 Seven bugs were found and fixed during integration, all worth knowing about:
 
@@ -1453,6 +1454,19 @@ mobile.
    snapshot to the existing queue and holds its gap timer; returning Home resumes
    it without generating a dismissal decision, dropping the CTA or changing the
    authored simulation event.
+13. **§20's three notification tiers gain a fourth, quieter surface: the Comet
+   Assistant's hint balloon.** PLAN-COMET-ASSISTANT.md (§0, owner-confirmed
+   2026-08-28) adds an AI helper to the chrome. Its balloon (`AssistantBalloon.tsx`,
+   scheduled by the deterministic, `Math.random()`-free `nextHint` in
+   `src/script/hints.ts`) sits below even §20.3's inbox badge on the intrusion
+   scale — it never covers a control the player needs, auto-dismisses after
+   `--assistant-hint-duration`, and both plan §1 (the assistant sees only what the
+   player can see) and its own copy table (`ASSISTANT_HINT_COPY`,
+   `src/content/assistant.ts`) keep it to coach-method text. Critically, it can
+   never carry an offer, a vehicle, or a decision the way a `MailItem`,
+   `PopupItem` or `DialogItem` can — so §20.4's "the chrome never lies" rule
+   extends to it by construction: there is nothing on the balloon capable of being
+   a lie about game state in the first place.
 
 ---
 ---

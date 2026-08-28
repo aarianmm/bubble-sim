@@ -11,6 +11,8 @@ import { Window } from './Window';
 import { Toolbar } from './Toolbar';
 import { EraLoadingPage, EraUpdateCompletePage, EraWelcomeDialog } from './EraTransition';
 import { AssistantButton } from './AssistantButton';
+import { AssistantBalloon } from './AssistantBalloon';
+import { ASSISTANT_HINT_COPY } from '../content/assistant';
 import { monthIndex } from '../sim/month';
 import './gallery.css';
 
@@ -21,9 +23,12 @@ type TransitionPreview = {
 
 const SAMPLE_SPINE_YEARS = [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006];
 
+const SAMPLE_HINT_TEXT = ASSISTANT_HINT_COPY['hint.read-fact-sheet'];
+
 export function VisualGallery() {
   const [year, setYear] = useState<'1996' | '1998' | '2000'>('1996');
   const [transitionPreview, setTransitionPreview] = useState<TransitionPreview>(null);
+  const [showBalloon, setShowBalloon] = useState(true);
 
   // Exercise the exact root-attribute path used by AppShell. Restored to the
   // opening style on unmount so leaving the gallery cannot strand the game in
@@ -162,6 +167,32 @@ export function VisualGallery() {
          * mount point would use — proves the seam works end to end, not
          * just the standalone button. */}
         <Toolbar unreadCount={2} rightSlot={<AssistantButton />} />
+      </div>
+
+      <div className="chrome gallery-section window-face">
+        <h2>Comet Assistant hint balloon (PLAN-COMET-ASSISTANT.md, Step C2)</h2>
+        <p>
+          The balloon a real hint uses — same component, same <code>--assistant-*</code>{' '}
+          tokens, rendered here with sample copy rather than through the live scheduler
+          (which needs a running <code>&lt;EngineProvider&gt;</code>, absent on this
+          route). It never blocks the page underneath it and dismisses on <code>✕</code>{' '}
+          exactly as it would after <code>--assistant-hint-duration</code> in the real
+          game.
+        </p>
+        {!showBalloon && (
+          <button type="button" className="bevel-out" onClick={() => setShowBalloon(true)}>
+            Show sample hint again
+          </button>
+        )}
+        <div className="gallery-balloon-anchor">
+          {showBalloon && (
+            <AssistantBalloon
+              text={SAMPLE_HINT_TEXT}
+              onDismiss={() => setShowBalloon(false)}
+              style={{ position: 'relative', top: 'auto', right: 'auto' }}
+            />
+          )}
+        </div>
       </div>
 
       <div className="gallery-section">

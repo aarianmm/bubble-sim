@@ -145,3 +145,65 @@
   flex: 0 0 auto;
   min-width: 48px;
 }
+
+/* ------------------------------------------------------------------ *
+ * Hint balloon (Step C2, plan §2) — anchored below the button, over the
+ * top-right of the content area, same corner the panel opens from. A
+ * quieter, fourth notification surface (plan §10 Deviation 2): it never
+ * carries an offer, and it never blocks the page underneath it.
+ *
+ * Like `.comet-assistant-panel` above, this positions itself absolutely
+ * against the nearest positioned ancestor — `.comet-assistant`'s own
+ * `position: relative` (AssistantButton.tsx). A future mount (C5) renders
+ * `<AssistantBalloon>` as a sibling of `<AssistantPanel>` inside that same
+ * wrapper for the anchor to resolve correctly.
+ * ------------------------------------------------------------------ */
+
+.comet-assistant-balloon {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 4px;
+  z-index: 39; /* one below the panel (40), so opening the panel while a
+                 balloon is showing never fights it for stacking order */
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: var(--assistant-balloon-max-width);
+  padding: 8px 10px;
+  background: var(--face);
+  color: var(--text);
+  pointer-events: auto; /* scoped to this face only — plan §2 "never blocks input" */
+}
+
+.comet-assistant-balloon__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.comet-assistant-balloon__close {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  line-height: 1;
+  font-size: 9px;
+  border: 1px solid var(--dk-shadow);
+  background: var(--face);
+  color: var(--text);
+  cursor: default;
+}
+
+/* A small drawn speech-bubble tail pointing up at the throbber — a border
+ * triangle built from tokened colours, not an image (§25.1 hard rule #4:
+ * no hex outside this file's tokens.css sources). */
+.comet-assistant-balloon__tail {
+  position: absolute;
+  top: -8px;
+  right: 14px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 8px solid var(--face);
+}

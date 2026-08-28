@@ -74,3 +74,10 @@
 .gallery-placeholder-page {
   padding: 16px;
 }
+
+/* Lets AssistantBalloon.tsx's sample (Step C2) sit in normal document flow
+ * here instead of anchored absolutely under a throbber button, which this
+ * route doesn't mount. See VisualGallery.tsx's inline position override. */
+.gallery-balloon-anchor {
+  display: inline-block;
+}
