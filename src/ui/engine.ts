@@ -21,6 +21,18 @@ export const MS_PER_MONTH = 1200;
 export const RATE_NORMAL = 1;
 export const RATE_FAST = 4;
 
+/**
+ * PLAN-COMET-ASSISTANT.md §8/§10.3 — reading the Comet Assistant's panel
+ * slows time the same way reading the inbox does. The plan's own §8 prose
+ * says to "reuse the existing constant" (naming it `RATE_INBOX`), but no
+ * such constant exists: the inbox uses `engine.setAutoPaused('mail-message',
+ * …)`, a full pause, and pausing is reserved for Tier 1 dialogs (§20.1) —
+ * the assistant must never pause (plan §8). So the assistant gets its own
+ * rate constant instead of reusing a pause mechanism. Recorded as a plan
+ * departure at integration (CLAUDE.md rule 11).
+ */
+export const RATE_ASSISTANT = 0.4;
+
 /** §25.4 presenter tool — 20x is for skipping quiet years live. */
 export const RATE_PRESENTER = 20;
 

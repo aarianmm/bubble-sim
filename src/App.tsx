@@ -22,6 +22,10 @@ import { noop } from './chrome/Chrome.types';
 import { EngineProvider } from './ui/EngineProvider';
 import { useEngine } from './ui/engine';
 import { Notifications } from './ui/Notifications';
+import { useAssistant } from './ui/useAssistant';
+import { AssistantButton } from './chrome/AssistantButton';
+import { AssistantPanel } from './chrome/AssistantPanel';
+import { AssistantBalloon } from './chrome/AssistantBalloon';
 import {
   EraLoadingPage,
   EraUpdateCompletePage,
@@ -114,6 +118,7 @@ export function AppShell() {
   const engine = useEngine();
   const router = useRouter();
   const { count: unreadCount, flashing: unreadFlashing, statusLine, bannerText } = useUnreadNotice();
+  const assistant = useAssistant();
 
   const [soundsOn, setSoundsOn] = useState(true);
   const [appliedMilestone, setAppliedMilestone] = useState<VisualMilestone>(() =>
@@ -232,6 +237,17 @@ export function AppShell() {
     }
   }, [engine.state.status, router.url]);
 
+  // PLAN-COMET-ASSISTANT.md §11 / C5 acceptance — the assistant is
+  // suppressed on the death card; the chrome is greyed there and hints must
+  // not fire over it. `nextHint` already gates on `state.status !== 'running'`
+  // (src/script/hints.ts), and the panel/button/balloon below are only
+  // rendered when `!onDeathCard`; this closes the one remaining gap — a
+  // panel already open when the run ends would otherwise sit open, mounted,
+  // over a greyed-out chrome with no visible way back to it.
+  useEffect(() => {
+    if (router.url === GAME_OVER_URL) assistant.setOpen(false);
+  }, [router.url]);
+
   function handleAbout() {
     window.alert('BUBBLE — Bubble Navigator\n\nA product of the late 1990s.');
   }
@@ -267,6 +283,11 @@ export function AppShell() {
           onAbout: handleAbout,
           onDisclaimer: () =>
             window.alert('This is not financial advice. It is a game about 1996–2006.'),
+          // PLAN-COMET-ASSISTANT.md §9 C5 — same live-item idiom as
+          // onRefresh/onMail just below: a real no-op on the death card,
+          // matching the greyed-out chrome rather than silently doing
+          // nothing a player can't tell apart from "broken".
+          onOpenAssistant: onDeathCard ? noop : () => assistant.setOpen(true),
         }}
         toolbar={{
           canGoBack: onDeathCard ? false : router.canGoBack,
@@ -280,6 +301,28 @@ export function AppShell() {
           onMail: onDeathCard ? noop : () => router.navigate(MAIL_URL),
           unreadCount,
           newMailNotice: bannerText,
+          // PLAN-COMET-ASSISTANT.md §2/§9 — the throbber spot at the
+          // toolbar's right edge. Suppressed on the death card (plan §11):
+          // the chrome is greyed there and hints must not fire over it.
+          rightSlot: onDeathCard ? undefined : (
+            <div className="chrome comet-assistant">
+              <AssistantButton open={assistant.open} onToggle={() => assistant.setOpen(!assistant.open)} />
+              {assistant.open && (
+                <AssistantPanel
+                  onClose={() => assistant.setOpen(false)}
+                  transcript={assistant.transcript}
+                  inFlight={assistant.inFlight}
+                  offline={assistant.offline}
+                  onSend={(question) =>
+                    assistant.send(question, { url: router.url, title: router.title })
+                  }
+                />
+              )}
+              {assistant.balloon && (
+                <AssistantBalloon text={assistant.balloon.text} onDismiss={assistant.dismissBalloon} />
+              )}
+            </div>
+          ),
         }}
         addressBar={{
           url: router.url,

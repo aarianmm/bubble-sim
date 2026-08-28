@@ -120,11 +120,44 @@
   color: var(--text);
 }
 
-/* This step's empty state — C5 (plan §9) replaces this with the real
- * transcript, reading the same content area. */
 .comet-assistant-panel__transcript-empty {
   margin: 0;
   color: var(--disabled);
+}
+
+/* ------------------------------------------------------------------ *
+ * Transcript turns + offline status line (Step C5, plan §7/§9).
+ * ------------------------------------------------------------------ */
+
+.comet-assistant-panel__turn {
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.comet-assistant-panel__turn:last-child {
+  margin-bottom: 0;
+}
+
+.comet-assistant-panel__turn--user {
+  font-weight: 700;
+}
+
+.comet-assistant-panel__turn--assistant {
+  font-weight: 400;
+}
+
+/* plan §7: "visible but not alarming" — the same face/text tokens as the
+ * rest of the panel, not a new warning colour (§25.1 hard rule #4: no hex
+ * outside tokens.css, and no new token was warranted for one quiet line). */
+.comet-assistant-panel__offline {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  background: var(--face);
+  color: var(--text);
+  border-top: 1px solid var(--shadow);
 }
 
 .comet-assistant-panel__inputrow {

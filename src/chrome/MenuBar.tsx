@@ -36,6 +36,7 @@ export function MenuBar({
   soundsOn = true,
   onAbout = noop,
   onDisclaimer = noop,
+  onOpenAssistant = noop,
 }: MenuBarProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -101,6 +102,7 @@ export function MenuBar({
       items: [
         { kind: 'item', label: 'About Bubble Navigator...', onSelect: onAbout },
         { kind: 'item', label: 'This is not financial advice', onSelect: onDisclaimer },
+        { kind: 'item', label: 'Comet Assistant', onSelect: onOpenAssistant },
         { kind: 'separator' },
         { kind: 'item', label: 'Contents and Index', disabled: true },
       ],

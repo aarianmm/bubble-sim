@@ -68,6 +68,11 @@ export interface MenuBarProps {
   soundsOn?: boolean;
   onAbout?: () => void;
   onDisclaimer?: () => void;
+  /** Help > Comet Assistant (PLAN-COMET-ASSISTANT.md, Step C5) — opens the
+   * same panel the toolbar throbber does, via useAssistant.ts's lifted
+   * `open` state. Follows the same live-item idiom as onAbout/onDisclaimer;
+   * every other Help item stays disabled. */
+  onOpenAssistant?: () => void;
 }
 
 /* ------------------------------------------------------------------ *
@@ -106,25 +111,52 @@ export interface ToolbarProps {
 
 /* ------------------------------------------------------------------ *
  * AssistantButton / AssistantPanel — the Comet Assistant
- * (PLAN-COMET-ASSISTANT.md, Step C1). The button owns its own open/closed
- * state locally, the same uncontrolled pattern AddressBar's visited-URL
- * dropdown and MenuBar's open menu already use for presentation-only UI
- * state (see AssistantButton.tsx). Deliberately minimal so later steps
- * (C2's hint balloon, C5's real chat) can add optional props without
- * reshaping these two.
+ * (PLAN-COMET-ASSISTANT.md, Step C1; chat wiring Step C5).
+ *
+ * Step C1 had the button own its open/closed state locally (the same
+ * uncontrolled pattern AddressBar's visited-URL dropdown and MenuBar's open
+ * menu use). Step C5 lifts that state into `useAssistant.ts` instead,
+ * because `Help > Comet Assistant` (MenuBarProps.onOpenAssistant) must open
+ * the very same panel the toolbar throbber does — two independent pieces of
+ * UI driving one open/closed value needs a single owner. AssistantButton is
+ * now a plain controlled component; AssistantPanel and AssistantBalloon are
+ * composed alongside it by whoever mounts them (App.tsx's AppShell), inside
+ * a shared `.comet-assistant` positioning wrapper (assistant.css) so the
+ * panel/balloon's `position: absolute` still anchors under the button.
  * ------------------------------------------------------------------ */
 
+/** One transcript turn (PLAN-COMET-ASSISTANT.md §8). Plain data, not game
+ * state — lives here rather than in /ui so /chrome components stay
+ * importable without a /ui dependency for their prop types alone. */
+export interface AssistantTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface AssistantButtonProps {
-  /** Notified whenever the panel's open/closed state changes (button
-   * click, ✕, or Escape). An observation hook for a later step (e.g.
-   * useAssistant's on-open time-rate side effect, plan §8) — this button
-   * remains the state's owner, not a controlled component. */
-  onOpenChange?: (open: boolean) => void;
+  /** Defaults keep the standalone `<AssistantButton />` in VisualGallery.tsx
+   * compiling and rendering (closed, inert) without that file needing to
+   * adopt the controlled contract — it is a static design preview, not a
+   * caller that needs real open/close behaviour. */
+  open?: boolean;
+  onToggle?: () => void;
 }
 
 export interface AssistantPanelProps {
   /** Closes the panel. Wired to the ✕ button and to Escape. */
   onClose: () => void;
+  /** In-memory transcript owned by useAssistant.ts; cleared on run reset. */
+  transcript: AssistantTurn[];
+  /** True while a question is in flight (network attempt or fallback
+   * resolution) — disables the input so a second question can't jump the
+   * queue mid-stream. */
+  inFlight: boolean;
+  /** Latches true once any reply in this run came from the offline
+   * fallback (plan §7) — drives the status line, never clears itself. */
+  offline: boolean;
+  /** Send-on-Enter and the Ask button both call this; empty input is a
+   * no-op the panel itself enforces. */
+  onSend: (question: string) => void;
 }
 
 /* ------------------------------------------------------------------ *

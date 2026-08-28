@@ -18,15 +18,18 @@
  * by AssistantButton.test.tsx, which renders under all three milestones and
  * asserts byte-identical markup.
  *
- * Owns its own open/closed state locally — the same uncontrolled pattern
- * AddressBar's visited-URL dropdown and MenuBar's open menu already use for
- * presentation-only UI state (see those files). `onOpenChange` lets a later
- * step (`useAssistant.ts`, plan §8) observe transitions — e.g. to slow the
- * clock on open and restore it on close — without this file changing shape.
+ * Step C5 (plan §9): a plain controlled component. `useAssistant.ts` owns
+ * open/closed (Chrome.types.ts's AssistantButtonProps comment explains why
+ * the state moved out of this file), so this component renders only the
+ * button itself — no wrapper div, no embedded panel. The `.comet-assistant`
+ * positioning wrapper and the panel/balloon it anchors are composed by
+ * whoever mounts this button (App.tsx's AppShell; VisualGallery.tsx for the
+ * design preview), matching assistant.css's expectation that the panel and
+ * balloon are DOM siblings of the button under one `position: relative`
+ * ancestor.
  */
-import { useState } from 'react';
 import type { AssistantButtonProps } from './Chrome.types';
-import { AssistantPanel } from './AssistantPanel';
+import { noop } from './Chrome.types';
 import './assistant.css';
 
 /* 32x32, hand-drawn (§24 — no external assets). Tokened colours only. */
@@ -77,29 +80,19 @@ function CometIcon() {
   );
 }
 
-export function AssistantButton({ onOpenChange }: AssistantButtonProps) {
-  const [open, setOpen] = useState(false);
-
-  function setOpenAndNotify(next: boolean) {
-    setOpen(next);
-    onOpenChange?.(next);
-  }
-
+export function AssistantButton({ open = false, onToggle = noop }: AssistantButtonProps) {
   return (
-    <div className="chrome comet-assistant">
-      <button
-        type="button"
-        className="bevel-out comet-assistant__btn"
-        aria-label="Comet Assistant"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => setOpenAndNotify(!open)}
-      >
-        <span className="comet-assistant__icon">
-          <CometIcon />
-        </span>
-      </button>
-      {open && <AssistantPanel onClose={() => setOpenAndNotify(false)} />}
-    </div>
+    <button
+      type="button"
+      className="bevel-out comet-assistant__btn"
+      aria-label="Comet Assistant"
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      onClick={onToggle}
+    >
+      <span className="comet-assistant__icon">
+        <CometIcon />
+      </span>
+    </button>
   );
 }

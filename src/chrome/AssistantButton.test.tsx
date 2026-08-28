@@ -1,4 +1,14 @@
 // @vitest-environment jsdom
+/**
+ * Step C5 (plan §9) converted AssistantButton from an uncontrolled component
+ * that owned its own open/closed state (and rendered AssistantPanel itself)
+ * into a plain controlled button — see Chrome.types.ts's AssistantButtonProps
+ * comment for why. Panel-toggle behaviour now belongs to whoever composes
+ * button + panel (App.tsx's AppShell, exercised end to end in
+ * useAssistant.test.tsx); this file only has to prove the button itself:
+ * renders identically across eras, reflects the `open` prop, and calls
+ * `onToggle` on click.
+ */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -24,9 +34,9 @@ function renderUnderMilestone(era: 'a' | 'b', uiYear: '1996' | '1998' | '2000') 
   document.documentElement.setAttribute('data-era', era);
   document.documentElement.setAttribute('data-ui-year', uiYear);
   act(() => {
-    root.render(<AssistantButton />);
+    root.render(<AssistantButton open={false} onToggle={() => {}} />);
   });
-  return container.querySelector('.comet-assistant')?.outerHTML;
+  return container.querySelector('.comet-assistant__btn')?.outerHTML;
 }
 
 describe('AssistantButton — zero component-level era branching (CLAUDE.md rule 3)', () => {
@@ -41,59 +51,39 @@ describe('AssistantButton — zero component-level era branching (CLAUDE.md rule
   });
 });
 
-describe('AssistantButton — panel toggle', () => {
-  it('opens the panel on click and closes it on a second click', () => {
+describe('AssistantButton — controlled component (Step C5)', () => {
+  it('reflects the open prop via aria-expanded without owning any state itself', () => {
     act(() => {
-      root.render(<AssistantButton />);
+      root.render(<AssistantButton open={false} onToggle={() => {}} />);
     });
     const button = container.querySelector('button')!;
-    expect(container.querySelector('.comet-assistant-panel')).toBeNull();
     expect(button.getAttribute('aria-expanded')).toBe('false');
 
-    act(() => button.click());
-    expect(container.querySelector('.comet-assistant-panel')).not.toBeNull();
+    act(() => {
+      root.render(<AssistantButton open={true} onToggle={() => {}} />);
+    });
     expect(button.getAttribute('aria-expanded')).toBe('true');
+  });
 
+  it('calls onToggle on click and does not flip aria-expanded itself', () => {
+    const calls: number[] = [];
+    act(() => {
+      root.render(<AssistantButton open={false} onToggle={() => calls.push(1)} />);
+    });
+    const button = container.querySelector('button')!;
     act(() => button.click());
-    expect(container.querySelector('.comet-assistant-panel')).toBeNull();
+    expect(calls).toEqual([1]);
+    // No local state: the prop is still `false`, so aria-expanded stays put
+    // until the parent re-renders with a new `open` value.
     expect(button.getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('closes on the panel’s ✕ button', () => {
+  it('renders inert defaults when mounted without props (VisualGallery.tsx)', () => {
     act(() => {
       root.render(<AssistantButton />);
     });
     const button = container.querySelector('button')!;
-    act(() => button.click());
-    expect(container.querySelector('.comet-assistant-panel')).not.toBeNull();
-
-    const closeBtn = container.querySelector<HTMLButtonElement>('.comet-assistant-panel__close')!;
-    act(() => closeBtn.click());
-    expect(container.querySelector('.comet-assistant-panel')).toBeNull();
-  });
-
-  it('closes on Escape', () => {
-    act(() => {
-      root.render(<AssistantButton />);
-    });
-    const button = container.querySelector('button')!;
-    act(() => button.click());
-    expect(container.querySelector('.comet-assistant-panel')).not.toBeNull();
-
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    });
-    expect(container.querySelector('.comet-assistant-panel')).toBeNull();
-  });
-
-  it('notifies onOpenChange without ceding ownership of the open state', () => {
-    const calls: boolean[] = [];
-    act(() => {
-      root.render(<AssistantButton onOpenChange={(open) => calls.push(open)} />);
-    });
-    const button = container.querySelector('button')!;
-    act(() => button.click());
-    act(() => button.click());
-    expect(calls).toEqual([true, false]);
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    act(() => button.click()); // must not throw with no onToggle supplied
   });
 });
