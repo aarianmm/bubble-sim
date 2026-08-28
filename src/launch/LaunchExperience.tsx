@@ -13,7 +13,7 @@ const TABS: { id: HubTab; label: string }[] = [
 ];
 
 const DECADES = [
-  { years: '1996–2000', title: 'The dot-com bubble', available: true },
+  { years: '1996–2006', title: 'The dot-com bubble', available: true },
   { years: '2001–2004', title: 'The long aftermath', available: false },
   { years: '2005–2008', title: 'Credit everywhere', available: false },
   { years: '2009–2012', title: 'After the crash', available: false },
@@ -62,7 +62,7 @@ function OverviewPanel({ onStart }: { onStart: () => void }) {
         <div className="launch-preview__legend">
           <span><i className="launch-preview__key launch-preview__key--market" /> Market pressure</span>
           <span><i className="launch-preview__key launch-preview__key--wealth" /> Your choices</span>
-          <b>1996 → 2000</b>
+          <b>1996 → 2006</b>
         </div>
       </div>
     </div>
