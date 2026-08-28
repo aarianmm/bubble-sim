@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import './launch.css';
 
 type HubTab = 'overview' | 'simulation' | 'leaderboard' | 'reports' | 'settings';
@@ -29,7 +29,15 @@ function BubbleMark() {
   );
 }
 
-function OverviewPanel({ onStart }: { onStart: () => void }) {
+function OverviewPanel({
+  onStart,
+  onTutorial,
+  tutorialButtonRef,
+}: {
+  onStart: () => void;
+  onTutorial: () => void;
+  tutorialButtonRef: RefObject<HTMLButtonElement>;
+}) {
   return (
     <div className="launch-hero">
       <div className="launch-hero__copy">
@@ -39,10 +47,15 @@ function OverviewPanel({ onStart }: { onStart: () => void }) {
           Step into the late 1990s, live on a salary that never rises, and decide what deserves your trust while
           markets, prices and persuasion accelerate around you.
         </p>
-        <button type="button" className="launch-primary" onClick={onStart}>
-          Start simulation <span aria-hidden="true">↗</span>
-        </button>
-        <p className="launch-hero__note">One unlocked chapter · no account required · about 12 minutes</p>
+        <div className="launch-hero__actions">
+          <button type="button" className="launch-primary" onClick={onStart}>
+            Start simulation <span aria-hidden="true">↗</span>
+          </button>
+          <button ref={tutorialButtonRef} type="button" className="launch-secondary" onClick={onTutorial}>
+            How to play
+          </button>
+        </div>
+        <p className="launch-hero__note">No financial knowledge required · no account required · about 12 minutes</p>
       </div>
       <div className="launch-preview" aria-label="Preview of the simulation's market and money story">
         <div className="launch-preview__topline">
@@ -64,6 +77,117 @@ function OverviewPanel({ onStart }: { onStart: () => void }) {
           <span><i className="launch-preview__key launch-preview__key--wealth" /> Your choices</span>
           <b>1996 → 2006</b>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TutorialStep({ step }: { step: number }) {
+  if (step === 0) {
+    return (
+      <>
+        <p className="launch-eyebrow">Your mission</p>
+        <h2 id="launch-tutorial-title">Welcome to BUBBLE</h2>
+        <p>Live through 10 years of financial decisions in around 12 minutes. You’ll earn money, receive financial offers, face unexpected costs and watch the world change around you.</p>
+        <div className="launch-tutorial__callout">
+          <h3>Your goal isn’t simply to get rich.</h3>
+          <p>Try to make decisions that keep you financially resilient — even when you don’t know what’s coming next.</p>
+        </div>
+      </>
+    );
+  }
+  if (step === 1) {
+    return (
+      <>
+        <p className="launch-eyebrow">How to play</p>
+        <h2 id="launch-tutorial-title">Three places help you decide</h2>
+        <div className="launch-tutorial__areas">
+          <TutorialCard title="HOME — See your situation">Check your money, monthly income and expenses, and what’s happening in the economy.</TutorialCard>
+          <TutorialCard title="MAIL — Make decisions">You’ll receive financial offers and important life events. Read carefully — not everything that looks attractive is necessarily a good decision.</TutorialCard>
+          <TutorialCard title="MY MONEY — Manage your money">Decide how much to keep as cash and how much to put into different financial products.</TutorialCard>
+        </div>
+        <p className="launch-tutorial__reassurance">Don’t recognise a financial term? That’s okay. BUBBLE is designed for you to learn as you play.</p>
+      </>
+    );
+  }
+  if (step === 2) {
+    return (
+      <>
+        <p className="launch-eyebrow">Time keeps moving</p>
+        <h2 id="launch-tutorial-title">Every month changes your situation</h2>
+        <p>Each month you earn money and pay living costs. Markets change, new opportunities appear and unexpected events can happen.</p>
+        <div className="launch-tutorial__timeline" aria-label="The simulation runs from 1996 to 2006">
+          <span>1996</span><i aria-hidden="true">→</i><span>1998</span><i aria-hidden="true">→</i><span>2000</span><i aria-hidden="true">→</i><span>2003</span><i aria-hidden="true">→</i><span>2006</span>
+        </div>
+        <div className="launch-tutorial__callout">
+          <h3>You don’t know what’s coming next.</h3>
+          <p>Make the best decision you can with the information you have.</p>
+        </div>
+      </>
+    );
+  }
+  return (
+    <>
+      <p className="launch-eyebrow">What you’ll learn</p>
+      <h2 id="launch-tutorial-title">Learn by making decisions</h2>
+      <div className="launch-tutorial__lessons">
+        <TutorialCard title="Managing your money">Balancing what you spend, save and invest.</TutorialCard>
+        <TutorialCard title="Keeping money available">Understanding why you might need cash for unexpected costs.</TutorialCard>
+        <TutorialCard title="Understanding risk">Seeing why higher potential rewards can come with greater uncertainty.</TutorialCard>
+        <TutorialCard title="Spreading your risk">Learning why putting everything in one place can be dangerous.</TutorialCard>
+        <TutorialCard title="Questioning financial offers">Looking beyond persuasive advertising before trusting something.</TutorialCard>
+      </div>
+      <p className="launch-tutorial__finish">There is no perfect strategy. Make your decisions, experience the consequences, and try again.</p>
+    </>
+  );
+}
+
+function TutorialCard({ title, children }: { title: string; children: ReactNode }) {
+  return <article><h3>{title}</h3><p>{children}</p></article>;
+}
+
+function HowToPlay({ onClose, onStart }: { onClose: () => void; onStart: () => void }) {
+  const [step, setStep] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dialogRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="launch-tutorial" role="presentation">
+      <div
+        ref={dialogRef}
+        className="launch-tutorial__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="launch-tutorial-title"
+        tabIndex={-1}
+      >
+        <header className="launch-tutorial__header">
+          <div className="launch-brand"><BubbleMark /><span>BUBBLE</span></div>
+          <span>HOW TO PLAY · {step + 1} / 4</span>
+          <button type="button" className="launch-tutorial__close" onClick={onClose} aria-label="Close tutorial">×</button>
+        </header>
+        <div className="launch-tutorial__body"><TutorialStep step={step} /></div>
+        <footer className="launch-tutorial__controls">
+          <div className="launch-tutorial__progress" aria-label={`Tutorial step ${step + 1} of 4`}>
+            {[0, 1, 2, 3].map((index) => <i key={index} className={index === step ? 'is-active' : ''} />)}
+          </div>
+          <div className="launch-tutorial__buttons">
+            {step > 0 && <button type="button" className="launch-secondary" onClick={() => setStep(step - 1)}>← Back</button>}
+            {step < 3 ? (
+              <button type="button" className="launch-primary" onClick={() => setStep(step + 1)}>Next →</button>
+            ) : (
+              <button type="button" className="launch-primary" onClick={onStart}>Start my simulation →</button>
+            )}
+          </div>
+        </footer>
       </div>
     </div>
   );
@@ -200,6 +324,13 @@ export function LaunchExperience({
 }) {
   const [screen, setScreen] = useState<LaunchScreen | 'transition'>(initialScreen);
   const [activeTab, setActiveTab] = useState<HubTab>('overview');
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const tutorialButtonRef = useRef<HTMLButtonElement>(null);
+
+  const closeTutorial = () => {
+    setTutorialOpen(false);
+    window.setTimeout(() => tutorialButtonRef.current?.focus(), 0);
+  };
 
   if (screen === 'library') {
     return <DecadeLibrary onBack={() => setScreen('hub')} onSelect={() => setScreen('transition')} />;
@@ -227,7 +358,13 @@ export function LaunchExperience({
         <span className="launch-header__edition">DEMO / 01</span>
       </header>
       <section className="launch-main" role="tabpanel">
-        {activeTab === 'overview' && <OverviewPanel onStart={() => setScreen('library')} />}
+        {activeTab === 'overview' && (
+          <OverviewPanel
+            onStart={() => setScreen('library')}
+            onTutorial={() => setTutorialOpen(true)}
+            tutorialButtonRef={tutorialButtonRef}
+          />
+        )}
         {activeTab === 'simulation' && <SimulationPanel onStart={() => setScreen('library')} />}
         {activeTab !== 'overview' && activeTab !== 'simulation' && <PlaceholderPanel tab={activeTab} />}
       </section>
@@ -235,6 +372,9 @@ export function LaunchExperience({
         <span>REAL HISTORY / FICTIONAL FIRMS</span>
         <span>OFFLINE · DETERMINISTIC · NO FINANCIAL ADVICE</span>
       </footer>
+      {tutorialOpen && (
+        <HowToPlay onClose={closeTutorial} onStart={() => setScreen('library')} />
+      )}
     </main>
   );
 }

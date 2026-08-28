@@ -8,7 +8,7 @@ import { LaunchExperience } from './LaunchExperience';
 
 function button(container: HTMLElement, label: string): HTMLButtonElement {
   const match = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((item) =>
-    item.textContent?.includes(label),
+    item.textContent?.includes(label) || item.getAttribute('aria-label') === label,
   );
   if (!match) throw new Error(`button not found: ${label}`);
   return match;
@@ -64,6 +64,49 @@ describe('modern launch experience', () => {
     expect(onLaunch).not.toHaveBeenCalled();
     act(() => button(container, 'Skip intro').click());
     expect(onLaunch).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers a short, reversible four-step tutorial without starting the simulation', () => {
+    const onLaunch = mount();
+    expect(container.textContent).toContain('No financial knowledge required · no account required · about 12 minutes');
+    expect(button(container, 'Start simulation').classList.contains('launch-primary')).toBe(true);
+    expect(button(container, 'How to play').classList.contains('launch-secondary')).toBe(true);
+
+    act(() => button(container, 'How to play').click());
+    const dialog = container.querySelector<HTMLElement>('[role="dialog"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    expect(container.textContent).toContain('Welcome to BUBBLE');
+    expect(onLaunch).not.toHaveBeenCalled();
+
+    act(() => button(container, 'Next').click());
+    expect(container.textContent).toContain('HOME — See your situation');
+    expect(container.textContent).toContain('MAIL — Make decisions');
+    expect(container.textContent).toContain('MY MONEY — Manage your money');
+
+    act(() => button(container, 'Next').click());
+    expect(container.textContent).toContain('Every month changes your situation');
+    act(() => button(container, 'Back').click());
+    expect(container.textContent).toContain('Three places help you decide');
+    act(() => button(container, 'Next').click());
+    act(() => button(container, 'Next').click());
+    expect(container.textContent).toContain('Questioning financial offers');
+    expect(container.textContent).toContain('There is no perfect strategy');
+
+    act(() => button(container, 'Start my simulation').click());
+    expect(container.querySelectorAll('.decade-card')).toHaveLength(4);
+    expect(onLaunch).not.toHaveBeenCalled();
+  });
+
+  it('closes the tutorial from its close control or Escape', () => {
+    mount();
+    act(() => button(container, 'How to play').click());
+    act(() => button(container, 'Close tutorial').click());
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+
+    act(() => button(container, 'How to play').click());
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('automatically enters the game when the authored transition completes', () => {

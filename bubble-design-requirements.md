@@ -596,9 +596,14 @@ Secondary stats on the death card, for bragging and teaching, not for scoring: p
 
 ## 16. Onboarding
 
-**Die fast, learn across runs.**
+**Learn the controls quickly; learn finance across runs.**
 
-- **No tutorial mode.** No "welcome to BUBBLE, let's learn about sliders."
+- The modern launch surface offers an optional, four-step **How to play**
+  overlay for first-time 15–18-year-old players. It explains the objective,
+  Home/Mail/My Money, the moving monthly clock and five broad learning themes;
+  it does not define products, recommend a strategy or alter the simulation.
+- **No in-game tutorial mode.** There is no guided run, coached slider exercise
+  or interruption that tells the player which financial choice to make.
 - The first run is short and probably fatal, and that is the design.
 - **Teaching is diegetic.** The workplace pension letter explains allocation because it's a pension letter. Dave's email demonstrates FOMO because Dave is like that. The year-turn dialog explains inflation because it's January.
 - **Discoverability floor:** the first message of the first run must be unmistakably safe and must require opening the fact sheet, so the player learns the sheet exists before it matters. Everything after that is on them.
@@ -1195,11 +1200,11 @@ perfect play         2005-02    KNOWN GAP
 | 27 | Death card | Full-page, chrome retained, **every toolbar button greyed except Home**. The shared accessible decade chart compares the player's money with the NASDAQ. A deterministic personal report summarises the player's decisions, fact-sheet reading, rebalances, scam exposure and forced sales, then gives specific next-run guidance. Missed red flags are still quoted from the fact sheet the player could have read (§11.2 rule 5) |
 | 28 | **One-click replay** | `engine.reset()`, no menu, no confirmation |
 | 29–30 | Visual progression at Jan 1998 and Jan 2000 | Continuous play pauses at each boundary on the previous design and presents a large mandatory prompt: `We are now entering the year 1998/2000. Please update the system.` `[ Update the system ]` starts the real router load beneath a blue full-viewport installer that covers every old chrome control, shows staged installation status and preserves the frozen date. Only after loading finishes are the destination root attributes applied; a second full-screen `Welcome to 1998/2000` surface then previews the installed interface and `[ Enter the updated system ]` returns control. The three-stage sequence borrows the supplied Windows Aero reference's deep desktop-blue field, translucent framed panels, glass highlights and luminous controls. The welcome signal and progress sheen use discrete step animation with reduced-motion fallbacks. 1998 installs a markedly taller IE4/Win98 channel interface; 2000 makes the starker Frutiger Aero-inspired jump across the full shell and changes the toolbar from stacked legacy tools to horizontal glass controls. Functional control slots, handlers and ordering remain invariant; their milestone metrics and presentation deliberately do not. Forward range checks prevent a batched month render from skipping the destination update, while reset/presenter state rebuilds still apply their target milestone immediately. `?visual=1` exposes the prompt, installer and completion surfaces for review. The authored Jan 2002 computer-upgrade dialog remains narrative and no longer changes the theme; see Deviation 5 |
-| — | Launch experience and chapter library | A modern product-level opening surface introduces BUBBLE through Overview, Simulation, Leaderboard, User reports and Settings tabs. Simulation explains the core loop before opening a minimal chapter library. Only 1996–2000 is playable; later cards are visibly locked presentation previews. Starting the demo runs an original deterministic stepped retro boot sequence, then mounts the existing simulation unchanged. No account, stored report, ranking or later-decade mechanic is implied |
+| — | Launch experience and chapter library | A modern product-level opening surface introduces BUBBLE through Overview, Simulation, Leaderboard, User reports and Settings tabs. An optional four-step, keyboard-dismissible How to play overlay gives young first-time players a skimmable orientation to the objective, Home/Mail/My Money, moving time and intended learning without teaching products or strategy. It enters the same minimal chapter library as Start simulation. Only 1996–2000 is playable; later cards are visibly locked presentation previews. Starting the demo runs an original deterministic stepped retro boot sequence, then mounts the existing simulation unchanged. No account, stored report, ranking or later-decade mechanic is implied |
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 
-### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 386 tests green.
+### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 388 tests green.
 
 Seven bugs were found and fixed during integration, all worth knowing about:
 
@@ -1416,8 +1421,10 @@ mobile.
    treatment. All eleven years and the same live clock source remain, with no
    simulation timing or navigation behaviour change.
 8. **A modern launch shell and locked chapter library now sit outside the period
-   browser.** The owner requested a contemporary introduction, tutorial-style
-   Simulation tab, chapter picker and dramatic retro hand-off. This departs from
+   browser.** The owner requested a contemporary introduction, optional
+   four-step How to play overlay, tutorial-style Simulation tab, chapter picker
+   and dramatic retro hand-off. The overlay teaches navigation and the play loop
+   but deliberately leaves financial products and strategy to the game. This departs from
    §18's assumption that the maximised faux browser is the entire product
    surface. The exception ends before gameplay: selecting the only unlocked
    1996–2000 card runs a deterministic `steps()` boot animation and then mounts
