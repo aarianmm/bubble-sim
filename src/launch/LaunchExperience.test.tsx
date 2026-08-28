@@ -55,7 +55,7 @@ describe('modern launch experience', () => {
     const decadeCards = Array.from(container.querySelectorAll<HTMLButtonElement>('.decade-card'));
     expect(decadeCards).toHaveLength(4);
     expect(decadeCards.filter((item) => !item.disabled)).toHaveLength(1);
-    expect(decadeCards[0].textContent).toContain('1996–2000');
+    expect(decadeCards[0].textContent).toContain('1996–2006');
     expect(decadeCards.slice(1).every((item) => item.textContent?.includes('LOCKED'))).toBe(true);
 
     act(() => decadeCards[0].click());
