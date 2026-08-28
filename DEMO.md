@@ -109,3 +109,25 @@ the run; there is no event-forcing or saved-state UI in the shipped app.
   crash hitting a drawdown, not a bug, and open as a design call.
 - These three are decided and parked — don't re-litigate them live, just
   own them if asked.
+
+---
+
+## 6. The Comet Assistant on stage
+
+The comet in the top-right of the toolbar is a real Claude call. It cannot
+break the demo: if the key is missing, the wifi dies, or a reply stalls past
+8 seconds, it silently falls back to authored answers and shows
+`⚠ Working offline — answers from the built-in help file.` **To demo it
+offline on purpose, just don't set the key** — the fallback is the shipping
+path and looks identical.
+
+**If a judge asks it something odd:** it is built to coach method, never to
+give verdicts. It won't say "that's a scam" or "buy this" — it will point at
+the fact sheet, the ten fields, the status bar and the address bar. That is
+the answer to "why won't it just tell me?", and it's the same lesson the game
+teaches. It also only sees what the player can see (no future events, no
+`isScam`, no unread mail), so it cannot spoil a run — that's enforced by the
+serializer and unit-tested, not just prompted.
+
+Opening the panel slows the clock to 0.4×; it never pauses. Closing restores
+1×.

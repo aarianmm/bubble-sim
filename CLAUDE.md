@@ -80,8 +80,19 @@ src/dev       test-only demo driver; not imported by the deployed app.
 npm run check       lint + typecheck + test — must be green before you finish
 npm run verify      the calibration gate (§25.3)
 npm run dev         vite dev server
+npm run dev:functions  vite + the /api/assistant Pages Function (needs npm install first)
 npm run build:series regenerate src/data/series.json
 ```
+
+## The Comet Assistant's API key
+
+`functions/api/assistant.ts` is the one runtime network call in the product
+(Deviation 14). It reads `ANTHROPIC_API_KEY` from the Cloudflare Pages project
+secrets — dashboard → Workers & Pages → bubble-sim → Settings → Environment
+variables, encrypted, Production and Preview. Optionally set `ASSISTANT_MODEL`
+to override the `claude-opus-5` default. **The key never goes in the repo.**
+Locally, `wrangler` reads it from `.dev.vars` (gitignored). Without a key the
+assistant falls back to authored answers and the game is unaffected.
 
 ## Style
 

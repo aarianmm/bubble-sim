@@ -11,10 +11,24 @@ import { Window } from './Window';
 import { Toolbar } from './Toolbar';
 import { EraLoadingPage, EraUpdateCompletePage, EraWelcomeDialog } from './EraTransition';
 import { AssistantButton } from './AssistantButton';
+import { AssistantPanel } from './AssistantPanel';
 import { AssistantBalloon } from './AssistantBalloon';
+import { noop, type AssistantTurn } from './Chrome.types';
 import { ASSISTANT_HINT_COPY } from '../content/assistant';
 import { monthIndex } from '../sim/month';
 import './gallery.css';
+
+/** Sample copy for the gallery's panel — the live transcript needs a running
+ * <EngineProvider>, absent on this route. Coach-method, same as the real
+ * answer library (PLAN-COMET-ASSISTANT.md §3). */
+const GALLERY_TRANSCRIPT: AssistantTurn[] = [
+  { role: 'user', content: 'what is a tracker?' },
+  {
+    role: 'assistant',
+    content:
+      'A tracker simply follows an index rather than paying someone to pick shares, so its fees tend to be a good deal smaller. In this game, the fact sheet on any offer shows the annual fee — worth comparing before you commit.',
+  },
+];
 
 type TransitionPreview = {
   year: '1998' | '2000';
@@ -29,6 +43,7 @@ export function VisualGallery() {
   const [year, setYear] = useState<'1996' | '1998' | '2000'>('1996');
   const [transitionPreview, setTransitionPreview] = useState<TransitionPreview>(null);
   const [showBalloon, setShowBalloon] = useState(true);
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   // Exercise the exact root-attribute path used by AppShell. Restored to the
   // opening style on unmount so leaving the gallery cannot strand the game in
@@ -163,10 +178,33 @@ export function VisualGallery() {
           <code>--assistant-*</code> tokens alone — same button, same panel, zero
           component-level era checks (CLAUDE.md rule 3).
         </p>
-        {/* The real Toolbar, wired through the same `rightSlot` a future
-         * mount point would use — proves the seam works end to end, not
-         * just the standalone button. */}
-        <Toolbar unreadCount={2} rightSlot={<AssistantButton />} />
+        {/* The real Toolbar, wired through the same `rightSlot` AppShell
+         * uses — proves the seam works end to end, not just the standalone
+         * button. C5 made AssistantButton controlled, so the gallery owns
+         * the open state here exactly as AppShell does, and composes the
+         * panel beside it inside the same `.comet-assistant` anchor. The
+         * transcript is sample copy: the live one needs an
+         * <EngineProvider>, absent on this route. */}
+        <Toolbar
+          unreadCount={2}
+          rightSlot={
+            <div className="chrome comet-assistant">
+              <AssistantButton
+                open={assistantOpen}
+                onToggle={() => setAssistantOpen((v) => !v)}
+              />
+              {assistantOpen && (
+                <AssistantPanel
+                  onClose={() => setAssistantOpen(false)}
+                  transcript={GALLERY_TRANSCRIPT}
+                  inFlight={false}
+                  offline={false}
+                  onSend={noop}
+                />
+              )}
+            </div>
+          }
+        />
       </div>
 
       <div className="chrome gallery-section window-face">

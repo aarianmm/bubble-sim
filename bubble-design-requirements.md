@@ -1199,6 +1199,8 @@ perfect play         2005-02    KNOWN GAP
 
 | — | Final integration pass | §25.5's demo path walked beat by beat; `DEMO.md` written as the operator's card |
 | C1 | **Comet Assistant — chrome shell** (PLAN-COMET-ASSISTANT.md) | New `--assistant-*` tokens in all three milestone blocks: button size, panel width/height, balloon max-width, hint duration, panel title type, and the comet's own costume colours (the only new hex; every other assistant surface reuses existing chrome tokens). `AssistantButton.tsx` renders one inline pixel-art comet-with-a-face SVG (deliberately one art group, not Toolbar's legacy/millennium pair — the character stays the same across eras, only its tokened colours shift) and owns its own open/closed state, the same uncontrolled pattern AddressBar's URL dropdown and MenuBar's open menu use. `AssistantPanel.tsx` ships the chromeless-popup-style shell only: title, working ✕, an empty transcript placeholder and a disabled input row; closes on ✕ and Escape. `Toolbar.tsx` gained an optional, additive `rightSlot` (`Chrome.types.ts`) with the existing button inventory, labels and handlers unchanged (`Toolbar.test.tsx` untouched and green). Not yet mounted into the real chrome — `?visual=1`'s gallery (button wired through the real `Toolbar`) is the only place it can be seen until a later step wires it into `AppShell`. `AssistantButton.test.tsx` proves byte-identical markup across all three milestones (zero component-level era branching) plus the open/close/Escape contract. The plan text names a "Jan 2002" era switch; the shell instead follows the shipped Deviation 5 milestones (Jan 1998 / Jan 2000) — a plan-vs-build wording slip, not a new deviation |
+| C3–C4 | **Comet Assistant — context serializer + offline answers** | `buildAssistantContext` (`src/ui/assistantContext.ts`) is the enforcement point for "the assistant sees only what the player can see": explicit allow-list construction, never spread-and-delete, capped at ~4 KB with three truncation tiers. `assistantContext.test.ts` is the fairness contract in executable form — a state holding a scam, unread mail, a future event and the §20.5 fake dialog serializes with none of `isScam`, `collapseMonth`, `sellableAfterCollapse`, `tier`, `imitatesDialog`, unread bodies, red-flag ids or any future date, while opened bodies and the verbatim lookalike URL *do* survive. `matchFallback` + 20 authored answers (`src/content/assistantAnswers.ts`) are the deterministic offline path; "is it a scam" refuses the verdict and teaches the fact-sheet check, pinned by test |
+| C6 | **Comet Assistant — Pages Function + streaming client** | `functions/api/assistant.ts` calls the Anthropic Messages API directly with `fetch` (no SDK) and translates upstream SSE into a minimal `{delta\|done\|error}` contract, so no upstream error body, key or stack trace can reach the client. The §3 persona/policy prompt is one byte-identical `cache_control: ephemeral` block; volatile game context rides in the final user turn inside a named delimiter the prompt declares to be data, never instructions. `src/ui/assistantApi.ts` is the typed client: 8s timeout, one `AssistantFailureReason` surface covering network/non-2xx/timeout/mid-stream, partial replies discarded. Guardrails: 32 KB body cap, 2,000-char message cap, 12-turn server-side trim, narrowed origin allowlist. `functions/` typechecks via `tsconfig.functions.json`; the static build is untouched |
 | C2 | **Comet Assistant — deterministic hints** (PLAN-COMET-ASSISTANT.md §4) | `src/script/hints.ts` authors eight `HintDef`s (check the inbox, read a fact sheet, idle cash, popups are dismissible for free, address-bar lookalikes, a card's promo rate, the status-bar link preview, concentrated holdings) mirroring `timeline.ts`'s typed-array idiom — dated, predicated, `Math.random()`-free. The pure scheduler `nextHint(state, shown: {id, month}[])` returns the first not-yet-shown, `fromMonth`-eligible, predicate-true hint, gated by a 6-simulated-month minimum gap (computed from the max month in `shown`, not wall time) and suppressed while `dialogs.length > 0` or `status !== 'running'`. Every predicate reads only visible `GameState` — `flags`, `cash`, `unlocked`, `popups`, `debt`, and `sim/selectors.ts`'s `currentAllocation` — never a spoiler field; `hints.test.ts` both drives a 61-month scripted walkthrough asserting the exact fire month of all eight hints and source-scans `hints.ts` for the forbidden identifiers so a later edit can't reintroduce a verdict silently. `src/content/assistant.ts` (new) carries `ASSISTANT_HINT_COPY`, coach-method copy only, with a marked section left for C4's fallback-answer library. `AssistantBalloon.tsx` (+ `assistant.css`) is the presentational balloon — a token-styled `bevel-out` face with a CSS-triangle tail, scoped `pointer-events` so it can never intercept a click meant for the page, dismissible early via ✕. `src/ui/useAssistant.ts` (new) is the scheduling half only: watches `engine.state.month`/`dialogs.length`/`status`, runs `nextHint` against an in-memory `shown` ref, shows the matched hint's copy for `--assistant-hint-duration` (6000ms, mirrored in JS as `ASSISTANT_HINT_DURATION_MS` the same way `Nav.tsx` mirrors `--duration-unread-flash`), and clears its bookkeeping on `engine.mailNoticeResetKey` changing — the same reset signal `AppShell` already uses. Chat/transcript/send (plan §8's other half) is explicitly left to C5; a section comment marks the seam. Neither the balloon nor the hook is mounted into `AppShell` yet — C5 owns real mounting, same sequencing as C1's panel. `?visual=1`'s gallery gained a standalone balloon sample (sample copy, no live engine) so a reviewer can eyeball it before C5 wires it in |
 
 ### MVP complete at Step 28 (§26.1), with the owner-directed launch/reporting expansion. 398 tests green.
@@ -1467,6 +1469,55 @@ mobile.
    `PopupItem` or `DialogItem` can — so §20.4's "the chrome never lies" rule
    extends to it by construction: there is nothing on the balloon capable of being
    a lie about game state in the first place.
+14. **§25.4 and CLAUDE.md rule 8 ("fully offline") are broken in exactly one
+   place: `/api/assistant`.** The Comet Assistant's chat panel makes a runtime
+   network call to a Cloudflare Pages Function, which calls the Claude API.
+   Decided by the project owner on 2026-08-28 (PLAN-COMET-ASSISTANT.md §0.1) with
+   the offline guarantee preserved by degradation rather than by abstinence:
+   **every** failure path — DNS, non-2xx, an 8-second timeout, or a mid-stream
+   error — discards any partial reply and lands in the authored, deterministic
+   answer library (`src/content/assistantAnswers.ts`, `matchFallback`), showing
+   `⚠ Working offline — answers from the built-in help file.` The assistant is
+   additive and degradable: with the network unplugged the game is complete and
+   the assistant still answers. No other feature acquired a network dependency,
+   the static build is unchanged, and `npm run verify` never touches the network.
+   The API key lives only as a Pages project secret and is never sent to, or
+   readable by, the client.
+15. **§17's period conceit admits one deliberate anachronism: the assistant is
+   really an AI.** A 1996 browser had no language model. Rather than hide this,
+   the assistant is *costumed* as a period desktop helper in the
+   Clippy/BonziBuddy/Ask-Jeeves lineage — it occupies the toolbar slot where IE4
+   kept its animated throbber, speaks in period British English, and never breaks
+   character or acknowledges being anachronistic. Judged an acceptable, deliberate
+   wink: the one place the interface knows it is 2026. Its costume changes with
+   the Jan 1998 and Jan 2000 milestones like everything else, through tokens only.
+16. **§25.2's determinism contract is preserved despite a nondeterministic
+   surface.** Live model replies are the only nondeterministic output in the
+   product. They are safe because the assistant is structurally **read-only**: it
+   never calls `dispatch()` with a game decision, so a run remains fully described
+   by (script, decisions). `setTimeRate` on panel open/close is the sole engine
+   mutation it performs, and that is an already-typed, already-recorded decision.
+   Run outcomes, replays and the calibration gate are unaffected, and the hint
+   scheduler and fallback answers remain fully deterministic and unit-tested.
+17. **Implementation departures from PLAN-COMET-ASSISTANT.md's own text.** The
+   plan is a design document and was wrong or unbuildable in five small places:
+   (a) plan §6 named `@anthropic-ai/sdk` as a new runtime dependency — the
+   function calls the Anthropic REST API directly with `fetch`, which is
+   dependency-free and native to the Workers runtime; (b) plan §6 said to allow
+   `*.pages.dev` origins, which would admit every Cloudflare Pages deployment on
+   the internet to spend this project's API key — narrowed to this project's own
+   `*.bubble-sim.pages.dev` previews (the check is best-effort regardless, see
+   `KNOWN-ISSUES.md`); (c) plan §8 said to reuse an existing `RATE_INBOX` 0.4×
+   constant, which does not exist — the inbox uses a full `setAutoPaused`, and
+   plan §8 forbids pausing, so `RATE_ASSISTANT = 0.4` was added to
+   `src/ui/engine.ts`; (d) plan §7 put the answer library in
+   `src/content/assistant.ts`, which holds hint copy — it lives in
+   `src/content/assistantAnswers.ts` so both could be authored concurrently;
+   (e) plan §5's context cap needed a third truncation tier (whole oldest inbox
+   rows, after mail bodies and wealth history) because a maximal late-decade
+   inbox exceeds 4 KB on row metadata alone. Plan §0.2's reference to a "Jan 2002
+   era switch" was also disregarded in favour of the shipped Jan 1998 / Jan 2000
+   milestones (Deviation 5).
 
 ---
 ---

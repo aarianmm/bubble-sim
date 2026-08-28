@@ -548,3 +548,37 @@ assistant already reads, then tighten these two predicates to require it.
 Worth doing only if playtesting shows either hint landing at an unhelpful
 moment — the current, simpler version still teaches the same two checks
 `bubble-design-requirements.md` §19.3 and §17.1 name.
+
+---
+
+## 31. Filed popup mail items render an empty body
+
+`popupToMailItem` (`src/chrome/popupPlacement.ts`) keeps the popup's original
+`pop.*` contentId, which lives in `POPUP_MESSAGES`, but `src/pages/Mail.tsx`
+resolves bodies only from `MAIL_MESSAGES`. An opened filed-popup message
+therefore shows an empty body — a §10.2/§22.2 message-fidelity break that
+predates the assistant. Found while writing `src/ui/assistantContext.ts`,
+which deliberately mirrors the same (buggy) lookup so the assistant sees
+exactly what the player sees.
+
+**Fix:** have `Mail.tsx` fall back to `POPUP_MESSAGES`, and update
+`assistantContext.ts` in the same commit so the two stay in sync.
+
+## 32. `/api/assistant`'s origin check is not a security boundary
+
+`functions/api/assistant.ts` allows `bubble-sim.pages.dev`,
+`*.bubble-sim.pages.dev` and localhost, and lets a **missing** `Origin` header
+through (some same-origin navigations omit it). Any non-browser client can
+simply not send one, so this stops casual cross-site use and nothing more.
+Real abuse control is a Cloudflare rate-limiting rule on `/api/assistant` — a
+dashboard setting, not code; the function is deliberately stateless. Plan §6's
+original `*.pages.dev` suffix was narrowed because it would have let any
+Cloudflare Pages deployment on the internet spend this project's API key.
+
+## 33. `wrangler` is declared but not installed
+
+`package.json` lists `wrangler` in `devDependencies` and provides
+`npm run dev:functions`, but no install was run — the assistant was built by
+concurrent agents sharing one `node_modules`. Run `npm install` once before
+using `dev:functions`. Plain `npm run dev` needs nothing and exercises the
+offline fallback, which is usually what you want for a rehearsal.
