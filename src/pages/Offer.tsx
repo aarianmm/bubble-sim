@@ -19,7 +19,7 @@ import { FactSheet, ReturnSparkline } from '../ui/FactSheet';
 import { FACT_SHEETS } from '../content/factsheets';
 import { OFFER_PAGES, type OfferPage } from '../content/offerpages';
 import type { VehicleId } from '../sim/ids';
-import { HOME_URL } from './registry';
+import { MONEY_URL } from './registry';
 import './offer.css';
 
 // §23 explicitly keeps `<marquee>` on the motion allow-list ("Marquee text,
@@ -87,7 +87,10 @@ export function Offer() {
         vehicleId: resolved.id,
         source: url,
       });
-      navigate(HOME_URL);
+      // Send the player straight to the allocator so the newly-unlocked
+      // vehicle (sitting at £0) is one click from actually being funded,
+      // instead of stranding them on /home with no prompt to allocate.
+      navigate(MONEY_URL);
     } else if (resolved.view === 'factsheet') {
       // §11.2 rule 5 / §26.1: the death card names the flags the player
       // could have read — this is what lets it know the sheet was seen.

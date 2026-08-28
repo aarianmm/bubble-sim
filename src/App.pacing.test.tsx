@@ -206,11 +206,11 @@ describe('context-aware reading and decision pause', () => {
     expect(engine!.timeRate).toBe(0);
   });
 
-  it('holds the accept decision at the current month before returning Home', () => {
+  it('holds the accept decision at the current month before landing on the allocator', () => {
     const offer = OFFER_PAGES['fenwick-index'].url;
     const month = engine!.state.month;
     navigate(`${offer}/accept`);
-    expect(router!.url).toBe(HOME_URL);
+    expect(router!.url).toBe(MONEY_URL);
     expect(engine!.state.month).toBe(month);
     expect(engine!.state.decisions.at(-1)).toMatchObject({
       type: 'accept-offer',

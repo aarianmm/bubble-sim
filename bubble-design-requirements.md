@@ -1191,7 +1191,7 @@ perfect play         2005-02    KNOWN GAP
 | 16 | Dual money display | One component; the toggle swaps every figure at once (proven by test). The comparison is now 2026 purchasing power, using an offline fixed ONS CPI D7BT reference (1996 68.8; July 2026 142.9) |
 | 17 | `/home` | Headline pairing, this-month strip, year spine and fact-checked ticker, plus live accessible NASDAQ and player-wealth charts. Both charts are fed by the same pure monthly tick history used by the ending report. Their invariant SVG structure participates in the UI evolution: flat sparse plots in 1996, framed area/data-console treatment in 1998, then rounded layered fills, stronger grids, endpoint halos and luminous depth in 2000—all through milestone tokens |
 | 18 | `/mail` | Junk, legit and scam rows are **byte-identical in markup** (tested) — triage is impossible from the list view; the inbox runs normally and open messages pause time |
-| 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate). Offer, fact-sheet and accept routes pause time for investigation and decisions |
+| 19 | Offer pages + **fact sheet** | Three style bands driven by content, never by `isScam`. Halcyon (slick) vs Northmoor (plain but legitimate). Offer, fact-sheet and accept routes pause time for investigation and decisions. Accepting redirects straight to `/money` rather than `/home`, since accept unlocks a vehicle at £0 and does not itself allocate money — see Deviation 13 |
 | 20–22 | The three notification tiers | Dialogs have **no code path that closes them without a choice**; `DialogItem` cannot carry a vehicle, making §20.4's trust hierarchy a compile-time guarantee. Popups are draggable, capped at 3, positioned by arithmetic on the month index and pinned to Home; leaving Home defers the active snapshot so Inbox and My Money stay clear without losing the offer |
 | 23 | `/money` | Sliders always total 100% under proportional redistribution. Textual `PIN` / `PINNED` controls now explain that pins hold a target only while editing, expose pressed state to assistive technology, and give stepped visual feedback. An unconfirmed draft survives Home, Inbox, Refresh and Back/Forward navigation instead of silently reverting to cash, while Reset/new run/confirmation clear it deliberately. Suspended instruments cannot receive new money directly or via another slider's proportional redistribution; sellable residuals can only move down and unsellable ones freeze. The simulation rejects non-finite, out-of-range, unknown and non-100% rebalance decisions. `[Rebalance Now]` explicitly distinguishes draft from applied money and itemises every buy, sell, realised P&L and exit fee before executing. A live target-allocation donut makes draft versus applied state visible without changing the allocator's mechanics. Allocation controls and graph retain the original flat 1996 treatment, change to a square cyan/blue console with a subtle orbit in 1998, and become a glossy rounded aqua/lime instrument with depth and stronger segment caps in 2000, entirely through root tokens with reduced-motion-safe stepped feedback. Time pauses while allocating. Real-engine route regressions prove the lifecycle, auto-pause and milestone switching |
 | 24 | **Script wired to the UI** | All 47 events fire on their authored dates into the correct tier. Mail and popups now genuinely expire. Two-phase month commit keeps a blocking dialog open without breaking `tick()`'s atomicity, matching `run.ts`'s batching exactly so §25.2 determinism holds |
@@ -1459,6 +1459,15 @@ mobile.
    snapshot to the existing queue and holds its gap timer; returning Home resumes
    it without generating a dismissal decision, dropping the CTA or changing the
    authored simulation event.
+13. **Accepting an offer redirects to `/money`, not `/home`.** §22.3 never names an
+   accept destination. The code comment at `Offer.tsx` already noted "accept !=
+   invest… unlocks the vehicle onto /money at £0; it never allocates money
+   itself" — landing on Home after accept left the player with an unfunded
+   vehicle and no prompt to fund it. Accept now redirects straight to `/money`,
+   which already reconciles its draft to show the newly unlocked vehicle at 0%,
+   putting allocation one step closer to the moment it becomes relevant. No
+   route, decision type or simulation rule changes; only the post-accept
+   navigation target does.
 
 ---
 ---

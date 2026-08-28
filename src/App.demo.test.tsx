@@ -411,10 +411,11 @@ describe('§25.5 — the demo path, beat by beat, driven through the real AppShe
     }
 
     click(byText<HTMLAnchorElement>(container!, 'a', 'Accept'));
-    // Offer.tsx's /accept effect dispatches accept-offer then redirects home.
-    expect(container!.querySelector('.comet-titlebar__title')?.textContent).toBe('BUBBLE — Your account');
+    // Offer.tsx's /accept effect dispatches accept-offer then redirects
+    // straight to the allocator, so the newly-unlocked vehicle is one
+    // step from being funded.
+    expect(container!.querySelector('.comet-titlebar__title')?.textContent).toBe('BUBBLE — My money');
 
-    click(byText<HTMLButtonElement>(container!, '.comet-sidebar__item', 'MY MONEY'));
     const northmoorRow = byText<HTMLElement>(container!, '.money-row', 'Northmoor');
     expect(northmoorRow).toBeTruthy();
     const slider = northmoorRow!.querySelector<HTMLInputElement>('input[type="range"]');

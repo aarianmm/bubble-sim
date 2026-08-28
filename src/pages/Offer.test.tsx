@@ -168,11 +168,11 @@ function text(testId: string): string {
 }
 
 describe('accepting (§6 decision 3 — accept != invest)', () => {
-  it('dispatches accept-offer and bounces back to /home, without touching the portfolio', () => {
+  it('dispatches accept-offer and sends the player to the allocator, without touching the portfolio', () => {
     mountAt(`${HALCYON_URL}/accept`);
     expect(text('decision-count')).toBe('1');
     expect(text('last-decision')).toBe('accept-offer');
-    expect(text('current-url')).toBe('http://www.bubble.net/home');
+    expect(text('current-url')).toBe('http://www.bubble.net/money');
   });
 });
 
