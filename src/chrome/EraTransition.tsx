@@ -4,7 +4,7 @@
  * the root milestone attribute flips. Both destinations render one identical
  * tree; `data-ui-target` tokens provide their period-specific presentation.
  */
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Dialog } from './Dialog';
 import type { LoadState } from './Chrome.types';
 import type { DialogItem } from '../sim/types';
@@ -180,16 +180,22 @@ export function EraUpdateCompletePage({
 }: {
   year: EvolutionYear;
   onEnter: () => void;
-}) {  
-    // Auto-advance into the updated system after a short pause, so the player
-    // does not have to click. The timer is cleared on unmount so it can never
-    // fire after the screen has already gone.
-    useEffect(() => {
-      const timer = window.setTimeout(onEnter, 2000);
-      return () => window.clearTimeout(timer);
+}) {
+  const enterButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    enterButtonRef.current?.focus();
+  }, []);
+
+  // Auto-advance into the updated system after a short pause, so the player
+  // does not have to click. The button remains for anyone who wants to skip
+  // ahead or move at their own pace. Timer is cleared on unmount.
+  useEffect(() => {
+    const timer = window.setTimeout(onEnter, 2000);
+    return () => window.clearTimeout(timer);
   }, [onEnter]);
-  
-  return (
+
+  return (    
     <section
       className="chrome era-update-complete-page"
       role="dialog"
@@ -230,10 +236,15 @@ export function EraUpdateCompletePage({
             <small>Brighter system feedback</small>
           </div>
         </div>
-
-      <p className="era-update-complete-entering" role="status" aria-live="polite">
-      Entering the updated system…
-      </p>
+        
+        <button
+          ref={enterButtonRef}
+          type="button"
+          className="chrome bevel-out era-update-complete-button"
+          onClick={onEnter}
+        >
+          Enter the updated system
+        </button>  
       </div>
     </section>
   );
