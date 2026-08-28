@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:functions": "wrangler pages dev --proxy 5173 -- npm run dev",
     "build": "tsc -b tsconfig.app.json && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -31,7 +32,8 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.7",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "^3.99.0"
   },
   "overrides": {
     "vite": "^6.0.7"

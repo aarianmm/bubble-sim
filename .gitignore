@@ -5,3 +5,8 @@ coverage
 *.local
 .DS_Store
 *.tsbuildinfo
+.scratch
+# wrangler reads the local ANTHROPIC_API_KEY for `npm run dev:functions`
+# from this file. A real key must never be committed.
+.dev.vars
+.wrangler
