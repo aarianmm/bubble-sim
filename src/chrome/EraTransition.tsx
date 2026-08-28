@@ -187,7 +187,15 @@ export function EraUpdateCompletePage({
     enterButtonRef.current?.focus();
   }, []);
 
-  return (
+  // Auto-advance into the updated system after a short pause, so the player
+  // does not have to click. The button remains for anyone who wants to skip
+  // ahead or move at their own pace. Timer is cleared on unmount.
+  useEffect(() => {
+    const timer = window.setTimeout(onEnter, 2000);
+    return () => window.clearTimeout(timer);
+  }, [onEnter]);
+
+  return (    
     <section
       className="chrome era-update-complete-page"
       role="dialog"
@@ -228,7 +236,7 @@ export function EraUpdateCompletePage({
             <small>Brighter system feedback</small>
           </div>
         </div>
-
+        
         <button
           ref={enterButtonRef}
           type="button"
@@ -236,7 +244,7 @@ export function EraUpdateCompletePage({
           onClick={onEnter}
         >
           Enter the updated system
-        </button>
+        </button>  
       </div>
     </section>
   );
