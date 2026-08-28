@@ -8,7 +8,9 @@
  */
 import { useEffect, useState } from 'react';
 import { Window } from './Window';
+import { Toolbar } from './Toolbar';
 import { EraLoadingPage, EraUpdateCompletePage, EraWelcomeDialog } from './EraTransition';
+import { AssistantButton } from './AssistantButton';
 import { monthIndex } from '../sim/month';
 import './gallery.css';
 
@@ -146,6 +148,20 @@ export function VisualGallery() {
           <p>Line seven.</p>
           <p>Line eight.</p>
         </div>
+      </div>
+
+      <div className="chrome gallery-section window-face">
+        <h2>Comet Assistant (PLAN-COMET-ASSISTANT.md, Step C1)</h2>
+        <p>
+          Click the comet at the toolbar&rsquo;s right edge to open the panel. Switch
+          milestones above to see the button and panel re-cost themselves through
+          <code>--assistant-*</code> tokens alone — same button, same panel, zero
+          component-level era checks (CLAUDE.md rule 3).
+        </p>
+        {/* The real Toolbar, wired through the same `rightSlot` a future
+         * mount point would use — proves the seam works end to end, not
+         * just the standalone button. */}
+        <Toolbar unreadCount={2} rightSlot={<AssistantButton />} />
       </div>
 
       <div className="gallery-section">

@@ -93,6 +93,38 @@ export interface ToolbarProps {
   unreadCount?: number;
   /** Transient, presentation-only notice anchored to the Mail icon. */
   newMailNotice?: string | null;
+  /** Rendered at the right end of the toolbar row, after the button
+   * inventory above — the throbber spot (PLAN-COMET-ASSISTANT.md §2: "the
+   * exact spot where IE4 kept its animated throbber logo"). Optional and
+   * additive: omitting it reproduces the exact toolbar this file always
+   * rendered, so no existing caller or test needs to change. Right-alignment
+   * is the slotted content's own concern (e.g. `.comet-assistant`'s
+   * `margin-left: auto` in assistant.css) — this component stays ignorant of
+   * what, if anything, it is carrying. */
+  rightSlot?: ReactNode;
+}
+
+/* ------------------------------------------------------------------ *
+ * AssistantButton / AssistantPanel — the Comet Assistant
+ * (PLAN-COMET-ASSISTANT.md, Step C1). The button owns its own open/closed
+ * state locally, the same uncontrolled pattern AddressBar's visited-URL
+ * dropdown and MenuBar's open menu already use for presentation-only UI
+ * state (see AssistantButton.tsx). Deliberately minimal so later steps
+ * (C2's hint balloon, C5's real chat) can add optional props without
+ * reshaping these two.
+ * ------------------------------------------------------------------ */
+
+export interface AssistantButtonProps {
+  /** Notified whenever the panel's open/closed state changes (button
+   * click, ✕, or Escape). An observation hook for a later step (e.g.
+   * useAssistant's on-open time-rate side effect, plan §8) — this button
+   * remains the state's owner, not a controlled component. */
+  onOpenChange?: (open: boolean) => void;
+}
+
+export interface AssistantPanelProps {
+  /** Closes the panel. Wired to the ✕ button and to Escape. */
+  onClose: () => void;
 }
 
 /* ------------------------------------------------------------------ *

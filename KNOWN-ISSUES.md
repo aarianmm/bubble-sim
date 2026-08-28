@@ -500,3 +500,25 @@ values. Successful fee-bearing liquidation remains atomic and ordinary
 insufficient-assets insolvency still ends the run. Regressions cover fee and
 no-fee sales, partial and multi-asset liquidation, queued/duplicate bills,
 rounding, voluntary fees, genuine insolvency and the defensive limit.
+
+---
+
+## 29. Comet Assistant panel does not close on outside click — PLAN-COMET-ASSISTANT.md §2, Step C1
+
+**Status:** open, a deliberate scope decision for Step C1.
+
+`AssistantButton.tsx`/`AssistantPanel.tsx` close the panel only via the
+throbber button, the panel's own ✕, or Escape — the exact three triggers
+Step C1's acceptance criteria name. Every other dismissible popover already
+in `/chrome` (`AddressBar.tsx`'s visited-URL dropdown, `MenuBar.tsx`'s open
+menu) also closes on an outside `pointerdown`, and a player is likely to
+expect the same here: clicking into the page content with the panel open
+currently leaves it floating over whatever they meant to read or click.
+
+**The fix:** give `AssistantPanel.tsx` the same `useRef` + document
+`pointerdown`-outside-the-root listener `AddressBar.tsx` already uses,
+calling the existing `onClose` prop — no reshaping needed, and no change to
+`AssistantButton.tsx`, since it already owns nothing but the toggle and the
+`onClose` callback. Left out of C1 to keep the shell's diff to exactly the
+named acceptance surface (button/✕/Escape); worth adding whenever a later
+step next touches `AssistantPanel.tsx` (e.g. C5's chat wiring).

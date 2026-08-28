@@ -397,6 +397,30 @@
   --scrollbar-button-surface: var(--face);
   --scrollbar-corner-surface: var(--face);
 
+  /* --- Comet Assistant (Plan: the Comet Assistant, C1) ---
+     A period desktop-assistant character at the toolbar's right edge (plan
+     §2 — "the exact spot where IE4 kept its animated throbber logo"). Sizing
+     and typography reuse the toolbar-button and title-bar tokens above so
+     the button and panel read as native controls, not a bolted-on widget.
+     The comet's own costume colours are new hex — no existing token reads
+     as "a friendly comet with a face" — and are the only new hex this
+     section introduces (§25.1 hard rule #4: still only inside tokens.css). */
+  --assistant-button-size: 40px; /* bevelled-out square, large like the other Era A toolbar buttons (plan §2) */
+  --assistant-comet-body: #6fa8ff;
+  --assistant-comet-body-dark: #29509c;
+  --assistant-comet-body-light: #e3f0ff;
+  --assistant-comet-tail: #ffcf47;
+  --assistant-comet-face: #fff8e6;
+  --assistant-comet-eye: #17202b;
+  --assistant-comet-cheek: #ff9fc0;
+  --assistant-panel-width: 300px;
+  --assistant-panel-height: 380px;
+  --assistant-panel-title-font-size: 11px;
+  --assistant-panel-title-weight: 700;
+  --assistant-panel-title-spacing: 0;
+  --assistant-balloon-max-width: 220px;
+  --assistant-hint-duration: 6000ms; /* balloon auto-dismiss (plan §2); a timing constant, not a milestone look, so it repeats unchanged in every block below — same pattern as --duration-unread-flash */
+
   /* --- Fonts (§19.1) --- */
   /* W95FA is the bundled bitmap MS Sans Serif clone (§25.4 — offline, no
      Microsoft fonts shipped, see src/assets/fonts/README.md). Era A prefers
@@ -757,6 +781,25 @@
   --scrollbar-thumb-surface: linear-gradient(90deg, #f8ffff 0%, #9fd8e9 46%, #4f9fc4 100%);
   --scrollbar-button-surface: linear-gradient(180deg, #ffffff 0%, #80c8df 100%);
   --scrollbar-corner-surface: #72afd0;
+
+  /* --- Comet Assistant --- IE4/Windows 98 coolbar scale: a slightly taller
+     button matching the taller toolbar, and a cooler-toned costume. */
+  --assistant-button-size: 46px;
+  --assistant-comet-body: #4fb8e0;
+  --assistant-comet-body-dark: #0d5f82;
+  --assistant-comet-body-light: #eafcff;
+  --assistant-comet-tail: #ffe066;
+  --assistant-comet-face: #fffef2;
+  --assistant-comet-eye: #08303f;
+  --assistant-comet-cheek: #ff9fc0;
+  --assistant-panel-width: 312px;
+  --assistant-panel-height: 392px;
+  --assistant-panel-title-font-size: 11px;
+  --assistant-panel-title-weight: 700;
+  --assistant-panel-title-spacing: 0.02em;
+  --assistant-balloon-max-width: 230px;
+  --assistant-hint-duration: 6000ms;
+
   --radius-control: 2px;
   --radius-title: 3px;
 
@@ -1116,6 +1159,24 @@
   --scrollbar-thumb-surface: linear-gradient(90deg, #f4ffff 0%, #83d8e2 38%, #1f9ec2 64%, #79c23b 100%);
   --scrollbar-button-surface: linear-gradient(180deg, #f8ffff 0%, #92dbe5 48%, #56ad33 100%);
   --scrollbar-corner-surface: linear-gradient(135deg, #58b9ce 0%, #75bc34 100%);
+
+  /* --- Comet Assistant --- small flat button like Era B toolbar icons
+     (plan §2), millennium aqua/lime costume matching the rest of the shell. */
+  --assistant-button-size: 30px;
+  --assistant-comet-body: #57d6c9;
+  --assistant-comet-body-dark: #0d7d6f;
+  --assistant-comet-body-light: #eafff9;
+  --assistant-comet-tail: #c8f26a;
+  --assistant-comet-face: #ffffff;
+  --assistant-comet-eye: #063a33;
+  --assistant-comet-cheek: #ffb1cf;
+  --assistant-panel-width: 320px;
+  --assistant-panel-height: 400px;
+  --assistant-panel-title-font-size: 11px;
+  --assistant-panel-title-weight: 700;
+  --assistant-panel-title-spacing: 0.06em;
+  --assistant-balloon-max-width: 240px;
+  --assistant-hint-duration: 6000ms;
 
   /* --- Fonts (§19.1) --- */
   --font-chrome: Tahoma, 'W95FA', 'MS Sans Serif', Geneva, Verdana, sans-serif;

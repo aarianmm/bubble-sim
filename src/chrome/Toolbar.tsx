@@ -8,6 +8,12 @@
  * Icons are hand-drawn inline SVG: 16-colour legacy art plus a richer shaded
  * IE5/Windows 2000 group, using only tokened colours (§24 — no external
  * assets, nothing copied from Microsoft).
+ *
+ * `rightSlot` (Chrome.types.ts) is an optional, additive extension point at
+ * the end of this row — the Comet Assistant's throbber button mounts there
+ * (PLAN-COMET-ASSISTANT.md §2). This file renders whatever it is handed and
+ * stays ignorant of it; the button inventory, labels and handlers above are
+ * unchanged.
  */
 import type { ReactNode } from 'react';
 import type { ToolbarProps } from './Chrome.types';
@@ -190,6 +196,7 @@ export function Toolbar({
   onMail = noop,
   unreadCount = 0,
   newMailNotice = null,
+  rightSlot,
 }: ToolbarProps) {
   const buttons: ToolbarButtonSpec[] = [
     { key: 'back', label: 'Back', icon: <BackIcon />, onClick: onBack, disabled: !canGoBack },
@@ -239,6 +246,7 @@ export function Toolbar({
           )}
         </button>
       ))}
+      {rightSlot}
     </div>
   );
 }
